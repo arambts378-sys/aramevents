@@ -16,6 +16,8 @@ export async function submitRegistrationServerAction(
     organization?: string;
     job_title?: string;
     distance_category_id?: string;
+    ticket_type_id?: string;
+    quantity?: number;
     gender?: string;
     age?: string;
     t_shirt_size?: string;

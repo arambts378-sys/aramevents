@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QR &amp; Access | ARAM BTS Event Operating System</title>
+<!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#fffbff",
+            "outline": "#797587",
+            "surface-container-high": "#eae5ff",
+            "inverse-surface": "#302e45",
+            "background": "#fcf8ff",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed": "#e5deff",
+            "inverse-primary": "#cabeff",
+            "on-tertiary-container": "#fffbff",
+            "surface": "#fcf8ff",
+            "primary": "#5f3add",
+            "error-container": "#ffdad6",
+            "surface-tint": "#613de0",
+            "surface-dim": "#dbd6f5",
+            "surface-container-low": "#f6f1ff",
+            "on-secondary-fixed-variant": "#4117cf",
+            "secondary-container": "#7058fe",
+            "outline-variant": "#c9c4d8",
+            "on-secondary-fixed": "#180065",
+            "on-surface-variant": "#484555",
+            "tertiary-fixed-dim": "#c8c4d3",
+            "secondary": "#573ae4",
+            "on-primary-fixed": "#1c0062",
+            "secondary-fixed-dim": "#c7bfff",
+            "surface-variant": "#e4dffe",
+            "primary-container": "#7857f8",
+            "on-tertiary-fixed-variant": "#474551",
+            "error": "#ba1a1a",
+            "tertiary-fixed": "#e5e0ef",
+            "primary-fixed": "#e6deff",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#1c1a25",
+            "surface-container": "#f0ebff",
+            "inverse-on-surface": "#f3eeff",
+            "on-primary": "#ffffff",
+            "on-background": "#1b192f",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#fffbff",
+            "on-error": "#ffffff",
+            "primary-fixed-dim": "#cabeff",
+            "on-surface": "#1b192f",
+            "on-secondary": "#ffffff",
+            "surface-bright": "#fcf8ff",
+            "surface-container-highest": "#e4dffe",
+            "on-primary-fixed-variant": "#4918c8",
+            "tertiary-container": "#757380",
+            "tertiary": "#5d5a67"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-mobile": "1.25rem",
+            "space-xl": "2.5rem",
+            "margin": "3rem",
+            "space-lg": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter-mobile": "1rem",
+            "gutter": "1.5rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Space Grotesk"],
+            "headline-md": ["Space Grotesk"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Space Grotesk"],
+            "body-md": ["Plus Jakarta Sans"],
+            "display-hero-mobile": ["Space Grotesk"],
+            "headline-sm": ["Space Grotesk"],
+            "display-hero": ["Space Grotesk"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "metric-display": ["Space Grotesk"],
+            "label-md": ["Plus Jakarta Sans"],
+            "title-md": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "headline-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-hero-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display-hero": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.03em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "metric-display": ["44px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+            "title-md": ["18px", { "lineHeight": "26px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c9c4d8;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="h-full bg-background text-on-surface antialiased flex flex-row selection:bg-primary-container selection:text-on-primary-container">
+<!-- ========================================================================= -->
+<!-- PERSISTENT SIDEBAR NAVIGATION (230px) -->
+<!-- ========================================================================= -->
+<aside class="w-[230px] flex-shrink-0 bg-surface-container-lowest border-r border-outline-variant/40 flex flex-col justify-between h-screen sticky top-0 z-40 select-none">
+<!-- Top Brand Header & Nav -->
+<div class="flex flex-col">
+<!-- Brand OS Header -->
+<div class="h-[72px] px-5 flex flex-col justify-center border-b border-outline-variant/30">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-primary flex items-center justify-center text-on-primary text-xs font-bold tracking-tight">
+            ▲
+          </div>
+<span class="font-headline-sm text-headline-sm text-on-surface tracking-tight font-bold">ARAM BTS</span>
+</div>
+<span class="text-[9px] font-label-sm uppercase tracking-widest text-outline mt-0.5 font-semibold">
+          EVENT OPERATING SYSTEM
+        </span>
+</div>
+<!-- Navigation Links -->
+<nav class="p-3 space-y-1">
+<!-- Home -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<!-- Events (ACTIVE PILL) -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary-fixed text-on-secondary-fixed font-semibold shadow-xs" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary" data-icon="confirmation_number" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+<span class="font-label-md text-label-md">Events</span>
+</a>
+<!-- People -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface" data-icon="group">group</span>
+<span class="font-label-md text-label-md">People</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors group" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline group-hover:text-on-surface" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<!-- User Profile Footer -->
+<div class="p-3 border-t border-outline-variant/30">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-title-md text-label-md font-bold shadow-xs">
+          SS
+        </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-on-surface truncate font-semibold">Santhosh S</span>
+<span class="font-body-sm text-body-sm text-outline truncate text-[11px]">Event Manager</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] ml-auto" data-icon="unfold_more">unfold_more</span>
+</div>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE CONTENT CANVAS -->
+<!-- ========================================================================= -->
+<main class="flex-1 flex flex-col min-h-screen overflow-y-auto custom-scroll">
+<!-- TOP STICKY APPLICATION BAR / BREADCRUMB STRIP -->
+<header class="h-[72px] sticky top-0 bg-surface-container-lowest/90 backdrop-blur-md border-b border-outline-variant/30 px-8 flex items-center justify-between z-30">
+<div class="flex items-center gap-4">
+<a class="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_back">arrow_back</span>
+<span>Back to Workspace</span>
+</a>
+<div class="h-4 w-[1px] bg-outline-variant/60"></div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm tracking-widest text-outline uppercase font-semibold">
+            EVENT WORKSPACE · TESTING 2026
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-lg text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="terminal">terminal</span>
+<span>CONSOLE ROUTE: /access-control</span>
+</div>
+<button class="w-9 h-9 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- CONTENT WRAPPER -->
+<div class="p-8 max-w-7xl w-full mx-auto space-y-6">
+<!-- PAGE HEADER -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+            QR &amp; ACCESS
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Configure event access, checkpoints, entitlements, and volunteer permissions.
+          </p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2.5 rounded-lg border border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low hover:border-primary transition-colors font-label-md text-label-md flex items-center gap-2 shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="tune">tune</span>
+<span>Credential Sync</span>
+</button>
+<button class="px-5 py-2.5 rounded-lg bg-primary hover:bg-[#5B3FE8] text-on-primary font-label-md text-label-md font-semibold transition-all duration-150 shadow-sm flex items-center gap-2 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>+ Create Access Zone</span>
+</button>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 3. KPI METRICS CARDS -->
+<!-- ========================================================================= -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+<!-- Card 1: ACTIVE ZONES -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">ACTIVE ZONES</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="verified_user">verified_user</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="font-metric-display text-metric-display text-on-surface font-bold tracking-tight">3</div>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+<p class="font-body-sm text-body-sm text-outline">Currently scanning &amp; active</p>
+</div>
+</div>
+</div>
+<!-- Card 2: TOTAL ZONES -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">TOTAL ZONES</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="layers">layers</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="font-metric-display text-metric-display text-on-surface font-bold tracking-tight">4</div>
+<p class="font-body-sm text-body-sm text-outline mt-1">Configured perimeter zones</p>
+</div>
+</div>
+<!-- Card 3: TODAY'S SCANS -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">TODAY'S SCANS</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="font-metric-display text-metric-display text-on-surface font-bold tracking-tight">1,428</div>
+<p class="font-body-sm text-body-sm text-outline mt-1">Real-time ticket validations</p>
+</div>
+</div>
+<!-- Card 4: ACTIVE VOLUNTEERS -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between hover:border-primary/40 transition-colors">
+<div class="flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">ACTIVE VOLUNTEERS</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="badge">badge</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="font-metric-display text-metric-display text-on-surface font-bold tracking-tight">18</div>
+<p class="font-body-sm text-body-sm text-outline mt-1">Assigned scanner devices</p>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. VOLUNTEER ACCESS FEATURE CARD -->
+<!-- ========================================================================= -->
+<section class="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
+<!-- Subtle violet corner accent glow -->
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-secondary-fixed/30 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[28px]" data-icon="badge">badge</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-title-md text-title-md text-on-surface font-bold">VOLUNTEER ACCESS</h2>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-label-sm uppercase font-semibold">
+                Device Control
+              </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5 max-w-xl">
+              Manage event volunteers and assign the scanner zones they are allowed to access.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-3 relative z-10">
+<button class="px-5 py-2.5 rounded-lg bg-primary hover:bg-[#5B3FE8] text-on-primary font-label-md text-label-md font-semibold transition-all duration-150 shadow-xs flex items-center gap-2 whitespace-nowrap active:scale-[0.98]">
+<span>Manage Volunteers</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. MAIN ACCESS CONTROL WORKSPACE CARD -->
+<!-- ========================================================================= -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-7 shadow-xs space-y-6">
+<!-- Section Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-5">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">
+              ACCESS CONTROL
+            </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              Manage checkpoints, scanner zones, and access activity for this event.
+            </p>
+</div>
+<!-- Restrained Tab Navigation Bar -->
+<div class="flex items-center gap-8 border-b-2 sm:border-b-0 border-transparent">
+<!-- Active Tab: ACCESS ZONES -->
+<button class="flex items-center gap-2 pb-2 sm:pb-3 border-b-2 border-primary text-primary font-label-md text-label-md font-bold transition-all">
+<span>ACCESS ZONES</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-semibold">
+                4
+              </span>
+</button>
+<!-- Inactive Tab: ACTIVITY -->
+<button class="flex items-center gap-2 pb-2 sm:pb-3 border-b-2 border-transparent text-outline hover:text-on-surface font-label-md text-label-md font-medium transition-all group">
+<span class="w-2 h-2 rounded-full bg-emerald-500 group-hover:scale-110 transition-transform"></span>
+<span>ACTIVITY</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-low text-outline text-[11px] font-semibold">
+                1,428 scans
+              </span>
+</button>
+</div>
+</div>
+<!-- Toolbar under tabs -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+<!-- Search & Filter Cluster -->
+<div class="flex flex-wrap items-center gap-3">
+<!-- Search Input -->
+<div class="relative w-full sm:w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline pointer-events-none" data-icon="search">search</span>
+<input class="w-full pl-9 pr-3 py-2 text-body-md font-body-md bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface placeholder-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search access zones..." type="text"/>
+</div>
+<!-- Filter Pills -->
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<button class="px-3 py-1 rounded-md bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-semibold shadow-xs">
+                All Statuses (4)
+              </button>
+<button class="px-3 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm font-medium transition-colors">
+                Active (3)
+              </button>
+<button class="px-3 py-1 rounded-md text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm font-medium transition-colors">
+                Maintenance (1)
+              </button>
+</div>
+</div>
+<!-- Secondary Toolbar Actions -->
+<div class="flex items-center gap-2 self-end lg:self-auto">
+<button class="px-3 py-2 border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors font-label-md text-label-md flex items-center gap-1.5 shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="file_download">file_download</span>
+<span>Export CSV</span>
+</button>
+<button class="px-4 py-2 bg-primary hover:bg-[#5B3FE8] text-on-primary font-label-md text-label-md font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span>+ Create Access Zone</span>
+</button>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 6. ACCESS ZONES CONTENT LIST / STRUCTURED ROWS -->
+<!-- ========================================================================= -->
+<div class="space-y-3.5 pt-2">
+<!-- Zone 1: Main Arena Entrance (Gates A–D) -->
+<div class="border border-outline-variant/40 rounded-xl p-5 hover:border-primary/40 bg-surface-container-lowest hover:bg-surface-container-low/20 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed/50 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px]" data-icon="door_sliding">door_sliding</span>
+</div>
+<div>
+<div class="flex flex-wrap items-center gap-2.5">
+<h3 class="font-title-md text-title-md text-on-surface font-bold">
+                    Main Arena Entrance (Gates A–D)
+                  </h3>
+<!-- Status Badge: Active -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-label-sm font-bold border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    ACTIVE
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="passkey">passkey</span>
+<span class="text-on-surface-variant font-medium">Entitlements:</span>
+<span class="text-on-surface">All General &amp; VIP Passes</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="devices">devices</span>
+<span class="text-on-surface-variant font-medium">Assigned Scanners:</span>
+<span class="text-on-surface">8 Volunteers · Handheld Scanner Terminal</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-outline-variant/30">
+<!-- Today's Scans Metric -->
+<div class="flex flex-col xl:items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">TODAY'S SCANS</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">942 scans</span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold transition-colors">
+                  Edit
+                </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors">
+                  Configure Scanners
+                </button>
+<button class="w-8 h-8 rounded-lg border border-outline-variant/40 hover:bg-surface-container-low flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="More options">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Zone 2: VIP Backstage & Speaker Lounge -->
+<div class="border border-outline-variant/40 rounded-xl p-5 hover:border-primary/40 bg-surface-container-lowest hover:bg-surface-container-low/20 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed/50 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px]" data-icon="stars">stars</span>
+</div>
+<div>
+<div class="flex flex-wrap items-center gap-2.5">
+<h3 class="font-title-md text-title-md text-on-surface font-bold">
+                    VIP Backstage &amp; Speaker Lounge
+                  </h3>
+<!-- Status Badge: Active -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-label-sm font-bold border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    ACTIVE
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="passkey">passkey</span>
+<span class="text-on-surface-variant font-medium">Entitlements:</span>
+<span class="text-on-surface">VIP All-Access · Speaker Credentials · Press Pass</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="contactless">contactless</span>
+<span class="text-on-surface-variant font-medium">Assigned Scanners:</span>
+<span class="text-on-surface">4 Volunteers · Fast-Pass NFC / QR</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-outline-variant/30">
+<!-- Today's Scans Metric -->
+<div class="flex flex-col xl:items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">TODAY'S SCANS</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">216 scans</span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold transition-colors">
+                  Edit
+                </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors">
+                  Configure Scanners
+                </button>
+<button class="w-8 h-8 rounded-lg border border-outline-variant/40 hover:bg-surface-container-low flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="More options">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Zone 3: Exhibition Hall & Partner Pavilion -->
+<div class="border border-outline-variant/40 rounded-xl p-5 hover:border-primary/40 bg-surface-container-lowest hover:bg-surface-container-low/20 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed/50 flex items-center justify-center text-primary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px]" data-icon="storefront">storefront</span>
+</div>
+<div>
+<div class="flex flex-wrap items-center gap-2.5">
+<h3 class="font-title-md text-title-md text-on-surface font-bold">
+                    Exhibition Hall &amp; Partner Pavilion
+                  </h3>
+<!-- Status Badge: Active -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-label-sm font-bold border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    ACTIVE
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="passkey">passkey</span>
+<span class="text-on-surface-variant font-medium">Entitlements:</span>
+<span class="text-on-surface">All Registered Attendees · Exhibitor Badges</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="group">group</span>
+<span class="text-on-surface-variant font-medium">Assigned Scanners:</span>
+<span class="text-on-surface">4 Volunteers</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-outline-variant/30">
+<!-- Today's Scans Metric -->
+<div class="flex flex-col xl:items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">TODAY'S SCANS</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">270 scans</span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold transition-colors">
+                  Edit
+                </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition-colors">
+                  Configure Scanners
+                </button>
+<button class="w-8 h-8 rounded-lg border border-outline-variant/40 hover:bg-surface-container-low flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="More options">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Zone 4: Executive Boardroom / Closed Keynote -->
+<div class="border border-outline-variant/40 rounded-xl p-5 hover:border-outline bg-surface-container-low/30 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-xl bg-outline-variant/30 flex items-center justify-center text-outline flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px]" data-icon="lock">lock</span>
+</div>
+<div>
+<div class="flex flex-wrap items-center gap-2.5">
+<h3 class="font-title-md text-title-md text-on-surface font-bold">
+                    Executive Boardroom / Closed Keynote
+                  </h3>
+<!-- Status Badge: Paused / Standby -->
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[11px] font-label-sm font-bold border border-slate-200">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    STANDBY
+                  </span>
+</div>
+<div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="passkey">passkey</span>
+<span class="text-on-surface-variant font-medium">Entitlements:</span>
+<span class="text-on-surface">Executive Pass Only</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="group">group</span>
+<span class="text-on-surface-variant font-medium">Assigned Scanners:</span>
+<span class="text-on-surface">2 Volunteers</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-outline-variant/30">
+<!-- Today's Scans Metric -->
+<div class="flex flex-col xl:items-end">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">TODAY'S SCANS</span>
+<span class="font-headline-sm text-headline-sm font-bold text-outline">0 scans</span>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-[#5B3FE8] text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-xs">
+                  Activate
+                </button>
+<button class="px-3 py-1.5 rounded-lg border border-outline-variant/50 hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-semibold transition-colors">
+                  Edit
+                </button>
+<button class="w-8 h-8 rounded-lg border border-outline-variant/40 hover:bg-surface-container-low flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="More options">
+<span class="material-symbols-outlined text-[18px]" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Minimal Subtle Footer Details for Operational Verification -->
+<footer class="pt-6 pb-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-outline-variant/30 text-outline font-body-sm text-body-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>ARAM BTS Mesh Access Sync Engine v4.8.2 Online</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="hover:text-primary transition-colors" href="#">Terminal Hardware Specs</a>
+<a class="hover:text-primary transition-colors" href="#">Emergency Protocol Override</a>
+<a class="hover:text-primary transition-colors" href="#">Audit Log</a>
+</div>
+</footer>
+</div>
+</main>
+</body></html>

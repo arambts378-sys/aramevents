@@ -1,7 +1,27 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 export function Header({ currentUser }: { currentUser: any }) {
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      router.push('/login');
+      router.refresh();
+    }
+  };
+
   return (
     <header className="mb-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#E7E2DD]">
@@ -22,6 +42,15 @@ export function Header({ currentUser }: { currentUser: any }) {
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Create Event</span>
           </Link>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="px-3 py-2 border border-[#E7E2DD] text-[#DC2626] hover:bg-[#DC2626]/10 font-medium text-sm rounded transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Sign Out"
+          >
+            <span className="material-symbols-outlined text-[18px]">logout</span>
+            <span className="hidden sm:inline">{loggingOut ? 'Signing out...' : 'Sign Out'}</span>
+          </button>
         </div>
       </div>
     </header>

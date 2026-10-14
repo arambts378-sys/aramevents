@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 
@@ -8,33 +10,44 @@ interface EventsEmptyStateProps {
 
 export function EventsEmptyState({ isSearchEmpty, clearFilters }: EventsEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-[#E7E2DD] rounded border-dashed">
-      <div className="w-16 h-16 bg-[#F8F4EF] rounded-full flex items-center justify-center mb-6">
-        <span className="material-symbols-outlined text-3xl text-[#7A1F3D]">
-          {isSearchEmpty ? 'search_off' : 'event_busy'}
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white border border-[#E6E2F0] rounded-2xl shadow-xs max-w-2xl mx-auto">
+      <div className="w-14 h-14 bg-[#F6F1FF] text-[#7C5CFC] rounded-2xl flex items-center justify-center mb-5 border border-[#E6E2F0]">
+        <span className="material-symbols-outlined text-[28px]">
+          {isSearchEmpty ? 'search_off' : 'event_available'}
         </span>
       </div>
-      
+
       {isSearchEmpty ? (
         <>
-          <h2 className="text-2xl font-bold text-[#171717] mb-3">No matching events found.</h2>
-          <p className="text-[#6B6B6B] mb-8 max-w-md mx-auto">
-            Try adjusting your search criteria or filter to see more events.
+          <h2 className="text-[20px] md:text-[22px] font-bold text-[#17152B] font-space mb-2">
+            No events found
+          </h2>
+          <p className="text-[14px] text-[#77738A] max-w-md mx-auto mb-6 font-jakarta">
+            Try adjusting your search or status filter.
           </p>
           {clearFilters && (
-            <button onClick={clearFilters} className="px-6 py-2.5 border border-[#E7E2DD] text-[#171717] font-medium rounded hover:bg-[#F8F4EF] transition-colors">
-              Clear Filters
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="h-[40px] px-5 bg-white border border-[#E6E2F0] hover:bg-[#F6F1FF] text-[#17152B] font-semibold text-[13px] rounded-lg transition-colors shadow-xs cursor-pointer active:scale-[0.98]"
+            >
+              Clear filters
             </button>
           )}
         </>
       ) : (
         <>
-          <h2 className="text-2xl font-bold text-[#171717] mb-3">No events yet.</h2>
-          <p className="text-[#6B6B6B] mb-8 max-w-md mx-auto">
-            Create your first event and start managing the complete event lifecycle from one workspace.
+          <h2 className="text-[20px] md:text-[22px] font-bold text-[#17152B] font-space mb-2">
+            No events yet
+          </h2>
+          <p className="text-[14px] text-[#77738A] max-w-md mx-auto mb-6 font-jakarta">
+            Create your first event to start managing registrations, people and event operations from one place.
           </p>
-          <Link href="/app/events/new" className="px-6 py-2.5 bg-[#7A1F3D] text-white font-medium rounded hover:bg-[#4A1024] transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined text-[20px]">add</span>
+          <Link
+            href="/app/events/new"
+            className="h-[44px] px-5 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[14px] font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Create Event</span>
           </Link>
         </>

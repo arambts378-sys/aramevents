@@ -1,20 +1,17 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Event } from '../types';
+import { User, Event, UserPreferences, WorkspaceDetails } from '../types';
 import { createClient } from '@/lib/supabase/client';
 
-interface Workspace {
-  id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-}
+export type Workspace = WorkspaceDetails;
 
 interface AppContextType {
   currentUser: User | null;
+  currentRole: string | null;
   workspaces: Workspace[];
   activeWorkspace: Workspace | null;
+  userPreferences: UserPreferences | null;
   events: Event[];
   isHydrated: boolean;
   createEvent: (event: Partial<Event>) => Promise<Event>;
@@ -22,6 +19,8 @@ interface AppContextType {
   getEventBySlug: (slug: string) => Event | undefined;
   updateEvent: (event: Event) => Promise<Event>;
   deleteEvent: (id: string) => Promise<void>;
+  updateUserPreferences: (prefs: Partial<UserPreferences>) => Promise<UserPreferences>;
+  updateActiveWorkspace: (updates: Partial<Workspace>) => Promise<Workspace>;
   refreshContext: () => Promise<void>;
 }
 
@@ -29,8 +28,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentRole, setCurrentRole] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   
@@ -38,53 +39,142 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const refreshContext = async () => {
     try {
-      // 1. Get authenticated user
+      // 1. Get authenticated user (checking session or getUser for reliable SSR cookie reading)
+      let authUser = null;
       const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        authUser = session.user;
+      } else {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user) {
+          authUser = userData.user;
+        }
+      }
       
-      if (!session) {
+      if (!authUser) {
         setCurrentUser(null);
+        setCurrentRole(null);
         setWorkspaces([]);
         setActiveWorkspace(null);
+        setUserPreferences(null);
         setEvents([]);
         setIsHydrated(true);
         return;
       }
 
-      // 2. Fetch profile
+      // 2. Fetch profile with fallback to auth metadata
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session.user.id)
-        .single();
+        .eq('id', authUser.id)
+        .maybeSingle();
 
-      if (profile) {
-        setCurrentUser({
-          id: profile.id,
-          name: profile.full_name,
-          email: session.user.email || '',
-        });
+      const resolvedName = profile?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User';
+
+      setCurrentUser({
+        id: authUser.id,
+        name: resolvedName,
+        email: authUser.email || '',
+      });
+
+      // 3. Fetch user preferences
+      try {
+        const { data: prefs, error: prefErr } = await supabase
+          .from('user_preferences')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .maybeSingle();
+
+        if (prefs && !prefErr) {
+          setUserPreferences(prefs as UserPreferences);
+        }
+      } catch {
+        // Table may be pending remote migration
       }
 
-      // 3. Fetch workspaces user is member of
+      // 4. Fetch workspaces user is member of
+      let userWorkspaces: Workspace[] = [];
       const { data: memberWorkspaces } = await supabase
         .from('workspace_members')
-        .select('workspace_id, workspaces(id, name, slug, owner_id)')
-        .eq('user_id', session.user.id);
+        .select('workspace_id, workspaces(*)')
+        .eq('user_id', authUser.id);
 
       if (memberWorkspaces && memberWorkspaces.length > 0) {
-        // Map nested join results safely
-        const userWorkspaces = memberWorkspaces
+        userWorkspaces = memberWorkspaces
           .map((mw: any) => mw.workspaces)
           .filter(Boolean) as Workspace[];
+      }
 
+      // Fallback: Check if user owns workspaces directly
+      if (userWorkspaces.length === 0) {
+        const { data: ownedWorkspaces } = await supabase
+          .from('workspaces')
+          .select('*')
+          .eq('owner_id', authUser.id);
+        if (ownedWorkspaces && ownedWorkspaces.length > 0) {
+          userWorkspaces = ownedWorkspaces as Workspace[];
+        }
+      }
+
+      // Fallback: If user has no workspace at all, create one
+      if (userWorkspaces.length === 0) {
+        const fallbackSlug = `ws-${Math.random().toString(36).substring(2, 10)}`;
+        const wsName = resolvedName ? `${resolvedName}'s Workspace` : 'My Workspace';
+        const { data: newWs } = await supabase
+          .from('workspaces')
+          .insert({
+            name: wsName,
+            slug: fallbackSlug,
+            owner_id: authUser.id,
+          })
+          .select()
+          .maybeSingle();
+
+        if (newWs) {
+          await supabase.from('workspace_members').insert({
+            workspace_id: newWs.id,
+            user_id: authUser.id,
+            role_id: '98ea8ad3-2801-4ac5-9697-ef1c5e845269',
+          });
+          userWorkspaces = [newWs as Workspace];
+        }
+      }
+
+      if (userWorkspaces.length > 0) {
         setWorkspaces(userWorkspaces);
         
-        // Pick first workspace as active for now (could save preference later)
-        const currentActive = userWorkspaces[0];
+        // Pick first workspace as active (or maintain currently active if still valid)
+        const currentActive = activeWorkspace && userWorkspaces.some(w => w.id === activeWorkspace.id)
+          ? userWorkspaces.find(w => w.id === activeWorkspace.id)!
+          : userWorkspaces[0];
         setActiveWorkspace(currentActive);
 
-        // 4. Fetch events for active workspace
+        // 5. Fetch user's role in the active workspace
         if (currentActive) {
+          try {
+            const { data: memberData } = await supabase
+              .from('workspace_members')
+              .select('role_id, roles(name)')
+              .eq('workspace_id', currentActive.id)
+              .eq('user_id', authUser.id)
+              .maybeSingle();
+
+            if (memberData && (memberData as any).roles) {
+              setCurrentRole((memberData as any).roles.name);
+            } else if (currentActive.owner_id === authUser.id) {
+              setCurrentRole('workspace_owner');
+            } else {
+              setCurrentRole('member');
+            }
+          } catch {
+            if (currentActive.owner_id === authUser.id) {
+              setCurrentRole('workspace_owner');
+            } else {
+              setCurrentRole('member');
+            }
+          }
+
+          // 6. Fetch events for active workspace
           const { data: workspaceEvents } = await supabase
             .from('events')
             .select('*')
@@ -107,6 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               location: e.location,
               description: e.description,
               status: e.status,
+              workspace_id: e.workspace_id,
               createdAt: e.created_at,
               flyer: e.flyer_url,
               website: e.website
@@ -134,13 +225,78 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const createEvent = async (newEventData: Partial<Event>): Promise<Event> => {
-    if (!activeWorkspace || !currentUser) throw new Error('Not authenticated or no active workspace');
+    let effectiveUser = currentUser;
+    let effectiveWorkspace = activeWorkspace;
+
+    // Self-healing: if state hasn't hydrated or is missing, resolve directly from Supabase
+    if (!effectiveUser || !effectiveWorkspace) {
+      let authUser = null;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        authUser = session.user;
+      } else {
+        const { data: userData } = await supabase.auth.getUser();
+        authUser = userData?.user;
+      }
+
+      if (!authUser) {
+        throw new Error('Not authenticated. Please sign in to create an event.');
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      effectiveUser = {
+        id: authUser.id,
+        name: profile?.full_name || authUser.user_metadata?.full_name || 'Organizer',
+        email: authUser.email || '',
+      };
+      setCurrentUser(effectiveUser);
+
+      const { data: memberWorkspaces } = await supabase
+        .from('workspace_members')
+        .select('workspace_id, workspaces(*)')
+        .eq('user_id', authUser.id);
+
+      let foundWorkspaces: Workspace[] = [];
+      if (memberWorkspaces && memberWorkspaces.length > 0) {
+        foundWorkspaces = memberWorkspaces
+          .map((mw: any) => mw.workspaces)
+          .filter(Boolean) as Workspace[];
+      }
+
+      if (foundWorkspaces.length === 0) {
+        const { data: ownedWorkspaces } = await supabase
+          .from('workspaces')
+          .select('*')
+          .eq('owner_id', authUser.id);
+        if (ownedWorkspaces && ownedWorkspaces.length > 0) {
+          foundWorkspaces = ownedWorkspaces as Workspace[];
+        }
+      }
+
+      if (foundWorkspaces.length > 0) {
+        effectiveWorkspace = foundWorkspaces[0];
+        setActiveWorkspace(effectiveWorkspace);
+        setWorkspaces(foundWorkspaces);
+      }
+    }
+
+    if (!effectiveUser) {
+      throw new Error('Not authenticated. Please sign in to create an event.');
+    }
+    if (!effectiveWorkspace) {
+      throw new Error('No active workspace found. Please select or create a workspace.');
+    }
 
     const { data, error } = await supabase
       .from('events')
       .insert([{
-        workspace_id: activeWorkspace.id,
-        created_by: currentUser.id,
+        workspace_id: effectiveWorkspace.id,
+        created_by: effectiveUser.id,
         name: newEventData.name,
         slug: newEventData.slug,
         type: newEventData.type,
@@ -175,6 +331,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       location: data.location,
       description: data.description,
       status: data.status,
+      workspace_id: data.workspace_id,
       createdAt: data.created_at,
       flyer: data.flyer_url,
       website: data.website
@@ -232,11 +389,55 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setEvents(prev => prev.filter(e => e.id !== id));
   };
 
+  const updateUserPreferences = async (newPrefs: Partial<UserPreferences>): Promise<UserPreferences> => {
+    if (!currentUser) throw new Error('Not authenticated');
+
+    const payload: any = {
+      user_id: currentUser.id,
+      ...newPrefs,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .upsert(payload, { onConflict: 'user_id' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    setUserPreferences(data as UserPreferences);
+    return data as UserPreferences;
+  };
+
+  const updateActiveWorkspace = async (updates: Partial<Workspace>): Promise<Workspace> => {
+    if (!activeWorkspace) throw new Error('No active workspace');
+
+    const payload: any = {};
+    if (updates.name !== undefined) payload.name = updates.name;
+    if (updates.email !== undefined) payload.email = updates.email;
+    if (updates.logo_url !== undefined) payload.logo_url = updates.logo_url;
+
+    const { data, error } = await supabase
+      .from('workspaces')
+      .update(payload)
+      .eq('id', activeWorkspace.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    const updatedWs = { ...activeWorkspace, ...data };
+    setActiveWorkspace(updatedWs);
+    setWorkspaces(prev => prev.map(w => w.id === updatedWs.id ? updatedWs : w));
+    return updatedWs;
+  };
+
   return (
     <AppContext.Provider value={{
       currentUser,
+      currentRole,
       workspaces,
       activeWorkspace,
+      userPreferences,
       events,
       isHydrated,
       createEvent,
@@ -244,6 +445,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       getEventBySlug,
       updateEvent,
       deleteEvent,
+      updateUserPreferences,
+      updateActiveWorkspace,
       refreshContext
     }}>
       {children}
