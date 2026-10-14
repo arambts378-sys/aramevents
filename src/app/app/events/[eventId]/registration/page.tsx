@@ -142,7 +142,7 @@ export default function OrganizerRegistrationPage() {
   return (
     <div className="min-h-screen flex flex-col bg-surface-container-lowest">
       {/* Header */}
-      <header className="h-14 border-b border-outline-variant/60 flex items-center px-6 gap-4 sticky top-0 bg-surface-container-lowest z-10">
+      <header className="min-h-14 border-b border-outline-variant/60 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 sticky top-0 bg-surface-container-lowest z-10">
         <button onClick={() => router.push(`/app/events/${eventId}`)} className="text-on-surface-variant hover:text-on-surface p-1">
           <span className="material-symbols-outlined text-xl">arrow_back</span>
         </button>
@@ -152,7 +152,7 @@ export default function OrganizerRegistrationPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1200px] mx-auto w-full p-8 flex flex-col lg:flex-row gap-10 items-start">
+      <main className="flex-1 max-w-[1200px] mx-auto w-full p-4 sm:p-8 flex flex-col lg:flex-row gap-6 sm:gap-10 items-start">
         
         {/* Left Column: Settings */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
@@ -251,7 +251,7 @@ export default function OrganizerRegistrationPage() {
           {/* Metrics Card */}
           <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-sm">
             <h3 className="text-title-sm font-bold text-on-surface mb-4">Metrics</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <div className="text-body-sm text-on-surface-variant">Total Registrations</div>
                 <div className="text-headline-sm font-bold text-on-surface">{metrics.total}</div>

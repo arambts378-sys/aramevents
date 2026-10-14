@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { maskEmail, normalizeEmail, resendChallengeOtp } from '@/services/otpService';
-import { sendOrganizerVerificationEmail } from '@/services/organizerMailer';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { OtpRateLimitError, maskEmail, resendChallengeOtp } from '@/services/otpService';
+import {
+  sendExistingAccountNoticeEmail,
+  sendOrganizerVerificationEmail,
+} from '@/services/organizerMailer';
+import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
+import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
 
 function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
@@ -14,55 +20,61 @@ function getClientIp(req: NextRequest): string {
   return '127.0.0.1';
 }
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email } = body;
-
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email address is required.' },
-        { status: 400 }
-      );
+    let body: Record<string, unknown>;
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
     }
 
-    const normEmail = normalizeEmail(email);
-    if (!EMAIL_REGEX.test(normEmail)) {
-      return NextResponse.json(
-        { error: 'Please provide a valid email address.' },
-        { status: 400 }
-      );
+    const emailError = validateEmail(body?.email);
+    if (emailError) {
+      return NextResponse.json({ error: emailError }, { status: 400 });
     }
 
+    const normEmail = normalizeEmail(body.email as string);
     const clientIp = getClientIp(req);
 
-    // Resend OTP challenge with cooldown & hourly rate limit checks
-    const { rawOtp, expiresAt } = await resendChallengeOtp(
-      normEmail,
-      clientIp,
-      'organizer_registration'
-    );
+    // Cooldown + hourly limits apply identically whether or not the email has an account,
+    // so throttling responses cannot be used to probe for registered emails.
+    const { rawOtp, created } = await resendChallengeOtp(normEmail, clientIp, 'organizer_registration');
 
-    await sendOrganizerVerificationEmail(normEmail, rawOtp, 10);
+    // Decide what (if anything) to send. The HTTP response is identical in every case.
+    const user = await findAuthUserByEmail(createAdminClient(), normEmail);
+
+    try {
+      if (created && user && !user.email_confirmed_at) {
+        await sendOrganizerVerificationEmail(normEmail, rawOtp, 10);
+      } else if (created && user && user.email_confirmed_at) {
+        // Already verified: no code is issued for sign-in; point the owner to the login page.
+        await sendExistingAccountNoticeEmail(normEmail);
+      }
+      // No account: send nothing (prevents using this endpoint to spam arbitrary addresses).
+    } catch (mailErr) {
+      const e = mailErr as { name?: string; code?: string } | null;
+      console.error('[organizer/resend] email delivery failed', { name: e?.name, code: e?.code });
+      return NextResponse.json(
+        { error: 'We could not send the verification email. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'A new verification code has been sent to your email.',
+      message: 'If this email is awaiting verification, a new code has been sent.',
       email: maskEmail(normEmail),
-      expiresAt: expiresAt.toISOString(),
     });
-  } catch (err: any) {
-    console.error('Error during OTP resend:', err);
-    const errorMessage = err?.message || 'Failed to resend verification code.';
-    const isCooldownOrRateLimit =
-      errorMessage.toLowerCase().includes('wait') ||
-      errorMessage.toLowerCase().includes('too many');
-
+  } catch (err) {
+    if (err instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: err.message }, { status: 429 });
+    }
+    const e = err as { name?: string; code?: string } | null;
+    console.error('[organizer/resend] unexpected error', { name: e?.name, code: e?.code });
     return NextResponse.json(
-      { error: errorMessage },
-      { status: isCooldownOrRateLimit ? 429 : 500 }
+      { error: 'Failed to resend verification code. Please try again.' },
+      { status: 500 }
     );
   }
 }

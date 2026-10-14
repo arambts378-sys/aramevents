@@ -1,8 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MISMATCH_MESSAGE,
+  PHONE_FORMAT_HINT,
+  getConfirmPasswordState,
+  normalizeEmail,
+  normalizeIndianMobile,
+  validateRegistration,
+  type RegistrationField,
+  type RegistrationFieldErrors,
+} from '@/lib/validation/auth';
+
+const INPUT_BASE =
+  'w-full px-3.5 py-2.5 bg-[#F7F5FF] border rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:ring-1 transition-colors';
+const INPUT_OK = 'border-[#E6E2F0] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]';
+const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]';
+
+function inputClass(hasError: boolean, extra = '') {
+  return `${INPUT_BASE} ${hasError ? INPUT_BAD : INPUT_OK} ${extra}`.trim();
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <p id={id} role="alert" className="text-[11px] font-semibold text-[#DC2626] flex items-start gap-1">
+      <span className="material-symbols-outlined text-sm shrink-0 leading-none mt-px">error</span>
+      <span>{message}</span>
+    </p>
+  );
+}
 
 export default function OrganizerRegisterPage() {
   const router = useRouter();
@@ -17,44 +48,94 @@ export default function OrganizerRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [touched, setTouched] = useState<Partial<Record<RegistrationField, boolean>>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [serverErrors, setServerErrors] = useState<RegistrationFieldErrors>({});
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Synchronous guard: state updates are async, so a fast double-click could otherwise
+  // dispatch two requests before `loading` re-renders.
+  const submitGuard = useRef(false);
+
+  const clientErrors = validateRegistration({
+    fullName,
+    organizationName,
+    email,
+    phoneNumber,
+    password,
+    confirmPassword,
+  }).fieldErrors;
+
+  // Confirm password is validated live: a mismatch shows as soon as the confirm field has
+  // content, and it re-evaluates whenever either field changes.
+  const { mismatch: confirmMismatch, match: passwordsMatch } = getConfirmPasswordState(password, confirmPassword);
+
+  const visibleError = (field: RegistrationField): string | undefined => {
+    if (serverErrors[field]) return serverErrors[field];
+    if (field === 'confirmPassword') {
+      if (confirmMismatch) return PASSWORD_MISMATCH_MESSAGE;
+      return touched.confirmPassword || submitted ? clientErrors.confirmPassword : undefined;
+    }
+    return touched[field] || submitted ? clientErrors[field] : undefined;
+  };
+
+  const touch = (field: RegistrationField) => setTouched((t) => ({ ...t, [field]: true }));
+
+  const clearFieldFeedback = (field: RegistrationField) => {
+    setError('');
+    setServerErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const errors = {
+    fullName: visibleError('fullName'),
+    organizationName: visibleError('organizationName'),
+    email: visibleError('email'),
+    phoneNumber: visibleError('phoneNumber'),
+    password: visibleError('password'),
+    confirmPassword: visibleError('confirmPassword'),
+  };
+
+  const describedBy = (field: RegistrationField, extra?: string) => {
+    const ids = [errors[field] ? `${field}-error` : '', extra || ''].filter(Boolean).join(' ');
+    return ids || undefined;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return; // Prevent double submit
+    if (loading || submitGuard.current) return; // Prevent double submit
     setError('');
+    setSubmitted(true);
 
-    // Client-side validations
-    const trimmedName = fullName.trim();
-    const trimmedOrg = organizationName.trim();
-    const trimmedEmail = email.trim().toLowerCase();
+    const result = validateRegistration({
+      fullName,
+      organizationName,
+      email,
+      phoneNumber,
+      password,
+      confirmPassword,
+    });
 
-    if (!trimmedName || trimmedName.length < 2) {
-      setError('Please enter your full name (at least 2 characters).');
-      return;
-    }
-    if (!trimmedOrg || trimmedOrg.length < 2) {
-      setError('Please enter your organization name (at least 2 characters).');
-      return;
-    }
-    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError('Please enter a valid work email address.');
-      return;
-    }
-    if (!password) {
-      setError('Password is required.');
-      return;
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+    if (!result.valid || !result.values) {
+      const order: RegistrationField[] = [
+        'fullName',
+        'organizationName',
+        'email',
+        'phoneNumber',
+        'password',
+        'confirmPassword',
+      ];
+      const first = order.find((f) => result.fieldErrors[f]);
+      if (first) document.getElementById(first)?.focus();
       return;
     }
 
+    submitGuard.current = true;
     setLoading(true);
 
     try {
@@ -62,30 +143,38 @@ export default function OrganizerRegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: trimmedName,
-          organizationName: trimmedOrg,
-          email: trimmedEmail,
-          phoneNumber: phoneNumber.trim() || undefined,
-          password,
+          fullName: result.values.fullName,
+          organizationName: result.values.organizationName,
+          email: result.values.email,
+          phoneNumber: result.values.phone,
+          password, // sent exactly as typed (never trimmed)
           confirmPassword,
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create organizer account. Please check your details.');
-        setLoading(false);
+        if (data?.fieldErrors && typeof data.fieldErrors === 'object') {
+          setServerErrors(data.fieldErrors as RegistrationFieldErrors);
+        }
+        setError(
+          data?.error || 'We could not create your account. Please check your details and try again.'
+        );
         return;
       }
 
-      // Route to verification challenge page with normalized email in query
-      router.push(`/organizer/verify?email=${encodeURIComponent(trimmedEmail)}`);
+      // Same destination whether the email is new, pending, or already registered.
+      router.push(`/organizer/verify?email=${encodeURIComponent(result.values.email)}`);
     } catch {
       setError('Network error. Please verify your internet connection and try again.');
+    } finally {
+      submitGuard.current = false;
       setLoading(false);
     }
   };
+
+  const phoneCheck = phoneNumber.trim() ? normalizeIndianMobile(phoneNumber) : null;
 
   return (
     <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-10 px-4 selection:bg-[#7C5CFC]/20 selection:text-[#7C5CFC]">
@@ -129,7 +218,7 @@ export default function OrganizerRegisterPage() {
           {/* Full Name */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="fullName" className="text-xs font-semibold text-[#17152B]">
-              Full Name <span className="text-[#DC2626]">*</span>
+              Full Name <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <input
               id="fullName"
@@ -137,18 +226,26 @@ export default function OrganizerRegisterPage() {
               type="text"
               autoComplete="name"
               required
+              aria-required="true"
+              aria-invalid={!!errors.fullName}
+              aria-describedby={describedBy('fullName')}
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                clearFieldFeedback('fullName');
+              }}
+              onBlur={() => touch('fullName')}
               placeholder="e.g. John Doe"
               maxLength={100}
-              className="w-full px-3.5 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+              className={inputClass(!!errors.fullName)}
             />
+            <FieldError id="fullName-error" message={errors.fullName} />
           </div>
 
           {/* Organization Name */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="organizationName" className="text-xs font-semibold text-[#17152B]">
-              Organization Name <span className="text-[#DC2626]">*</span>
+              Organization Name <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <input
               id="organizationName"
@@ -156,18 +253,26 @@ export default function OrganizerRegisterPage() {
               type="text"
               autoComplete="organization"
               required
+              aria-required="true"
+              aria-invalid={!!errors.organizationName}
+              aria-describedby={describedBy('organizationName')}
               value={organizationName}
-              onChange={(e) => setOrganizationName(e.target.value)}
+              onChange={(e) => {
+                setOrganizationName(e.target.value);
+                clearFieldFeedback('organizationName');
+              }}
+              onBlur={() => touch('organizationName')}
               placeholder="e.g. Acme Events Foundation"
               maxLength={100}
-              className="w-full px-3.5 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+              className={inputClass(!!errors.organizationName)}
             />
+            <FieldError id="organizationName-error" message={errors.organizationName} />
           </div>
 
           {/* Work Email */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-xs font-semibold text-[#17152B]">
-              Work Email <span className="text-[#DC2626]">*</span>
+              Work Email <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <input
               id="email"
@@ -175,36 +280,74 @@ export default function OrganizerRegisterPage() {
               type="email"
               autoComplete="email"
               required
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              aria-describedby={describedBy('email')}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFieldFeedback('email');
+              }}
+              onBlur={() => {
+                setEmail((v) => normalizeEmail(v));
+                touch('email');
+              }}
               placeholder="name@company.com"
               maxLength={255}
-              className="w-full px-3.5 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+              className={inputClass(!!errors.email)}
             />
+            <FieldError id="email-error" message={errors.email} />
           </div>
 
-          {/* Phone Number */}
+          {/* Mobile Number */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="phoneNumber" className="text-xs font-semibold text-[#17152B]">
-              Phone Number <span className="text-[#77738A] font-normal">(Optional)</span>
+              Mobile Number <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <input
               id="phoneNumber"
               name="tel"
               type="tel"
+              inputMode="tel"
               autoComplete="tel"
+              required
+              aria-required="true"
+              aria-invalid={!!errors.phoneNumber}
+              aria-describedby={describedBy('phoneNumber', 'phoneNumber-hint')}
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => {
+                setPhoneNumber(e.target.value);
+                clearFieldFeedback('phoneNumber');
+              }}
+              onBlur={() => touch('phoneNumber')}
               placeholder="+91 98765 43210"
               maxLength={25}
-              className="w-full px-3.5 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+              className={inputClass(!!errors.phoneNumber)}
             />
+            <FieldError id="phoneNumber-error" message={errors.phoneNumber} />
+            {!errors.phoneNumber && (
+              <p id="phoneNumber-hint" className="text-[11px] text-[#77738A] flex items-center gap-1">
+                {phoneCheck?.valid ? (
+                  <>
+                    <span className="material-symbols-outlined text-sm text-[#16A34A] leading-none">check_circle</span>
+                    <span>We&apos;ll save this as {phoneCheck.e164}</span>
+                  </>
+                ) : (
+                  <span>Indian mobile number (10 digits). Country code +91 is optional.</span>
+                )}
+              </p>
+            )}
+            {errors.phoneNumber && (
+              <span id="phoneNumber-hint" className="sr-only">
+                {PHONE_FORMAT_HINT}
+              </span>
+            )}
           </div>
 
           {/* Password */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="password" className="text-xs font-semibold text-[#17152B]">
-              Password <span className="text-[#DC2626]">*</span>
+              Password <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -213,11 +356,18 @@ export default function OrganizerRegisterPage() {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
+                aria-required="true"
+                aria-invalid={!!errors.password}
+                aria-describedby={describedBy('password', 'password-requirements')}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters"
-                maxLength={128}
-                className="w-full pl-3.5 pr-10 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  clearFieldFeedback('password');
+                }}
+                onBlur={() => touch('password')}
+                placeholder={`At least ${PASSWORD_MIN_LENGTH} characters`}
+                maxLength={PASSWORD_MAX_LENGTH}
+                className={inputClass(!!errors.password, 'pl-3.5 pr-10')}
               />
               <button
                 type="button"
@@ -230,12 +380,28 @@ export default function OrganizerRegisterPage() {
                 </span>
               </button>
             </div>
+            <FieldError id="password-error" message={errors.password} />
+            <p
+              id="password-requirements"
+              className={`text-[11px] flex items-center gap-1 ${
+                password.length >= PASSWORD_MIN_LENGTH && password.trim().length > 0
+                  ? 'text-[#16A34A]'
+                  : 'text-[#77738A]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm leading-none">
+                {password.length >= PASSWORD_MIN_LENGTH && password.trim().length > 0
+                  ? 'check_circle'
+                  : 'radio_button_unchecked'}
+              </span>
+              <span>At least {PASSWORD_MIN_LENGTH} characters</span>
+            </p>
           </div>
 
           {/* Confirm Password */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="confirmPassword" className="text-xs font-semibold text-[#17152B]">
-              Confirm Password <span className="text-[#DC2626]">*</span>
+              Confirm Password <span className="text-[#DC2626]" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -244,11 +410,24 @@ export default function OrganizerRegisterPage() {
                 type={showConfirmPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
+                aria-required="true"
+                aria-invalid={!!errors.confirmPassword}
+                aria-describedby={
+                  errors.confirmPassword
+                    ? 'confirmPassword-error'
+                    : passwordsMatch
+                      ? 'confirmPassword-match'
+                      : undefined
+                }
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  clearFieldFeedback('confirmPassword');
+                }}
+                onBlur={() => touch('confirmPassword')}
                 placeholder="Re-enter your password"
-                maxLength={128}
-                className="w-full pl-3.5 pr-10 py-2.5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors"
+                maxLength={PASSWORD_MAX_LENGTH}
+                className={inputClass(!!errors.confirmPassword, 'pl-3.5 pr-10')}
               />
               <button
                 type="button"
@@ -261,12 +440,25 @@ export default function OrganizerRegisterPage() {
                 </span>
               </button>
             </div>
+            {/* Directly below the confirm input; updates on every keystroke in either field */}
+            <FieldError id="confirmPassword-error" message={errors.confirmPassword} />
+            {!errors.confirmPassword && passwordsMatch && (
+              <p
+                id="confirmPassword-match"
+                role="status"
+                className="text-[11px] font-semibold text-[#16A34A] flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-sm leading-none">check_circle</span>
+                <span>Passwords match</span>
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || confirmMismatch}
+            aria-busy={loading}
             className="w-full h-11 mt-3 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-[#7C5CFC]/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

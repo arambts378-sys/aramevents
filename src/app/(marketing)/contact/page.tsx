@@ -1,18 +1,29 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact',
+  description: 'Contact information for ARAM Tickets will be published here once confirmed.',
+};
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-surface-container-lowest p-8 flex flex-col items-center justify-center">
-      <div className="max-w-4xl w-full text-center space-y-6">
-        <h1 className="text-5xl font-bold text-primary">Contact</h1>
-        <p className="text-on-surface-variant text-xl">Design Pending</p>
-        
-        <div className="pt-8 flex gap-4 justify-center">
-          <Link href="/" className="px-6 py-2.5 bg-surface-container text-on-surface rounded-lg font-semibold hover:bg-surface-container-high transition-colors">
-            Back to Home
-          </Link>
-        </div>
+    <div className="mx-auto flex min-h-[65vh] max-w-3xl flex-col justify-center px-5 py-20 text-center sm:px-8">
+      <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#5B3FE8]">Contact</p>
+      <h1 className="mt-4 text-4xl font-bold tracking-tight text-[#17152B] sm:text-5xl">
+        We are preparing our contact information.
+      </h1>
+      <p className="mx-auto mt-5 max-w-xl leading-7 text-[#77738A]">
+        Contact details will be published here once they are confirmed.
+      </p>
+      <div className="mt-8 flex justify-center">
+        <Link
+          href="/"
+          className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[#E6E2F0] bg-white px-6 text-sm font-semibold text-[#17152B] hover:bg-[#F7F5FF]"
+        >
+          Back to home
+        </Link>
       </div>
     </div>
   );

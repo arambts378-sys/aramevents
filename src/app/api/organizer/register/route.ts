@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createChallenge, maskEmail, normalizeEmail } from '@/services/otpService';
-import { sendOrganizerVerificationEmail } from '@/services/organizerMailer';
+import {
+  OtpRateLimitError,
+  createChallenge,
+  maskEmail,
+} from '@/services/otpService';
+import {
+  sendExistingAccountNoticeEmail,
+  sendOrganizerVerificationEmail,
+} from '@/services/organizerMailer';
+import {
+  findAuthUserByEmail,
+  isEmailExistsError,
+  isWeakPasswordError,
+} from '@/lib/auth/adminUsers';
+import { validateRegistration } from '@/lib/validation/auth';
 
 function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
@@ -15,182 +28,138 @@ function getClientIp(req: NextRequest): string {
   return '127.0.0.1';
 }
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+/** Log only non-sensitive error attributes (never request bodies / passwords). */
+function logAuthError(context: string, err: unknown) {
+  const e = err as { name?: string; code?: string; status?: number } | null;
+  console.error(`[organizer/register] ${context}`, {
+    name: e?.name,
+    code: e?.code,
+    status: e?.status,
+  });
+}
+
+// Identical for new accounts, pending (unverified) accounts, and already-verified accounts,
+// so this public endpoint cannot be used to discover which emails are registered.
+const GENERIC_SUCCESS_MESSAGE =
+  'If this address is awaiting verification, check your email for a code. If you already have an account, sign in or reset your password.';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { fullName, organizationName, email, phoneNumber, password, confirmPassword } = body;
-
-    // 1. Server-side Input Validation
-    if (!fullName || typeof fullName !== 'string' || fullName.trim().length < 2) {
-      return NextResponse.json(
-        { error: 'Full name is required and must be at least 2 characters.' },
-        { status: 400 }
-      );
-    }
-    if (fullName.trim().length > 100) {
-      return NextResponse.json(
-        { error: 'Full name must not exceed 100 characters.' },
-        { status: 400 }
-      );
+    let body: Record<string, unknown>;
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
     }
 
-    if (!organizationName || typeof organizationName !== 'string' || organizationName.trim().length < 2) {
+    // 1. Server-side validation (client validation is only a usability aid)
+    const validation = validateRegistration({
+      fullName: body?.fullName,
+      organizationName: body?.organizationName,
+      email: body?.email,
+      phoneNumber: body?.phoneNumber,
+      password: body?.password,
+      confirmPassword: body?.confirmPassword,
+    });
+
+    if (!validation.valid || !validation.values) {
       return NextResponse.json(
-        { error: 'Organization name is required and must be at least 2 characters.' },
-        { status: 400 }
-      );
-    }
-    if (organizationName.trim().length > 100) {
-      return NextResponse.json(
-        { error: 'Organization name must not exceed 100 characters.' },
+        { error: 'Please correct the highlighted fields.', fieldErrors: validation.fieldErrors },
         { status: 400 }
       );
     }
 
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'A valid email address is required.' },
-        { status: 400 }
-      );
-    }
-
-    const normEmail = normalizeEmail(email);
-    if (!EMAIL_REGEX.test(normEmail) || normEmail.length > 255) {
-      return NextResponse.json(
-        { error: 'Please provide a valid work email address.' },
-        { status: 400 }
-      );
-    }
-
-    if (phoneNumber && typeof phoneNumber === 'string' && phoneNumber.trim().length > 25) {
-      return NextResponse.json(
-        { error: 'Phone number cannot exceed 25 characters.' },
-        { status: 400 }
-      );
-    }
-
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        { error: 'Password is required.' },
-        { status: 400 }
-      );
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters long.' },
-        { status: 400 }
-      );
-    }
-    if (password.length > 128) {
-      return NextResponse.json(
-        { error: 'Password cannot exceed 128 characters.' },
-        { status: 400 }
-      );
-    }
-
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        { error: 'Passwords do not match.' },
-        { status: 400 }
-      );
-    }
-
+    const { fullName, organizationName, email, phone, password } = validation.values;
     const clientIp = getClientIp(req);
     const adminClient = createAdminClient();
 
-    // 2. Check if user already exists in Supabase Auth
-    // Use listUsers pagination to search
-    const { data: userListData, error: listError } = await adminClient.auth.admin.listUsers({
-      perPage: 1000,
+    // 2. Create the Auth user. Supabase Auth's unique-email constraint is the source of truth,
+    //    which also makes simultaneous submissions safe: exactly one createUser can succeed.
+    //    The handle_new_user trigger provisions profile + workspace + owner membership atomically
+    //    with the auth.users insert, so a failed/retried registration cannot duplicate them.
+    const { data: created, error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: false,
+      user_metadata: {
+        full_name: fullName,
+        organization_name: organizationName,
+        phone,
+      },
     });
 
-    if (listError) {
-      console.error('Failed to query users from Supabase Auth:', listError);
-      return NextResponse.json(
-        { error: 'Unable to process registration at this time. Please try again.' },
-        { status: 500 }
-      );
-    }
+    let accountState: 'new' | 'pending' | 'verified';
 
-    const existingUser = userListData?.users.find(
-      (u) => u.email?.toLowerCase() === normEmail
-    );
-
-    if (existingUser) {
-      // If user is already confirmed, protect against enumeration by returning generic message
-      if (existingUser.email_confirmed_at) {
-        return NextResponse.json({
-          success: true,
-          message: 'If the information is valid, a verification code has been sent to your email.',
-          email: maskEmail(normEmail),
-          existingConfirmed: true,
-        });
-      }
-
-      // If user exists but is unconfirmed, update user credentials and metadata
-      const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(
-        existingUser.id,
-        {
-          password,
-          user_metadata: {
-            full_name: fullName.trim(),
-            organization_name: organizationName.trim(),
-            phone: phoneNumber ? phoneNumber.trim() : null,
+    if (createError || !created?.user) {
+      if (isWeakPasswordError(createError)) {
+        return NextResponse.json(
+          {
+            error: 'Please correct the highlighted fields.',
+            fieldErrors: {
+              password:
+                'This password is too weak or has appeared in a data breach. Please choose a different one.',
+            },
           },
-        }
-      );
-
-      if (updateAuthError) {
-        console.error('Failed to update unconfirmed auth user:', updateAuthError);
-        return NextResponse.json(
-          { error: 'Unable to process registration. Please try again.' },
-          { status: 500 }
-        );
-      }
-    } else {
-      // Create new unconfirmed Supabase Auth user
-      const { data: newUser, error: createAuthError } = await adminClient.auth.admin.createUser({
-        email: normEmail,
-        password,
-        email_confirm: false,
-        user_metadata: {
-          full_name: fullName.trim(),
-          organization_name: organizationName.trim(),
-          phone: phoneNumber ? phoneNumber.trim() : null,
-        },
-      });
-
-      if (createAuthError || !newUser?.user) {
-        console.error('Failed to create auth user:', createAuthError);
-        return NextResponse.json(
-          { error: 'Unable to create organizer account. Please check your details and try again.' },
           { status: 400 }
         );
       }
+
+      if (!isEmailExistsError(createError)) {
+        logAuthError('createUser failed', createError);
+        return NextResponse.json(
+          { error: 'Unable to create your account right now. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      // Email already registered: never modify the existing account (password, metadata,
+      // workspace). Only decide which email to send.
+      const existing = await findAuthUserByEmail(adminClient, email);
+      if (!existing) {
+        logAuthError('email_exists reported but user not found', null);
+        return NextResponse.json(
+          { error: 'Unable to create your account right now. Please try again.' },
+          { status: 500 }
+        );
+      }
+      accountState = existing.email_confirmed_at ? 'verified' : 'pending';
+    } else {
+      accountState = 'new';
     }
 
-    // 3. Create Verification Challenge & Send Email OTP
-    const { rawOtp, expiresAt } = await createChallenge(normEmail, clientIp, 'organizer_registration');
+    // 3. Challenge + email. Challenge creation is serialized in the database so concurrent
+    // requests cannot replace one another's code.
+    const challenge = await createChallenge(email, clientIp, 'organizer_registration');
+    if (challenge.created) {
 
-    await sendOrganizerVerificationEmail(normEmail, rawOtp, 10);
+      try {
+        if (accountState === 'verified') {
+          await sendExistingAccountNoticeEmail(email);
+        } else {
+          await sendOrganizerVerificationEmail(email, challenge.rawOtp, 10);
+        }
+      } catch (mailErr) {
+        logAuthError('email delivery failed', mailErr);
+        return NextResponse.json(
+          { error: 'We could not send the verification email. Please try again.' },
+          { status: 500 }
+        );
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Verification code sent to your email.',
-      email: maskEmail(normEmail),
-      expiresAt: expiresAt.toISOString(),
+      message: GENERIC_SUCCESS_MESSAGE,
+      email: maskEmail(email),
     });
-  } catch (err: any) {
-    console.error('Error during organizer registration:', err);
-    // Rate limit or unexpected errors
-    const errorMessage = err?.message || 'An unexpected error occurred. Please try again.';
-    const isRateLimit = errorMessage.toLowerCase().includes('too many') || errorMessage.toLowerCase().includes('wait');
+  } catch (err) {
+    if (err instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: err.message }, { status: 429 });
+    }
+    logAuthError('unexpected error', err);
     return NextResponse.json(
-      { error: errorMessage },
-      { status: isRateLimit ? 429 : 500 }
+      { error: 'An unexpected error occurred. Please try again.' },
+      { status: 500 }
     );
   }
 }

@@ -202,6 +202,46 @@
 
 body {
   @apply bg-surface text-on-surface antialiased selection:bg-primary-container selection:text-white font-body-md text-body-md min-h-screen flex flex-col;
+  min-width: 320px;
+  width: 100%;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+main,
+section,
+article,
+aside,
+header,
+footer,
+nav,
+form {
+  min-width: 0;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+  touch-action: manipulation;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }
 
 @keyframes pulse-dot {

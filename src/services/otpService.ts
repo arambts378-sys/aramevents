@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { normalizeEmail } from '@/lib/validation/auth';
 
 export const RESEND_COOLDOWN_SECONDS = 45;
 export const EXPIRATION_MINUTES = 10;
@@ -21,11 +22,15 @@ export interface VerificationChallengeRecord {
   request_ip_hash: string | null;
 }
 
-// In-memory fallback cache in case DB table is not yet provisioned in remote instance
-const memoryChallengeStore = new Map<string, VerificationChallengeRecord>();
-
-export function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+/**
+ * Thrown for intentional, user-safe throttling messages (cooldown / hourly limits).
+ * Routes may return `message` to the client; any other error must be treated as internal.
+ */
+export class OtpRateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'OtpRateLimitError';
+  }
 }
 
 export function maskEmail(email: string): string {
@@ -72,58 +77,44 @@ export async function createChallenge(
   email: string,
   clientIp: string = '127.0.0.1',
   purpose: string = 'organizer_registration'
-): Promise<{ challengeId: string; rawOtp: string; expiresAt: Date }> {
+): Promise<
+  | { created: true; challengeId: string; rawOtp: string; expiresAt: Date }
+  | { created: false; challengeId: string; expiresAt: Date }
+> {
   const normEmail = normalizeEmail(email);
   const ipHash = hashIp(clientIp);
   const rawOtp = generateSecureOtp();
   const otpHashed = getOtpHash(rawOtp);
 
   const expiresAt = new Date(Date.now() + EXPIRATION_MINUTES * 60 * 1000);
-  const now = new Date();
 
   // Rate Limiting Check: per-email hourly quota & per-IP hourly quota
   await enforceCreationRateLimits(normEmail, ipHash);
 
   const adminClient = createAdminClient();
+  const { data, error } = await adminClient.rpc('create_organizer_verification_challenge', {
+    p_email: normEmail,
+    p_otp_hash: otpHashed,
+    p_purpose: purpose,
+    p_expires_at: expiresAt.toISOString(),
+    p_max_attempts: MAX_ATTEMPTS,
+    p_request_ip_hash: ipHash,
+  });
+  if (error) throw error;
 
-  const newRecord = {
-    id: crypto.randomUUID(),
-    email: normEmail,
-    otp_hash: otpHashed,
-    purpose,
-    expires_at: expiresAt.toISOString(),
-    attempt_count: 0,
-    max_attempts: MAX_ATTEMPTS,
-    verified_at: null,
-    created_at: now.toISOString(),
-    last_sent_at: now.toISOString(),
-    request_ip_hash: ipHash,
-  };
-
-  try {
-    const { data, error } = await adminClient
-      .from('organizer_verification_challenges')
-      .insert([newRecord])
-      .select('id')
-      .single();
-
-    if (error) {
-      // If table doesn't exist yet on remote database (PGRST205), fallback to memory
-      if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
-        memoryChallengeStore.set(newRecord.id, newRecord);
-        return { challengeId: newRecord.id, rawOtp, expiresAt };
-      }
-      throw new Error(`Failed to create verification challenge: ${error.message}`);
-    }
-
-    return { challengeId: data.id, rawOtp, expiresAt };
-  } catch (err: any) {
-    if (err?.message?.includes('schema cache') || err?.code === 'PGRST205') {
-      memoryChallengeStore.set(newRecord.id, newRecord);
-      return { challengeId: newRecord.id, rawOtp, expiresAt };
-    }
-    throw err;
+  const result = Array.isArray(data) ? data[0] : data;
+  if (
+    !result ||
+    typeof result.challenge_id !== 'string' ||
+    typeof result.created !== 'boolean'
+  ) {
+    throw new Error('Challenge creation returned an invalid result.');
   }
+
+  if (!result.created) {
+    return { created: false, challengeId: result.challenge_id, expiresAt };
+  }
+  return { created: true, challengeId: result.challenge_id, rawOtp, expiresAt };
 }
 
 /**
@@ -133,11 +124,8 @@ export async function resendChallengeOtp(
   email: string,
   clientIp: string = '127.0.0.1',
   purpose: string = 'organizer_registration'
-): Promise<{ success: boolean; rawOtp: string; expiresAt: Date; challengeId: string }> {
+): Promise<{ success: true; created: true; rawOtp: string; expiresAt: Date; challengeId: string }> {
   const normEmail = normalizeEmail(email);
-  const ipHash = hashIp(clientIp);
-
-  // Retrieve active challenge to verify cooldown
   const activeChallenge = await getLatestActiveChallenge(normEmail, purpose);
 
   if (activeChallenge) {
@@ -145,17 +133,17 @@ export async function resendChallengeOtp(
     const elapsedSeconds = Math.floor((Date.now() - lastSent) / 1000);
     if (elapsedSeconds < RESEND_COOLDOWN_SECONDS) {
       const waitSeconds = RESEND_COOLDOWN_SECONDS - elapsedSeconds;
-      throw new Error(`Please wait ${waitSeconds} seconds before requesting a new verification code.`);
+      throw new OtpRateLimitError(`Please wait ${waitSeconds} seconds before requesting a new verification code.`);
     }
-
-    // Invalidate previous active challenge
-    await invalidateChallenge(activeChallenge.id);
   }
 
-  // Create a brand new challenge with fresh cryptographically secure OTP
   const challenge = await createChallenge(normEmail, clientIp, purpose);
+  if (!challenge.created) {
+    throw new OtpRateLimitError('A verification code was just sent. Please wait before requesting another.');
+  }
   return {
     success: true,
+    created: true,
     rawOtp: challenge.rawOtp,
     expiresAt: challenge.expiresAt,
     challengeId: challenge.challengeId,
@@ -220,8 +208,10 @@ export async function verifyOtpChallenge(
     };
   }
 
-  // Mark challenge verified
-  await markChallengeVerified(challenge.id);
+  // Mark the OTP consumed once even if two verification requests race.
+  if (!(await markChallengeVerified(challenge.id))) {
+    return { success: false, error: 'This verification code has already been used. Please request a new code.' };
+  }
 
   return { success: true, challengeId: challenge.id };
 }
@@ -230,50 +220,24 @@ async function enforceCreationRateLimits(email: string, ipHash: string): Promise
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const adminClient = createAdminClient();
 
-  try {
-    const { data: emailChallenges, error: emailError } = await adminClient
-      .from('organizer_verification_challenges')
-      .select('id')
-      .eq('email', email)
-      .gte('created_at', oneHourAgo);
+  const { data: emailChallenges, error: emailError } = await adminClient
+    .from('organizer_verification_challenges')
+    .select('id')
+    .eq('email', email)
+    .gte('created_at', oneHourAgo);
+  if (emailError) throw emailError;
+  if (emailChallenges.length >= MAX_HOURLY_CHALLENGES_PER_EMAIL) {
+    throw new OtpRateLimitError('Too many registration attempts for this email. Please try again in an hour.');
+  }
 
-    if (!emailError && emailChallenges && emailChallenges.length >= MAX_HOURLY_CHALLENGES_PER_EMAIL) {
-      throw new Error('Too many registration attempts for this email. Please try again in an hour.');
-    }
-
-    const { data: ipChallenges, error: ipError } = await adminClient
-      .from('organizer_verification_challenges')
-      .select('id')
-      .eq('request_ip_hash', ipHash)
-      .gte('created_at', oneHourAgo);
-
-    if (!ipError && ipChallenges && ipChallenges.length >= MAX_HOURLY_REQUESTS_PER_IP) {
-      throw new Error('Too many registration requests from this network. Please try again later.');
-    }
-  } catch (err: any) {
-    if (err?.message?.includes('schema cache') || err?.code === 'PGRST205') {
-      // In-memory rate limiting check
-      let emailCount = 0;
-      let ipCount = 0;
-      const oneHourAgoMs = Date.now() - 60 * 60 * 1000;
-
-      for (const record of memoryChallengeStore.values()) {
-        const createdAtMs = new Date(record.created_at).getTime();
-        if (createdAtMs >= oneHourAgoMs) {
-          if (record.email === email) emailCount++;
-          if (record.request_ip_hash === ipHash) ipCount++;
-        }
-      }
-
-      if (emailCount >= MAX_HOURLY_CHALLENGES_PER_EMAIL) {
-        throw new Error('Too many registration attempts for this email. Please try again in an hour.');
-      }
-      if (ipCount >= MAX_HOURLY_REQUESTS_PER_IP) {
-        throw new Error('Too many registration requests from this network. Please try again later.');
-      }
-      return;
-    }
-    throw err;
+  const { data: ipChallenges, error: ipError } = await adminClient
+    .from('organizer_verification_challenges')
+    .select('id')
+    .eq('request_ip_hash', ipHash)
+    .gte('created_at', oneHourAgo);
+  if (ipError) throw ipError;
+  if (ipChallenges.length >= MAX_HOURLY_REQUESTS_PER_IP) {
+    throw new OtpRateLimitError('Too many registration requests from this network. Please try again later.');
   }
 }
 
@@ -283,96 +247,37 @@ async function getLatestActiveChallenge(
 ): Promise<VerificationChallengeRecord | null> {
   const adminClient = createAdminClient();
 
-  try {
-    const { data, error } = await adminClient
-      .from('organizer_verification_challenges')
-      .select('*')
-      .eq('email', email)
-      .eq('purpose', purpose)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (error) {
-      if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
-        return getMemoryChallenge(email, purpose);
-      }
-      throw error;
-    }
-
-    return (data as VerificationChallengeRecord) || null;
-  } catch (err: any) {
-    if (err?.message?.includes('schema cache') || err?.code === 'PGRST205') {
-      return getMemoryChallenge(email, purpose);
-    }
-    return null;
-  }
-}
-
-function getMemoryChallenge(email: string, purpose: string): VerificationChallengeRecord | null {
-  const matching: VerificationChallengeRecord[] = [];
-  for (const record of memoryChallengeStore.values()) {
-    if (record.email === email && record.purpose === purpose) {
-      matching.push(record);
-    }
-  }
-  matching.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  return matching[0] || null;
+  const { data, error } = await adminClient
+    .from('organizer_verification_challenges')
+    .select('*')
+    .eq('email', email)
+    .eq('purpose', purpose)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as VerificationChallengeRecord) || null;
 }
 
 async function updateAttemptCount(challengeId: string, count: number): Promise<void> {
   const adminClient = createAdminClient();
-  try {
-    const { error } = await adminClient
-      .from('organizer_verification_challenges')
-      .update({ attempt_count: count })
-      .eq('id', challengeId);
-
-    if (error && (error.code === 'PGRST205' || error.message?.includes('schema cache'))) {
-      const rec = memoryChallengeStore.get(challengeId);
-      if (rec) rec.attempt_count = count;
-    }
-  } catch {
-    const rec = memoryChallengeStore.get(challengeId);
-    if (rec) rec.attempt_count = count;
-  }
+  const { error } = await adminClient
+    .from('organizer_verification_challenges')
+    .update({ attempt_count: count })
+    .eq('id', challengeId);
+  if (error) throw error;
 }
 
-async function markChallengeVerified(challengeId: string): Promise<void> {
+async function markChallengeVerified(challengeId: string): Promise<boolean> {
   const adminClient = createAdminClient();
   const now = new Date().toISOString();
-  try {
-    const { error } = await adminClient
-      .from('organizer_verification_challenges')
-      .update({ verified_at: now })
-      .eq('id', challengeId);
-
-    if (error && (error.code === 'PGRST205' || error.message?.includes('schema cache'))) {
-      const rec = memoryChallengeStore.get(challengeId);
-      if (rec) rec.verified_at = now;
-    }
-  } catch {
-    const rec = memoryChallengeStore.get(challengeId);
-    if (rec) rec.verified_at = now;
-  }
-}
-
-async function invalidateChallenge(challengeId: string): Promise<void> {
-  const adminClient = createAdminClient();
-  // Setting expires_at to 1 second ago immediately invalidates it
-  const expiredTime = new Date(Date.now() - 1000).toISOString();
-  try {
-    const { error } = await adminClient
-      .from('organizer_verification_challenges')
-      .update({ expires_at: expiredTime })
-      .eq('id', challengeId);
-
-    if (error && (error.code === 'PGRST205' || error.message?.includes('schema cache'))) {
-      const rec = memoryChallengeStore.get(challengeId);
-      if (rec) rec.expires_at = expiredTime;
-    }
-  } catch {
-    const rec = memoryChallengeStore.get(challengeId);
-    if (rec) rec.expires_at = expiredTime;
-  }
+  const { data, error } = await adminClient
+    .from('organizer_verification_challenges')
+    .update({ verified_at: now })
+    .eq('id', challengeId)
+    .is('verified_at', null)
+    .select('id')
+    .maybeSingle();
+  if (error) throw error;
+  return !!data;
 }

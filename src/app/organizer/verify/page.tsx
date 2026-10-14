@@ -27,7 +27,8 @@ function VerifyForm() {
   const [resending, setResending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [cooldown, setCooldown] = useState(45);
+  // Arriving from a failed login (sent=0) means no code was just sent, so allow resending right away.
+  const [cooldown, setCooldown] = useState(searchParams.get('sent') === '0' ? 0 : 45);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -189,7 +190,7 @@ function VerifyForm() {
       <div className="text-center mb-6">
         <h1 className="text-2xl font-extrabold text-[#17152B] tracking-tight">Verify your email</h1>
         <p className="text-xs text-[#77738A] mt-2 font-normal">
-          We sent a 6-digit verification code to:
+          If this account is awaiting verification, enter the 6-digit code sent to:
         </p>
         <p className="text-xs font-bold text-[#17152B] mt-1 font-mono bg-[#F7F5FF] py-1 px-2.5 rounded-lg border border-[#E6E2F0] inline-block">
           {email ? maskEmailClient(email) : 'your email address'}
@@ -290,6 +291,23 @@ function VerifyForm() {
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           <span>Change email</span>
         </Link>
+
+        <p className="text-[#77738A] text-center">
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline"
+          >
+            Sign in
+          </Link>
+          {' or '}
+          <Link
+            href="/forgot-password"
+            className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline"
+          >
+            reset your password
+          </Link>
+        </p>
       </div>
     </div>
   );
