@@ -1,19 +1,134 @@
-import React from 'react';
+'use client';
+
+import { useRef, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
+
+const INPUT_BASE =
+  'w-full px-3.5 py-3 bg-[#F7F5FF] border rounded-xl text-xs font-semibold text-[#27243A] placeholder-[#77738A]/60 focus:outline-none focus:ring-1 transition-colors';
+const INPUT_OK = 'border-[#E5E1F5] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]';
+const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]';
 
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [error, setError] = useState('');
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const submitGuard = useRef(false);
+  const supabase = createClient();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (loading || submitGuard.current) return;
+    setError('');
+    setSent(false);
+
+    const validationError = validateEmail(email);
+    setEmailError(validationError || '');
+    if (validationError) {
+      document.getElementById('recovery-email')?.focus();
+      return;
+    }
+
+    submitGuard.current = true;
+    setLoading(true);
+    try {
+      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
+        normalizeEmail(email),
+        { redirectTo: `${window.location.origin}/reset-password` }
+      );
+      if (recoveryError) {
+        setError('We could not send reset instructions right now. Please try again.');
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError('We could not reach the server. Check your connection and try again.');
+    } finally {
+      submitGuard.current = false;
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-surface-container-lowest p-8 flex flex-col items-center justify-center">
-      <div className="max-w-md w-full text-center space-y-6">
-        <h1 className="text-4xl font-bold text-primary">Forgot Password</h1>
-        <p className="text-on-surface-variant">Design Pending</p>
-        
-        <div className="pt-8 flex gap-4 justify-center">
-          <Link href="/login" className="px-6 py-2.5 bg-surface-container text-on-surface rounded-lg font-semibold hover:bg-surface-container-high transition-colors">
-            Back to Login
-          </Link>
+    <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-12 px-4">
+      <div />
+      <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-[#E5E1F5] shadow-xl shadow-[#7C5CFC]/5">
+        <Link href="/" className="flex flex-col items-center gap-2 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#7C5CFC] flex items-center justify-center text-white">
+            <span className="material-symbols-outlined text-2xl">layers</span>
+          </div>
+          <span className="text-xl font-bold tracking-tight text-[#27243A]">ARAM BTS</span>
+        </Link>
+
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-extrabold text-[#27243A]">Reset your password</h1>
+          <p className="text-xs text-[#77738A] mt-2">
+            Enter your email and we&apos;ll send password reset instructions if an account exists.
+          </p>
         </div>
-      </div>
+
+        {error && (
+          <p role="alert" className="mb-4 bg-[#DC2626]/10 border border-[#DC2626]/30 text-[#DC2626] rounded-xl p-3 text-xs font-semibold">
+            {error}
+          </p>
+        )}
+        {sent && (
+          <p role="status" aria-live="polite" className="mb-4 bg-[#16A34A]/10 border border-[#16A34A]/30 text-[#166534] rounded-xl p-3 text-xs font-semibold">
+            If an account exists for this email, password reset instructions have been sent.
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2" noValidate>
+          <label htmlFor="recovery-email" className="text-xs font-semibold text-[#27243A]">
+            Email address
+          </label>
+          <input
+            id="recovery-email"
+            type="email"
+            autoComplete="email"
+            required
+            aria-required="true"
+            aria-invalid={!!emailError}
+            aria-describedby={emailError ? 'recovery-email-error' : undefined}
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              setEmailError('');
+              setError('');
+              setSent(false);
+            }}
+            className={`${INPUT_BASE} ${emailError ? INPUT_BAD : INPUT_OK}`}
+            placeholder="name@company.com"
+            maxLength={255}
+          />
+          {emailError && (
+            <p id="recovery-email-error" role="alert" className="text-[11px] font-semibold text-[#DC2626]">
+              {emailError}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            aria-busy={loading}
+            className="w-full h-12 mt-3 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-sm rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Sending...' : 'Send reset instructions'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-[#77738A]">
+          Remembered your password?{' '}
+          <Link href="/login" className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8]">
+            Sign in
+          </Link>
+        </p>
+      </main>
+      <footer className="mt-8 text-center text-xs text-[#77738A]">
+        © 2026 ARAM BTS. Events Beyond Boundaries.
+      </footer>
     </div>
   );
 }

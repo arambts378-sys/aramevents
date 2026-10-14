@@ -55,7 +55,7 @@ export default function EditorToolbar({
   };
 
   return (
-    <header className="h-[68px] bg-white border-b border-[#E6E2F0] px-4 sm:px-6 flex items-center justify-between z-30 shrink-0 select-none">
+    <header className="min-h-[68px] bg-white border-b border-[#E6E2F0] px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 z-30 shrink-0 select-none">
       {/* ================================================================= */}
       {/* LEFT: Back to Event, Breadcrumbs, Status Badge */}
       {/* ================================================================= */}
@@ -95,13 +95,13 @@ export default function EditorToolbar({
       {/* ================================================================= */}
       {/* CENTER: Device Viewport, Undo/Redo, Zoom, Fullscreen Focus Toggle */}
       {/* ================================================================= */}
-      <div className="hidden lg:flex items-center gap-3">
+      <div className="order-3 flex w-full max-w-full items-center gap-2 overflow-x-auto py-1 lg:order-none lg:w-auto lg:gap-3">
         {/* Device Viewport Selector */}
         <div className="bg-[#F0EBFF]/60 p-1 rounded-lg border border-[#E6E2F0] flex items-center gap-1">
           <button
             type="button"
             onClick={() => setViewport('desktop')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
+            className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
               viewport === 'desktop'
                 ? 'bg-white text-[#7C5CFC] shadow-xs border border-[#E6E2F0] font-semibold'
                 : 'text-[#77738A] hover:text-[#17152B] hover:bg-white/50'
@@ -114,7 +114,7 @@ export default function EditorToolbar({
           <button
             type="button"
             onClick={() => setViewport('tablet')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
+            className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
               viewport === 'tablet'
                 ? 'bg-white text-[#7C5CFC] shadow-xs border border-[#E6E2F0] font-semibold'
                 : 'text-[#77738A] hover:text-[#17152B] hover:bg-white/50'
@@ -128,7 +128,7 @@ export default function EditorToolbar({
           <button
             type="button"
             onClick={() => setViewport('mobile')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
+            className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] transition-all font-jakarta ${
               viewport === 'mobile'
                 ? 'bg-white text-[#7C5CFC] shadow-xs border border-[#E6E2F0] font-semibold'
                 : 'text-[#77738A] hover:text-[#17152B] hover:bg-white/50'
@@ -149,7 +149,7 @@ export default function EditorToolbar({
             type="button"
             disabled={!canUndo}
             onClick={undo}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF] disabled:text-[#c9c4d8] disabled:cursor-not-allowed transition-colors"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF] disabled:text-[#c9c4d8] disabled:cursor-not-allowed transition-colors"
             title="Undo"
             aria-label="Undo"
           >
@@ -159,7 +159,7 @@ export default function EditorToolbar({
             type="button"
             disabled={!canRedo}
             onClick={redo}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF] disabled:text-[#c9c4d8] disabled:cursor-not-allowed transition-colors"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF] disabled:text-[#c9c4d8] disabled:cursor-not-allowed transition-colors"
             title="Redo"
             aria-label="Redo"
           >
@@ -174,7 +174,7 @@ export default function EditorToolbar({
           <select
             value={zoom}
             onChange={handleZoomChange}
-            className="appearance-none flex items-center gap-1 pl-3 pr-7 py-1.5 rounded-lg border border-[#E6E2F0] text-[13px] font-semibold text-[#17152B] bg-white hover:bg-[#F6F1FF] transition-colors cursor-pointer outline-none font-jakarta"
+            className="min-h-11 appearance-none flex items-center gap-1 pl-3 pr-7 py-1.5 rounded-lg border border-[#E6E2F0] text-[13px] font-semibold text-[#17152B] bg-white hover:bg-[#F6F1FF] transition-colors cursor-pointer outline-none font-jakarta"
             aria-label="Preview zoom level"
           >
             <option value="fit">FIT</option>
@@ -198,7 +198,7 @@ export default function EditorToolbar({
         <button
           type="button"
           onClick={onToggleExpandPreview}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-semibold transition-all font-jakarta shadow-2xs ${
+          className={`flex min-h-11 items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-semibold transition-all font-jakarta shadow-2xs ${
             isExpandedPreview
               ? 'bg-[#7C5CFC] text-white border-[#7C5CFC]'
               : 'bg-white text-[#17152B] border-[#E6E2F0] hover:bg-[#F6F1FF] hover:border-[#7C5CFC]/40'
@@ -231,7 +231,7 @@ export default function EditorToolbar({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="px-3.5 sm:px-4 py-2 rounded-lg border border-[#E6E2F0] bg-white text-[#17152B] font-semibold text-[13px] hover:bg-[#F6F1FF] hover:border-[#7C5CFC]/40 transition-all disabled:opacity-50 shadow-xs font-jakarta"
+          className="min-h-11 px-3.5 sm:px-4 py-2 rounded-lg border border-[#E6E2F0] bg-white text-[#17152B] font-semibold text-[13px] hover:bg-[#F6F1FF] hover:border-[#7C5CFC]/40 transition-all disabled:opacity-50 shadow-xs font-jakarta"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
@@ -241,7 +241,7 @@ export default function EditorToolbar({
           type="button"
           onClick={onPublish}
           disabled={publishing}
-          className="px-3.5 sm:px-4 py-2 rounded-lg bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] shadow-sm flex items-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-50 font-jakarta"
+          className="min-h-11 px-3.5 sm:px-4 py-2 rounded-lg bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] shadow-sm flex items-center gap-1.5 transition-all active:scale-[0.98] disabled:opacity-50 font-jakarta"
         >
           <span className="material-symbols-outlined text-[18px]">
             {publishing ? 'sync' : 'language'}

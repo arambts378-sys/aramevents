@@ -1,61 +1,47 @@
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="w-full bg-white border-t border-[#C9C4D8]/30 select-none">
-      <div className="w-full py-10 px-6 lg:px-12 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-        {/* Brand & Copyright */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-          <Link
-            href="/"
-            className="font-space text-[18px] font-bold text-[#1B192F] tracking-tight hover:text-[#5F3ADD] transition-colors"
-          >
-            ARAM BTS
+    <footer className="border-t border-[#E6E2F0] bg-white">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between">
+        <div className="text-center md:text-left">
+          <Link href="/" className="text-lg font-bold tracking-tight text-[#17152B]">
+            ARAM <span className="text-[#7C5CFC]">Tickets</span>
           </Link>
-          <span className="hidden sm:inline text-[#C9C4D8]">|</span>
-          <span className="font-jakarta text-[12px] text-[#484555]">
-            © 2026 ARAM BTS (WisRight Technologies). All rights reserved.
-          </span>
+          <p className="mt-2 text-xs text-[#77738A]">
+            © 2026 WisRight Technologies. All rights reserved.
+          </p>
         </div>
 
-        {/* Links Cluster */}
-        <nav className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 font-jakarta">
-          <a
-            className="text-[12px] text-[#1B192F] font-semibold hover:text-[#5F3ADD] transition-colors duration-150 hover:underline"
-            href="#platform"
-          >
-            Platform
-          </a>
-          <a
-            className="text-[12px] text-[#484555] hover:text-[#1B192F] hover:text-[#5F3ADD] transition-colors duration-150 hover:underline"
-            href="#solutions"
-          >
-            Solutions
-          </a>
-          <a
-            className="text-[12px] text-[#484555] hover:text-[#1B192F] hover:text-[#5F3ADD] transition-colors duration-150 hover:underline"
-            href="#resources"
-          >
-            Resources
-          </a>
-          <Link
-            className="text-[12px] text-[#484555] hover:text-[#1B192F] hover:text-[#5F3ADD] transition-colors duration-150 hover:underline"
-            href="/privacy"
-          >
+        <nav
+          aria-label="Footer navigation"
+          className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+        >
+          <Link href="/#features" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Features
+          </Link>
+          <Link href="/#event-day" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Event day
+          </Link>
+          <Link href="/pricing" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Pricing
+          </Link>
+          <Link href="/contact" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Contact
+          </Link>
+          <Link href="/login" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Log in
+          </Link>
+          <Link href="/organizer/register" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Create account
+          </Link>
+          <Link href="/privacy" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
             Privacy Policy
           </Link>
-          <Link
-            className="text-[12px] text-[#484555] hover:text-[#1B192F] hover:text-[#5F3ADD] transition-colors duration-150 hover:underline"
-            href="/terms"
-          >
-            Terms of Service
+          <Link href="/terms" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+            Terms and Conditions
           </Link>
-          <span className="text-[12px] text-[#484555] hover:text-[#1B192F] hover:text-[#5F3ADD] transition-colors duration-150">
-            Security Architecture
-          </span>
         </nav>
       </div>
     </footer>

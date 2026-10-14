@@ -213,3 +213,77 @@ If you did not request this account creation, please ignore this email.
   const info = await transporter.sendMail(mailOptions);
   return { success: true, messageId: info.messageId };
 }
+
+/**
+ * Sent instead of a verification code when someone tries to register an email that already
+ * has a verified account. The registration API response is identical in both cases, so the
+ * existence of the account is only disclosed to the owner of the mailbox.
+ */
+export async function sendExistingAccountNoticeEmail(
+  toEmail: string
+): Promise<{ success: boolean; messageId?: string }> {
+  const smtp = await resolveSmtpConfig();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const loginUrl = `${appUrl}/login`;
+  const recoveryUrl = `${appUrl}/forgot-password`;
+  const subject = 'You already have an ARAM BTS account';
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${subject}</title></head>
+<body style="margin:0;padding:0;background-color:#F7F5FF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#17152B;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#F7F5FF;padding:40px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;border:1px solid #E6E2F0;" cellspacing="0" cellpadding="0">
+        <tr><td style="padding:32px;text-align:center;">
+          <h1 style="font-size:22px;font-weight:700;margin:0 0 12px;">You already have an account</h1>
+          <p style="font-size:14px;line-height:22px;color:#77738A;margin:0 0 24px;">
+            Someone tried to create an ARAM BTS organizer account with this email address, but an account already exists. No changes were made.
+          </p>
+          <a href="${loginUrl}" style="display:inline-block;background-color:#7C5CFC;color:#FFFFFF;font-weight:700;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:12px;">Sign in</a>
+          <p style="font-size:12px;line-height:18px;color:#77738A;margin:16px 0 0;">
+            Forgot your password? <a href="${recoveryUrl}" style="color:#7C5CFC;font-weight:700;">Reset it here</a>.
+          </p>
+          <p style="font-size:12px;line-height:18px;color:#77738A;margin:24px 0 0;">
+            If this wasn't you, you can safely ignore this email.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `
+ARAM BTS — You already have an account
+
+Someone tried to create an ARAM BTS organizer account with this email address, but an account already exists. No changes were made.
+
+Sign in: ${loginUrl}
+Reset password: ${recoveryUrl}
+
+If this wasn't you, you can safely ignore this email.
+`.trim();
+
+  if (!smtp) {
+    console.info(`[OrganizerMailer] Simulated existing-account notice dispatched to ${toEmail} (SMTP not configured).`);
+    return { success: true, messageId: 'simulated-dev-id' };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: { user: smtp.user, pass: smtp.pass },
+  });
+
+  const info = await transporter.sendMail({
+    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
+    to: toEmail,
+    subject,
+    text,
+    html,
+  });
+  return { success: true, messageId: info.messageId };
+}

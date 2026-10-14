@@ -2,28 +2,146 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
-import { normalizeEmail, verifyOtpChallenge } from '@/services/otpService';
+import { OtpRateLimitError, verifyOtpChallenge } from '@/services/otpService';
+import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
+import { normalizeEmail, normalizeIndianMobile, validateEmail } from '@/lib/validation/auth';
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+class ProvisioningError extends Error {}
+
+function logError(context: string, err: unknown) {
+  const e = err as { name?: string; code?: string; status?: number } | null;
+  console.error(`[organizer/verify] ${context}`, { name: e?.name, code: e?.code, status: e?.status });
+}
+
+/**
+ * Idempotently ensures profile, workspace and OWNER membership exist.
+ *
+ * The auth.users trigger normally created all three when the account was registered, so in the
+ * normal case this only refreshes names. It never inserts a second workspace for an owner who
+ * already has one, and membership uses an upsert on UNIQUE(workspace_id, user_id).
+ */
+async function ensureProvisioned(
+  adminClient: AdminClient,
+  user: { id: string; user_metadata?: Record<string, unknown> },
+  normEmail: string
+) {
+  const metadata = user.user_metadata ?? {};
+  const fullName =
+    typeof metadata.full_name === 'string' && metadata.full_name.trim()
+      ? metadata.full_name.trim()
+      : 'Organizer';
+  const orgName =
+    typeof metadata.organization_name === 'string' && metadata.organization_name.trim()
+      ? metadata.organization_name.trim()
+      : `${fullName}'s Organization`;
+  const profile: Record<string, string | null> = {
+    id: user.id,
+    full_name: fullName,
+    avatar_url: typeof metadata.avatar_url === 'string' ? metadata.avatar_url : null,
+    updated_at: new Date().toISOString(),
+  };
+  if (typeof metadata.phone === 'string' && metadata.phone.length > 0) {
+    const phone = normalizeIndianMobile(metadata.phone);
+    if (!phone.valid || !phone.e164) throw new ProvisioningError('phone');
+    profile.phone = phone.e164;
+  }
+
+  const { error: profileError } = await adminClient.from('profiles').upsert(profile);
+  if (profileError) {
+    logError('profile upsert failed', profileError);
+    throw new ProvisioningError('profile');
+  }
+
+  const findWorkspace = async () => {
+    const { data, error } = await adminClient
+      .from('workspaces')
+      .select('id')
+      .eq('owner_id', user.id)
+      .order('created_at', { ascending: true })
+      .limit(1);
+    if (error) {
+      logError('workspace lookup failed', error);
+      throw new ProvisioningError('workspace');
+    }
+    return data && data.length > 0 ? (data[0].id as string) : null;
+  };
+
+  let workspaceId = await findWorkspace();
+
+  if (workspaceId) {
+    // Name the pre-created workspace after the registered organization before confirming email.
+    const { error: renameError } = await adminClient
+      .from('workspaces')
+      .update({ name: orgName, email: normEmail })
+      .eq('id', workspaceId);
+    if (renameError) {
+      logError('workspace rename failed', renameError);
+      throw new ProvisioningError('workspace');
+    }
+  } else {
+    // Fallback only when the trigger did not create one.
+    const { error: insertError } = await adminClient.from('workspaces').insert({
+      id: crypto.randomUUID(),
+      name: orgName,
+      slug: `ws-${crypto.randomBytes(4).toString('hex')}`,
+      owner_id: user.id,
+      email: normEmail,
+    });
+    if (insertError) logError('workspace insert failed', insertError);
+
+    // Re-read: if a concurrent request created it first we adopt that one.
+    workspaceId = await findWorkspace();
+    if (!workspaceId) throw new ProvisioningError('workspace');
+  }
+
+  const { data: ownerRole, error: roleError } = await adminClient
+    .from('roles')
+    .select('id')
+    .eq('name', 'workspace_owner')
+    .limit(1)
+    .maybeSingle();
+
+  if (roleError) {
+    logError('owner role lookup failed', roleError);
+    throw new ProvisioningError('role');
+  }
+  if (ownerRole?.id) {
+    const { error: memberError } = await adminClient.from('workspace_members').upsert(
+      { workspace_id: workspaceId, user_id: user.id, role_id: ownerRole.id },
+      { onConflict: 'workspace_id,user_id', ignoreDuplicates: true }
+    );
+    if (memberError) {
+      logError('membership upsert failed', memberError);
+      throw new ProvisioningError('membership');
+    }
+  } else {
+    console.error('[organizer/verify] workspace_owner role not found');
+    throw new ProvisioningError('role');
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, otp } = body;
-
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email address is required.' },
-        { status: 400 }
-      );
+    let body: Record<string, unknown>;
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
     }
 
+    const emailError = validateEmail(body?.email);
+    if (emailError) {
+      return NextResponse.json({ error: emailError }, { status: 400 });
+    }
+
+    const otp = body?.otp;
     if (!otp || typeof otp !== 'string') {
-      return NextResponse.json(
-        { error: 'Verification code is required.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Verification code is required.' }, { status: 400 });
     }
 
-    const normEmail = normalizeEmail(email);
+    const normEmail = normalizeEmail(body.email as string);
     const cleanOtp = otp.trim();
 
     if (!/^\d{6}$/.test(cleanOtp)) {
@@ -33,7 +151,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Verify Challenge Cryptographically
+    // 1. Verify challenge cryptographically (unchanged OTP requirements)
     const verification = await verifyOtpChallenge(normEmail, cleanOtp, 'organizer_registration');
 
     if (!verification.success) {
@@ -46,122 +164,53 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Activate Supabase Auth User
+    // 2. Locate the pending Auth user
     const adminClient = createAdminClient();
-    const { data: userListData, error: listError } = await adminClient.auth.admin.listUsers({
-      perPage: 1000,
-    });
-
-    if (listError) {
-      console.error('Failed to query users during verification:', listError);
-      return NextResponse.json(
-        { error: 'Verification succeeded but failed to activate account. Please contact support.' },
-        { status: 500 }
-      );
-    }
-
-    const user = userListData?.users.find((u) => u.email?.toLowerCase() === normEmail);
+    const user = await findAuthUserByEmail(adminClient, normEmail);
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Account record not found. Please register again.' },
-        { status: 404 }
+        { error: 'Invalid or expired verification code. Please request a new code.' },
+        { status: 400 }
       );
     }
 
-    // Confirm email in Supabase Auth
+    // An already-verified account must not be re-provisioned or silently signed in via OTP.
+    if (user.email_confirmed_at) {
+      return NextResponse.json(
+        { error: 'This email is already verified. Please sign in.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Idempotent provisioning BEFORE confirming, so a failure leaves the account pending
+    //    and retryable instead of "verified but without a workspace".
+    try {
+      await ensureProvisioned(adminClient, user, normEmail);
+    } catch (provErr) {
+      if (provErr instanceof ProvisioningError) {
+        return NextResponse.json(
+          { error: 'We could not finish setting up your workspace. Please request a new code and try again.' },
+          { status: 500 }
+        );
+      }
+      throw provErr;
+    }
+
+    // 4. Confirm email in Supabase Auth
     const { error: confirmError } = await adminClient.auth.admin.updateUserById(user.id, {
       email_confirm: true,
     });
 
     if (confirmError) {
-      console.error('Failed to confirm email in Supabase Auth:', confirmError);
+      logError('email confirmation failed', confirmError);
       return NextResponse.json(
-        { error: 'Failed to activate account in authentication service.' },
+        { error: 'We could not activate your account. Please request a new code and try again.' },
         { status: 500 }
       );
     }
 
-    // 3. Ensure Profile, Workspace and OWNER Membership Provisioning
-    const fullName = user.user_metadata?.full_name || 'Organizer';
-    const orgName = user.user_metadata?.organization_name || `${fullName}'s Organization`;
-
-    // Ensure Profile exists and is updated
-    await adminClient.from('profiles').upsert({
-      id: user.id,
-      full_name: fullName,
-      avatar_url: user.user_metadata?.avatar_url || null,
-      updated_at: new Date().toISOString(),
-    });
-
-    // Ensure Workspace exists
-    const { data: existingWorkspaces } = await adminClient
-      .from('workspaces')
-      .select('id, name')
-      .eq('owner_id', user.id)
-      .limit(1);
-
-    let workspaceId: string;
-
-    if (existingWorkspaces && existingWorkspaces.length > 0) {
-      workspaceId = existingWorkspaces[0].id;
-      // Update workspace name to the registered Organization Name
-      await adminClient
-        .from('workspaces')
-        .update({
-          name: orgName,
-          email: normEmail,
-        })
-        .eq('id', workspaceId);
-    } else {
-      // Create new workspace if trigger did not create it
-      workspaceId = crypto.randomUUID();
-      const slug = `ws-${crypto.randomBytes(4).toString('hex')}`;
-
-      const { data: newWs, error: wsError } = await adminClient
-        .from('workspaces')
-        .insert({
-          id: workspaceId,
-          name: orgName,
-          slug,
-          owner_id: user.id,
-          email: normEmail,
-        })
-        .select('id')
-        .single();
-
-      if (!wsError && newWs) {
-        workspaceId = newWs.id;
-      }
-    }
-
-    // Ensure OWNER Role Membership in workspace_members
-    const { data: ownerRole } = await adminClient
-      .from('roles')
-      .select('id')
-      .eq('name', 'workspace_owner')
-      .limit(1)
-      .maybeSingle();
-
-    if (ownerRole?.id) {
-      const { data: existingMember } = await adminClient
-        .from('workspace_members')
-        .select('id')
-        .eq('workspace_id', workspaceId)
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (!existingMember) {
-        await adminClient.from('workspace_members').insert({
-          workspace_id: workspaceId,
-          user_id: user.id,
-          role_id: ownerRole.id,
-        });
-      }
-    }
-
-    // 4. Establish Authenticated Session Cookies
+    // 5. Establish authenticated session cookies
     try {
       const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
         type: 'magiclink',
@@ -172,13 +221,12 @@ export async function POST(req: NextRequest) {
         const serverSupabase = await createServerSupabaseClient();
         await serverSupabase.auth.verifyOtp({
           token_hash: linkData.properties.hashed_token,
-          type: (linkData.properties.verification_type as any) || 'magiclink',
+          type: 'magiclink',
         });
       }
     } catch (sessionErr) {
-      console.warn('Could not auto-generate session cookies via magic link:', sessionErr);
-      // Even if server session cookie exchange has an issue, user account is verified
-      // so user can authenticate or will be redirected.
+      logError('could not establish session after verification', sessionErr);
+      // The account is verified, so the user can still sign in manually.
     }
 
     return NextResponse.json({
@@ -186,10 +234,13 @@ export async function POST(req: NextRequest) {
       message: 'Account verified successfully.',
       redirect: '/app',
     });
-  } catch (err: any) {
-    console.error('Error during OTP verification:', err);
+  } catch (err) {
+    if (err instanceof OtpRateLimitError) {
+      return NextResponse.json({ error: err.message }, { status: 429 });
+    }
+    logError('unexpected error', err);
     return NextResponse.json(
-      { error: err?.message || 'An unexpected error occurred during verification.' },
+      { error: 'An unexpected error occurred during verification. Please try again.' },
       { status: 500 }
     );
   }
