@@ -22,6 +22,9 @@ export interface WebsiteSection {
 }
 
 export interface ThemeConfig {
+  colors?: import('@/data/templates').ThemeColors;
+  typography?: import('@/data/templates').ThemeTypography;
+  layout?: import('@/data/templates').ThemeLayout;
   primaryColor?: string;
   secondaryColor?: string;
   backgroundColor?: string;
@@ -30,6 +33,7 @@ export interface ThemeConfig {
   fontHeading?: string;
   fontBody?: string;
   buttonStyle?: string;
+  [key: string]: unknown;
 }
 
 export interface WebsiteState {
@@ -64,6 +68,7 @@ export interface Event {
   location?: string;
   description?: string;
   status: 'draft' | 'published' | 'archived';
+  workspace_id: string;
   createdAt: string;
   flyer?: string;
   website: WebsiteConfig;
@@ -141,9 +146,56 @@ export interface Registration {
   created_at: string;
   updated_at: string;
   distance_category_id?: string | null;
+  ticket_type_id?: string | null;
   person?: Person; // Joined data
   event_person?: EventPerson; // Joined data
   distance_category?: WalkathonDistanceCategory; // Joined data
+  ticket_type?: EventTicketType; // Joined data
+}
+
+export type TicketType = 'free' | 'paid';
+export type TicketVisibility = 'public' | 'hidden';
+export type TicketDerivedStatus = 'draft' | 'scheduled' | 'on_sale' | 'sold_out' | 'sales_ended' | 'inactive';
+
+export interface EventTicketType {
+  id: string;
+  event_id: string;
+  name: string;
+  description?: string | null;
+  ticket_type: TicketType;
+  price_amount: number; // in integer paise (₹799 = 79900)
+  currency: string;
+  quantity_total: number;
+  sales_start_at?: string | null;
+  sales_end_at?: string | null;
+  min_per_order: number;
+  max_per_order: number;
+  visibility: TicketVisibility;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Computed / joined fields
+  quantity_sold?: number;
+  quantity_remaining?: number;
+  derived_status?: TicketDerivedStatus;
+}
+
+export interface PublicTicketAvailability {
+  id: string;
+  event_id: string;
+  name: string;
+  description?: string | null;
+  ticket_type: TicketType;
+  price_amount: number; // in integer paise
+  currency: string;
+  quantity_total: number;
+  quantity_sold: number;
+  quantity_remaining: number;
+  min_per_order: number;
+  max_per_order: number;
+  sales_start_at?: string | null;
+  sales_end_at?: string | null;
+  status: TicketDerivedStatus;
 }
 
 export interface WalkathonDistanceCategory {
@@ -155,4 +207,29 @@ export interface WalkathonDistanceCategory {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserPreferences {
+  user_id: string;
+  default_event_type?: string | null;
+  default_event_format?: string | null;
+  default_timezone?: string | null;
+  default_location?: string | null;
+  notify_registration_updates: boolean;
+  notify_event_updates: boolean;
+  notify_check_in_updates: boolean;
+  notify_integration_alerts: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface WorkspaceDetails {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  email?: string | null;
+  logo_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }

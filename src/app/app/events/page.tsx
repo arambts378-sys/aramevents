@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '@/context/AppContext';
@@ -7,45 +7,53 @@ import { EventsHeader } from '@/components/events/EventsHeader';
 import { EventsToolbar } from '@/components/events/EventsToolbar';
 import { EventGrid } from '@/components/events/EventGrid';
 import { EventsEmptyState } from '@/components/events/EventsEmptyState';
+import { EventsSkeletonGrid } from '@/components/events/EventsSkeletonGrid';
+import { EventsErrorState } from '@/components/events/EventsErrorState';
 
 export default function EventsListPage() {
-  const { events, currentUser } = useAppContext();
-  
+  const { events, currentUser, isHydrated, refreshContext } = useAppContext();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  // Derive available statuses dynamically from existing events
+  // Derive available statuses dynamically from existing events and supported statuses
   const availableStatuses = useMemo(() => {
-    const statuses = new Set<string>();
-    events.forEach(e => {
-      if (e.status) statuses.add(e.status.toLowerCase());
+    const statuses = new Set<string>(['draft', 'published', 'archived']);
+    events.forEach((e) => {
+      if (e.status) statuses.add(e.status.toLowerCase().trim());
     });
     return Array.from(statuses).sort();
   }, [events]);
 
+  // Filter events based on search and status
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
+    return events.filter((event) => {
       // Status Filter
       if (statusFilter !== 'all' && event.status?.toLowerCase() !== statusFilter) {
         return false;
       }
-      
+
       // Search Filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const searchString = [
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const searchTarget = [
           event.name,
           event.type,
           event.format,
           event.location,
-          event.id
-        ].filter(Boolean).join(' ').toLowerCase();
-        
-        if (!searchString.includes(query)) {
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        if (!searchTarget.includes(query)) {
           return false;
         }
       }
-      
+
       return true;
     });
   }, [events, searchQuery, statusFilter]);
@@ -55,45 +63,63 @@ export default function EventsListPage() {
     setStatusFilter('all');
   };
 
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    setHasError(false);
+    try {
+      await refreshContext();
+    } catch {
+      setHasError(true);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex">
-      {/* Global App Shell */}
-      <div className="hidden md:block w-[240px] shrink-0">
-        <Sidebar currentUser={currentUser} />
-      </div>
+    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
+      <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+        {/* Left Persistent Sidebar (230px) */}
+        <Sidebar
+          currentUser={currentUser}
+          mobileOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+        />
 
-      {/* Main Content Area */}
-      <main className="flex-1 w-full md:w-[calc(100%-240px)] flex flex-col h-screen overflow-y-auto">
-        {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-[#E7E2DD] bg-white sticky top-0 z-10">
-          <div className="font-bold text-[#171717]">ARAM BTS</div>
-          <button className="text-[#171717]"><span className="material-symbols-outlined">menu</span></button>
-        </div>
+        {/* Right Main Content Area */}
+        <main className="flex-1 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 py-8 flex flex-col gap-6 overflow-y-auto w-full md:w-[calc(100%-230px)]">
+          {/* Portfolio Page Header */}
+          <EventsHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
 
-        <div className="w-full max-w-[1400px] mx-auto p-6 md:p-12 lg:px-16 lg:py-12">
-          <EventsHeader />
-          
-          {events.length > 0 ? (
+          {/* Loading Skeleton */}
+          {!isHydrated || isRetrying ? (
+            <EventsSkeletonGrid />
+          ) : hasError ? (
+            /* Error State with Retry */
+            <EventsErrorState onRetry={handleRetry} />
+          ) : events.length === 0 ? (
+            /* Zero Events State */
+            <EventsEmptyState isSearchEmpty={false} />
+          ) : (
             <>
-              <EventsToolbar 
+              {/* Search & Status Filter Toolbar */}
+              <EventsToolbar
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
                 statusFilter={statusFilter}
                 setStatusFilter={setStatusFilter}
                 availableStatuses={availableStatuses}
               />
-              
+
+              {/* Event Cards Grid or Filtered Empty State */}
               {filteredEvents.length > 0 ? (
                 <EventGrid events={filteredEvents} />
               ) : (
                 <EventsEmptyState isSearchEmpty={true} clearFilters={clearFilters} />
               )}
             </>
-          ) : (
-            <EventsEmptyState isSearchEmpty={false} />
           )}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

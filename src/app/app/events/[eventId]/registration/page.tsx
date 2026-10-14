@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { registrationsService } from '@/services/registrations';
@@ -74,7 +75,7 @@ export default function OrganizerRegistrationPage() {
     try {
       const cap = formData.capacity === '' ? null : parseInt(formData.capacity as string, 10);
       const updated = await registrationsService.updateEventRegistrationSettings(eventId, {
-        is_enabled: formData.is_enabled,
+        is_enabled: true,
         title: formData.title || null,
         description: formData.description || null,
         capacity: cap && cap >= 1 ? cap : null,
@@ -155,26 +156,44 @@ export default function OrganizerRegistrationPage() {
         
         {/* Left Column: Settings */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
+          {/* Tickets & Pricing Link Card */}
+          <Link
+            href={`/app/events/${eventId}/tickets`}
+            className="group bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs hover:border-[#7C5CFC] hover:shadow-sm transition-all duration-150 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center border border-[#E6E2F0]/60 group-hover:scale-105 transition-transform">
+                <span className="material-symbols-outlined text-[22px]">sell</span>
+              </div>
+              <div>
+                <h3 className="text-[14px] font-bold text-[#17152B] font-space group-hover:text-[#7C5CFC] transition-colors">
+                  Tickets &amp; Pricing
+                </h3>
+                <p className="text-[12px] text-[#77738A] font-jakarta leading-tight mt-0.5">
+                  Create ticket types, set prices and manage availability.
+                </p>
+              </div>
+            </div>
+            <span className="material-symbols-outlined text-[20px] text-[#77738A] group-hover:text-[#7C5CFC] group-hover:translate-x-0.5 transition-all">
+              arrow_forward
+            </span>
+          </Link>
+
           <form onSubmit={handleSaveSettings} className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-6 flex flex-col gap-5">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="text-title-md font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined">settings</span>
-                Settings
+                <span className="material-symbols-outlined text-primary">settings</span>
+                Registration Details
               </h2>
               
-              <label className="flex items-center gap-2 cursor-pointer">
-                <span className="text-label-sm font-bold text-on-surface-variant">{formData.is_enabled ? 'Enabled' : 'Disabled'}</span>
-                <div className={`w-11 h-6 rounded-full transition-colors relative flex items-center ${formData.is_enabled ? 'bg-primary' : 'bg-surface-variant'}`}>
-                  <input 
-                    type="checkbox" 
-                    className="sr-only"
-                    checked={formData.is_enabled}
-                    onChange={(e) => setFormData({...formData, is_enabled: e.target.checked})}
-                  />
-                  <div className={`w-4 h-4 bg-white rounded-full absolute transition-transform ${formData.is_enabled ? 'translate-x-6' : 'translate-x-1'}`}></div>
-                </div>
-              </label>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold font-mono uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </span>
             </div>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Registration opens automatically whenever tickets are available. Customize public details and optional capacity below.
+            </p>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-label-sm font-medium text-on-surface-variant">Public Title</label>

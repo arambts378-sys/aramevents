@@ -1,0 +1,195 @@
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { EventPerformanceRow } from '@/services/analyticsService';
+
+interface EventPerformanceProps {
+  events: EventPerformanceRow[];
+}
+
+type SortField = 'name' | 'registrations' | 'checkins' | 'attendance' | 'date';
+type SortOrder = 'asc' | 'desc';
+
+export function EventPerformance({ events }: EventPerformanceProps) {
+  const [sortField, setSortField] = useState<SortField>('registrations');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const sortedEvents = [...events].sort((a, b) => {
+    let comparison = 0;
+    if (sortField === 'name') {
+      comparison = a.name.localeCompare(b.name);
+    } else if (sortField === 'registrations') {
+      comparison = a.registrationsCount - b.registrationsCount;
+    } else if (sortField === 'checkins') {
+      comparison = a.checkInsCount - b.checkInsCount;
+    } else if (sortField === 'attendance') {
+      const rateA = a.attendanceRate ?? -1;
+      const rateB = b.attendanceRate ?? -1;
+      comparison = rateA - rateB;
+    } else if (sortField === 'date') {
+      comparison = a.startDate.localeCompare(b.startDate);
+    }
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  return (
+    <div className="bg-white border border-[#E6E2F0] rounded-2xl shadow-xs overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className="p-5 sm:p-6 border-b border-[#E6E2F0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 className="text-base font-bold text-[#17152B] tracking-tight">
+            Event Performance Portfolio
+          </h2>
+          <p className="text-xs text-[#77738A] mt-0.5 font-normal">
+            Comparative registration and validated participation rates across your workspace events.
+          </p>
+        </div>
+        <div className="text-xs text-[#77738A] font-semibold">
+          Showing {events.length} event{events.length === 1 ? '' : 's'}
+        </div>
+      </div>
+
+      {/* Contained Horizontal Scroll Table */}
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="bg-[#FAFAFD] border-b border-[#E6E2F0] text-[#77738A] uppercase tracking-wider font-bold">
+              <th
+                scope="col"
+                onClick={() => handleSort('name')}
+                className="py-3 px-4 sm:px-6 cursor-pointer hover:text-[#17152B] transition-colors select-none"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Event</span>
+                  <span className="material-symbols-outlined text-sm">
+                    {sortField === 'name' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                  </span>
+                </div>
+              </th>
+              <th scope="col" className="py-3 px-4 hidden md:table-cell">
+                Type / Format
+              </th>
+              <th
+                scope="col"
+                onClick={() => handleSort('registrations')}
+                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  <span>Registrations</span>
+                  <span className="material-symbols-outlined text-sm">
+                    {sortField === 'registrations' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                  </span>
+                </div>
+              </th>
+              <th
+                scope="col"
+                onClick={() => handleSort('checkins')}
+                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  <span>Check-ins</span>
+                  <span className="material-symbols-outlined text-sm">
+                    {sortField === 'checkins' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                  </span>
+                </div>
+              </th>
+              <th
+                scope="col"
+                onClick={() => handleSort('attendance')}
+                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  <span>Attendance</span>
+                  <span className="material-symbols-outlined text-sm">
+                    {sortField === 'attendance' ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                  </span>
+                </div>
+              </th>
+              <th scope="col" className="py-3 px-4 sm:px-6 text-center">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#E6E2F0]">
+            {sortedEvents.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-[#77738A]">
+                  No events found in this scope.
+                </td>
+              </tr>
+            ) : (
+              sortedEvents.map((event) => (
+                <tr
+                  key={event.id}
+                  className="hover:bg-[#F7F5FF]/50 transition-colors group"
+                >
+                  <td className="py-3.5 px-4 sm:px-6">
+                    <Link
+                      href={`/app/events/${event.id}`}
+                      className="font-bold text-[#17152B] group-hover:text-[#7C5CFC] transition-colors flex flex-col"
+                    >
+                      <span className="text-xs sm:text-sm">{event.name}</span>
+                      <span className="text-[11px] text-[#77738A] font-normal">
+                        {event.startDate}
+                      </span>
+                    </Link>
+                  </td>
+                  <td className="py-3.5 px-4 hidden md:table-cell text-[#77738A]">
+                    <span className="font-semibold text-[#17152B]">{event.type}</span>
+                    <span className="text-[11px] block">{event.format}</span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-bold text-[#17152B] tabular-nums">
+                    {event.registrationsCount}
+                  </td>
+                  <td className="py-3.5 px-4 text-right font-bold text-[#22C55E] tabular-nums">
+                    {event.checkInsCount}
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    {event.attendanceRate !== null ? (
+                      <span
+                        className={`font-bold tabular-nums px-2 py-0.5 rounded-md ${
+                          event.attendanceRate >= 70
+                            ? 'bg-[#22C55E]/10 text-[#22C55E]'
+                            : event.attendanceRate >= 40
+                            ? 'bg-[#7C5CFC]/10 text-[#7C5CFC]'
+                            : 'bg-[#F59E0B]/10 text-[#D97706]'
+                        }`}
+                      >
+                        {event.attendanceRate}%
+                      </span>
+                    ) : (
+                      <span className="text-[#77738A] font-bold">—</span>
+                    )}
+                  </td>
+                  <td className="py-3.5 px-4 sm:px-6 text-center">
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        event.status.toLowerCase() === 'published'
+                          ? 'bg-[#22C55E]/10 text-[#22C55E]'
+                          : event.status.toLowerCase() === 'draft'
+                          ? 'bg-[#77738A]/10 text-[#77738A]'
+                          : 'bg-[#7C5CFC]/10 text-[#7C5CFC]'
+                      }`}
+                    >
+                      {event.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

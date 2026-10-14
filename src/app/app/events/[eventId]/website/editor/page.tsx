@@ -1,14 +1,14 @@
-
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import EditorToolbar from '@/components/website-editor/EditorToolbar';
 import WebsitePreview from '@/components/website-editor/WebsitePreview';
 import TemplateGallery from '@/components/website-editor/TemplateGallery';
 import SectionPropertiesPanel from '@/components/website-editor/SectionPropertiesPanel';
-import { templates } from '@/data/templates';
+import { templates, ThemeColors, ThemeTypography, ThemeLayout } from '@/data/templates';
 
 const defaultSections = [
   { id: 'header', type: 'header', visible: true, order: 0 },
@@ -23,36 +23,93 @@ const defaultSections = [
   { id: 'exhibitors', type: 'exhibitors', visible: true, order: 9 },
   { id: 'contact', type: 'contact', visible: true, order: 10 },
   { id: 'final_cta', type: 'final_cta', visible: true, order: 11 },
-  { id: 'footer', type: 'footer', visible: true, order: 12 }
+  { id: 'footer', type: 'footer', visible: true, order: 12 },
 ];
 
-export default function EventOverviewPage() {
-  const router = useRouter();
+const formatSectionTitle = (id: string) => {
+  switch (id) {
+    case 'header':
+      return 'Header';
+    case 'hero':
+      return 'Hero';
+    case 'event_info':
+      return 'Event Info';
+    case 'about':
+      return 'About';
+    case 'speakers':
+      return 'Speakers';
+    case 'agenda':
+      return 'Agenda';
+    case 'register':
+      return 'Register';
+    case 'venue':
+      return 'Venue';
+    case 'sponsors':
+      return 'Sponsors';
+    case 'exhibitors':
+      return 'Exhibitors';
+    case 'contact':
+      return 'Contact';
+    case 'final_cta':
+      return 'Final CTA';
+    case 'footer':
+      return 'Footer';
+    default:
+      return id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+};
+
+export default function EventWebsiteEditorPage() {
   const routeParams = useParams();
   const eventId = routeParams?.eventId as string;
   const { getEvent, updateEvent, isHydrated } = useAppContext();
-  
+
   const [publishing, setPublishing] = useState(false);
   const [viewport, setViewport] = useState('desktop');
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState<number | 'fit'>('fit');
+  const [isExpandedPreview, setIsExpandedPreview] = useState(false);
   const [draft, setDraft] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'sections' | 'preview' | 'templates'>('preview');
+  const [leftPanelView, setLeftPanelView] = useState<'sections' | 'properties'>('sections');
+  const [saveSuccessNotice, setSaveSuccessNotice] = useState(false);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
 
   const event = getEvent(eventId);
 
   useEffect(() => {
     if (event && !draft && history.length === 0) {
       let initialDraft = event.website?.draft;
+      const defaultTpl = templates[0];
       if (!initialDraft) {
         initialDraft = {
           templateId: event.website?.templateId || 'editorial',
           status: 'draft',
-          theme: {},
-          sections: event.website?.sections?.length ? event.website.sections : defaultSections
+          theme: {
+            colors: defaultTpl.colors,
+            typography: defaultTpl.typography,
+            layout: defaultTpl.layout,
+          },
+          sections: event.website?.sections?.length ? event.website.sections : defaultSections,
         };
+      } else {
+        const templateId = (initialDraft as any).templateId || 'editorial';
+        const matchedTpl = templates.find((t) => t.id === templateId) || defaultTpl;
+        const currentTheme = (initialDraft as any).theme || {};
+        if (!currentTheme.colors) {
+          initialDraft = {
+            ...initialDraft,
+            theme: {
+              colors: matchedTpl.colors,
+              typography: matchedTpl.typography,
+              layout: matchedTpl.layout,
+              ...currentTheme,
+            },
+          };
+        }
       }
       setDraft(initialDraft);
       setHistory([initialDraft]);
@@ -60,9 +117,75 @@ export default function EventOverviewPage() {
     }
   }, [event, draft, history]);
 
-  if (!isHydrated) return null;
-  if (!event) return <div className="p-10 text-center">Event not found</div>;
-  if (!draft) return <div className="p-10 text-center">Loading editor...</div>;
+  // Loading Skeleton State
+  if (!isHydrated) {
+    return (
+      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex flex-col overflow-hidden antialiased">
+        <header className="h-[68px] bg-white border-b border-[#E6E2F0] px-6 flex items-center justify-between animate-pulse">
+          <div className="h-5 w-48 bg-[#E6E2F0] rounded-md" />
+          <div className="h-8 w-64 bg-[#E6E2F0] rounded-lg" />
+          <div className="h-9 w-32 bg-[#E6E2F0] rounded-lg" />
+        </header>
+        <div className="flex-1 flex overflow-hidden">
+          <div className="w-[280px] bg-white border-r border-[#E6E2F0] p-4 space-y-3 animate-pulse">
+            <div className="h-5 w-32 bg-[#E6E2F0] rounded" />
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-10 bg-[#F6F1FF] rounded-lg" />
+            ))}
+          </div>
+          <div className="flex-1 bg-[#ECE8F5] p-8 flex items-center justify-center animate-pulse">
+            <div className="w-full max-w-[1000px] h-[550px] bg-white rounded-xl border border-[#E6E2F0]" />
+          </div>
+          <div className="w-[340px] bg-white border-l border-[#E6E2F0] p-4 space-y-4 animate-pulse">
+            <div className="h-5 w-28 bg-[#E6E2F0] rounded" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-36 bg-[#F6F1FF] rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Event Not Found State
+  if (!event) {
+    return (
+      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex items-center justify-center p-6 antialiased">
+        <div className="max-w-md w-full bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+            <span className="material-symbols-outlined text-[24px]">event_busy</span>
+          </div>
+          <h1 className="text-[20px] font-bold text-[#17152B] font-space">Event Not Found</h1>
+          <p className="text-[13px] text-[#77738A] font-jakarta">
+            The event for this website editor does not exist or has been removed.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/app/events"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[13px] font-semibold rounded-lg transition-colors shadow-xs font-jakarta"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              <span>Back to Events</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading Draft state
+  if (!draft) {
+    return (
+      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex items-center justify-center p-6 antialiased">
+        <div className="flex items-center gap-3 text-[#77738A] font-jakarta text-[14px]">
+          <span className="material-symbols-outlined animate-spin text-[20px] text-[#7C5CFC]">
+            sync
+          </span>
+          <span>Loading Website Editor...</span>
+        </div>
+      </div>
+    );
+  }
 
   const pushHistory = (newDraft: any) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -86,26 +209,130 @@ export default function EventOverviewPage() {
     }
   };
 
+  const applyTemplateChange = (templateId: string, applyRecommendedOrder: boolean) => {
+    const matched = templates.find((t) => t.id === templateId);
+    if (!matched) return;
+
+    let updatedSections = draft.sections;
+
+    if (applyRecommendedOrder && matched.defaultSections && matched.defaultSections.length > 0) {
+      const recSet = new Set(matched.defaultSections);
+
+      // Order recommended sections according to template's recommended defaultSections sequence
+      const orderedRecSections: any[] = [];
+      matched.defaultSections.forEach((secId, idx) => {
+        const found = draft.sections.find((s: any) => s.id === secId);
+        if (found) {
+          orderedRecSections.push({
+            ...found,
+            order: idx,
+            visible: true,
+          });
+        }
+      });
+
+      // Append any remaining or custom sections with preserved order after recommended sections
+      const otherSections = draft.sections
+        .filter((s: any) => !recSet.has(s.id))
+        .sort((a: any, b: any) => a.order - b.order)
+        .map((s: any, idx: number) => ({
+          ...s,
+          order: orderedRecSections.length + idx,
+        }));
+
+      updatedSections = [...orderedRecSections, ...otherSections];
+    }
+
+    pushHistory({
+      ...draft,
+      templateId,
+      theme: {
+        colors: matched.colors,
+        typography: matched.typography,
+        layout: matched.layout,
+      },
+      sections: updatedSections,
+    });
+
+    setPendingTemplateId(null);
+  };
+
   const handleTemplateSelect = (templateId: string) => {
-    pushHistory({ ...draft, templateId });
+    if (templateId === draft.templateId) return;
+    const matched = templates.find((t) => t.id === templateId);
+    if (!matched) return;
+
+    // Check if current visible section order differs from recommended defaultSections
+    const currentVisibleOrder = (draft.sections || [])
+      .filter((s: any) => s.visible)
+      .sort((a: any, b: any) => a.order - b.order)
+      .map((s: any) => s.id);
+
+    const isOrderDifferent =
+      JSON.stringify(currentVisibleOrder) !== JSON.stringify(matched.defaultSections);
+
+    if (isOrderDifferent) {
+      setPendingTemplateId(templateId);
+    } else {
+      applyTemplateChange(templateId, true);
+    }
+  };
+
+  const handleUpdateColors = (newColors: ThemeColors) => {
+    pushHistory({
+      ...draft,
+      theme: {
+        ...(draft.theme || {}),
+        colors: newColors,
+      },
+    });
+  };
+
+  const handleUpdateTypography = (newTypography: ThemeTypography) => {
+    pushHistory({
+      ...draft,
+      theme: {
+        ...(draft.theme || {}),
+        typography: newTypography,
+      },
+    });
+  };
+
+  const handleUpdateLayout = (newLayout: ThemeLayout) => {
+    pushHistory({
+      ...draft,
+      theme: {
+        ...(draft.theme || {}),
+        layout: newLayout,
+      },
+    });
   };
 
   const handleToggleSection = (sectionId: string) => {
-    const newSections = draft.sections.map((s: any) => s.id === sectionId ? { ...s, visible: !s.visible } : s);
+    const newSections = draft.sections.map((s: any) =>
+      s.id === sectionId ? { ...s, visible: !s.visible } : s
+    );
     pushHistory({ ...draft, sections: newSections });
   };
 
-  const handleMoveSection = (sectionId: string, direction: string) => {
+  const handleMoveSection = (sectionId: string, direction: 'up' | 'down') => {
     const idx = draft.sections.findIndex((s: any) => s.id === sectionId);
-    if ((direction === 'up' && idx === 0) || (direction === 'down' && idx === draft.sections.length - 1)) return;
-    
+    if (
+      (direction === 'up' && idx === 0) ||
+      (direction === 'down' && idx === draft.sections.length - 1)
+    )
+      return;
+
     const newSections = [...draft.sections];
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    
+
     const tempOrder = newSections[idx].order;
     newSections[idx].order = newSections[swapIdx].order;
     newSections[swapIdx].order = tempOrder;
-    pushHistory({ ...draft, sections: newSections.sort((a: any, b: any) => a.order - b.order) });
+    pushHistory({
+      ...draft,
+      sections: newSections.sort((a: any, b: any) => a.order - b.order),
+    });
   };
 
   const updateSectionConfig = (sectionId: string, updates: any) => {
@@ -113,14 +340,13 @@ export default function EventOverviewPage() {
       if (s.id === sectionId) {
         return {
           ...s,
-          content: { ...s.content, ...updates }
+          content: { ...s.content, ...updates },
         };
       }
       return s;
     });
     pushHistory({ ...draft, sections: newSections });
   };
-
 
   const handleSave = async () => {
     try {
@@ -129,41 +355,52 @@ export default function EventOverviewPage() {
         ...event,
         website: {
           ...event.website,
-          draft
-        }
+          draft,
+        },
       });
-      alert('Saved as draft!');
+      setSaveSuccessNotice(true);
+      setTimeout(() => setSaveSuccessNotice(false), 2500);
     } catch (err) {
       console.error('Error saving draft:', err);
-      alert('Failed to save draft. Please try again.');
+      alert('Failed to save website changes. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handlePublish = () => {
-    setPublishing(true);
-    setTimeout(() => {
+  const handlePublish = async () => {
+    try {
+      setPublishing(true);
       const publishedState = { ...draft, status: 'published' };
-      updateEvent({ 
+      await updateEvent({
         ...event,
-        website: { 
+        website: {
+          ...event.website,
           status: 'published',
           draft: publishedState,
-          published: publishedState
-        } 
+          published: publishedState,
+        },
       });
-      setPublishing(false);
       setDraft(publishedState);
-      alert('Website Published!');
-    }, 800);
+      setSaveSuccessNotice(true);
+      setTimeout(() => setSaveSuccessNotice(false), 2500);
+    } catch (err) {
+      console.error('Error publishing website:', err);
+      alert('Failed to publish website. Please try again.');
+    } finally {
+      setPublishing(false);
+    }
   };
 
+  const activeSection = draft.sections.find((s: any) => s.id === activeSectionId);
+  const sortedSections = [...draft.sections].sort((a: any, b: any) => a.order - b.order);
+
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <EditorToolbar 
-        event={event} 
-        onPublish={handlePublish} 
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#F7F5FF] text-[#17152B] antialiased select-none font-jakarta">
+      {/* 1. TOP EDITOR TOOLBAR (~68px) */}
+      <EditorToolbar
+        event={event}
+        onPublish={handlePublish}
         publishing={publishing}
         viewport={viewport}
         setViewport={setViewport}
@@ -175,62 +412,350 @@ export default function EventOverviewPage() {
         canRedo={historyIndex < history.length - 1}
         handleSave={handleSave}
         saving={saving}
+        isExpandedPreview={isExpandedPreview}
+        onToggleExpandPreview={() => setIsExpandedPreview((prev) => !prev)}
+        activeMobileTab={mobileTab}
+        setActiveMobileTab={(tab) => setMobileTab(tab as 'sections' | 'preview' | 'templates')}
       />
-      
-      <div className="flex flex-1 min-h-0 relative">
-        <aside className="w-[320px] bg-surface-container-lowest border-r flex flex-col h-full overflow-y-auto custom-scroll">
-          <div className="p-3 font-semibold border-b flex justify-between items-center">
-            <span>{activeSectionId ? `${activeSectionId.toUpperCase()} Settings` : 'Website Sections'}</span>
-            {activeSectionId && (
-              <button onClick={() => setActiveSectionId(null)} className="text-sm font-medium text-brand-maroon hover:underline">
-                Back
-              </button>
-            )}
-          </div>
-          
-          {!activeSectionId ? (
-            <div className="p-2 space-y-2">
-              {draft.sections.map((section: any) => (
-                <div key={section.id} className="flex items-center justify-between p-2 border rounded hover:bg-surface-container cursor-pointer" onClick={(e) => {
-                  if ((e.target as HTMLElement).closest('button')) return;
-                  setActiveSectionId(section.id);
-                }}>
-                  <span>{section.id}</span>
-                  <div className="flex gap-2">
-                    <button onClick={(e) => { e.stopPropagation(); handleToggleSection(section.id); }}>
-                      <span className="material-symbols-outlined text-[16px]">
-                        {section.visible ? 'visibility' : 'visibility_off'}
-                      </span>
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleMoveSection(section.id, 'up'); }}><span className="material-symbols-outlined text-[16px]">arrow_upward</span></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleMoveSection(section.id, 'down'); }}><span className="material-symbols-outlined text-[16px]">arrow_downward</span></button>
+
+      {/* Responsive Panel Switcher for Viewports < 1280px (hidden in expand focus mode) */}
+      {!isExpandedPreview && (
+        <div className="xl:hidden flex items-center justify-around border-b border-[#E6E2F0] bg-white px-2 py-1.5 text-[12px] font-semibold shrink-0 z-20">
+          <button
+            type="button"
+            onClick={() => setMobileTab('sections')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+              mobileTab === 'sections'
+                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
+                : 'text-[#77738A] hover:text-[#17152B]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">view_list</span>
+            <span>SECTIONS</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('preview')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+              mobileTab === 'preview'
+                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
+                : 'text-[#77738A] hover:text-[#17152B]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">preview</span>
+            <span>PREVIEW</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('templates')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
+              mobileTab === 'templates'
+                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
+                : 'text-[#77738A] hover:text-[#17152B]'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">palette</span>
+            <span>DESIGN</span>
+          </button>
+        </div>
+      )}
+
+      {/* Temporary Success Toast Notification */}
+      {saveSuccessNotice && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#17152B] text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-white/10 animate-fade-in">
+          <span className="material-symbols-outlined text-[18px] text-emerald-400">
+            check_circle
+          </span>
+          <span>Changes successfully saved to website</span>
+        </div>
+      )}
+
+      {/* 2. THREE-PANEL WORKSPACE (Height: 100vh - 68px, Full-Height & Zero Page-Level Scrolling) */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+        {/* =================================================================== */}
+        {/* LEFT SIDEBAR: Website Sections & Settings (~280px) */}
+        {/* =================================================================== */}
+        {!isExpandedPreview && (
+          <aside
+            className={`w-full xl:w-[280px] bg-[#F7F5FF] border-r border-[#E6E2F0] flex flex-col shrink-0 min-h-0 overflow-hidden z-10 transition-all ${
+              mobileTab === 'sections' ? 'flex' : 'hidden xl:flex'
+            }`}
+          >
+            {/* Header */}
+            <div className="p-3.5 border-b border-[#E6E2F0] bg-white shrink-0">
+              {activeSectionId ? (
+                <div className="flex items-center gap-1 p-0.5 bg-[#F6F1FF] rounded-lg border border-[#E6E2F0]">
+                  <button
+                    type="button"
+                    onClick={() => setLeftPanelView('sections')}
+                    className={`flex-1 py-1 text-center rounded-md text-[11px] font-semibold transition-all ${
+                      leftPanelView === 'sections'
+                        ? 'bg-white text-[#7C5CFC] shadow-xs'
+                        : 'text-[#77738A] hover:text-[#17152B]'
+                    }`}
+                  >
+                    Sections ({draft.sections.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLeftPanelView('properties')}
+                    className={`flex-1 py-1 text-center rounded-md text-[11px] font-semibold transition-all ${
+                      leftPanelView === 'properties'
+                        ? 'bg-white text-[#7C5CFC] shadow-xs'
+                        : 'text-[#77738A] hover:text-[#17152B]'
+                    }`}
+                  >
+                    Edit: {formatSectionTitle(activeSectionId)}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <h2 className="text-[14px] font-bold text-[#17152B] font-space">Website Sections</h2>
+                    <span className="text-[11px] font-mono font-semibold text-[#77738A]">
+                      ({draft.sections.length})
+                    </span>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
-          ) : (
-            <div className="p-4 space-y-6">
-              <SectionPropertiesPanel 
-                section={draft.sections.find((s: any) => s.id === activeSectionId)} 
-                updateSection={(updates: any) => updateSectionConfig(activeSectionId, updates)} 
-              />
+
+            {/* Sections List or Active Section Properties Panel */}
+            {leftPanelView === 'sections' || !activeSectionId ? (
+              <>
+                <div className="flex-1 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
+                  {sortedSections.map((section: any, idx: number) => {
+                    const isVisible = section.visible;
+                    const isActive = section.id === activeSectionId;
+                    const title = formatSectionTitle(section.id);
+
+                    return (
+                      <div
+                        key={section.id}
+                        onClick={() => {
+                          setActiveSectionId(section.id);
+                          if (window.innerWidth < 1280) {
+                            setMobileTab('preview');
+                          }
+                        }}
+                        className={`h-[46px] rounded-lg flex items-center justify-between px-3 transition-all group cursor-pointer border ${
+                          isActive
+                            ? 'bg-[#F0EBFF] border-[#7C5CFC] text-[#7C5CFC] font-semibold shadow-xs'
+                            : !isVisible
+                            ? 'bg-white/60 border-[#E6E2F0] text-[#77738A]/70 opacity-60 hover:opacity-100 hover:bg-white'
+                            : 'bg-white border-[#E6E2F0] text-[#17152B] hover:border-[#7C5CFC]/40 hover:bg-white'
+                        }`}
+                      >
+                        {/* Left: Drag / Order Indicator + Name */}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className={`material-symbols-outlined text-[17px] ${
+                              isActive ? 'text-[#7C5CFC]' : 'text-[#c9c4d8] group-hover:text-[#77738A]'
+                            }`}
+                          >
+                            drag_indicator
+                          </span>
+                          <span className="text-[13px] truncate">{title}</span>
+                        </div>
+
+                        {/* Right: Actions */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          {isActive && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setLeftPanelView('properties');
+                              }}
+                              className="px-2 py-0.5 text-[11px] font-semibold bg-[#7C5CFC] text-white rounded-md hover:bg-[#5B3FE8] transition-colors flex items-center gap-0.5 shadow-2xs mr-1"
+                              title="Edit Section Content"
+                            >
+                              <span className="material-symbols-outlined text-[13px]">edit</span>
+                              <span>Edit</span>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveSection(section.id, 'up');
+                            }}
+                            disabled={idx === 0}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-[#77738A] hover:text-[#7C5CFC] disabled:opacity-20 transition-opacity"
+                            title="Move section up"
+                            aria-label="Move section up"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">arrow_upward</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMoveSection(section.id, 'down');
+                            }}
+                            disabled={idx === sortedSections.length - 1}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-[#77738A] hover:text-[#7C5CFC] disabled:opacity-20 transition-opacity"
+                            title="Move section down"
+                            aria-label="Move section down"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">arrow_downward</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleSection(section.id);
+                            }}
+                            className={`p-0.5 transition-colors ${
+                              isVisible
+                                ? 'text-[#77738A] hover:text-[#7C5CFC]'
+                                : 'text-[#c9c4d8] hover:text-[#17152B]'
+                            }`}
+                            title={isVisible ? 'Hide Section' : 'Show Section'}
+                            aria-label={isVisible ? 'Hide Section' : 'Show Section'}
+                          >
+                            <span className="material-symbols-outlined text-[17px]">
+                              {isVisible ? 'visibility' : 'visibility_off'}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Left Sidebar Footer */}
+                <div className="p-3 border-t border-[#E6E2F0] bg-white text-center shrink-0">
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#77738A]">
+                    <span className="material-symbols-outlined text-[14px]">touch_app</span>
+                    <span>Click section to highlight &amp; scroll</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white min-h-0">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E6E2F0]">
+                  <button
+                    type="button"
+                    onClick={() => setLeftPanelView('sections')}
+                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">arrow_back</span>
+                    <span>All Sections</span>
+                  </button>
+                  <span className="text-[11px] font-mono font-semibold text-[#77738A] uppercase">
+                    {formatSectionTitle(activeSectionId || '')}
+                  </span>
+                </div>
+                <SectionPropertiesPanel
+                  section={activeSection}
+                  updateSection={(updates: any) => updateSectionConfig(activeSectionId, updates)}
+                  eventId={eventId}
+                  workspaceId={event.workspace_id}
+                />
+              </div>
+            )}
+          </aside>
+        )}
+
+        {/* =================================================================== */}
+        {/* CENTER CANVAS: Website Preview Canvas (flex-1, full remaining width) */}
+        {/* =================================================================== */}
+        <div
+          className={`flex-1 min-w-0 min-h-0 overflow-hidden flex flex-col ${
+            mobileTab === 'preview' || isExpandedPreview ? 'flex' : 'hidden xl:flex'
+          }`}
+        >
+          <WebsitePreview
+            event={event}
+            draft={draft}
+            viewport={viewport}
+            zoom={zoom}
+            activeSectionId={activeSectionId}
+            onSectionClick={(sectionId) => {
+              setActiveSectionId(sectionId);
+              setLeftPanelView('properties');
+              if (window.innerWidth < 1280) {
+                setMobileTab('sections');
+              }
+            }}
+          />
+        </div>
+
+        {/* =================================================================== */}
+        {/* RIGHT SIDEBAR: Templates & Styling (~340px) */}
+        {/* =================================================================== */}
+        {!isExpandedPreview && (
+          <aside
+            className={`w-full xl:w-[340px] bg-white border-l border-[#E6E2F0] flex flex-col shrink-0 min-h-0 overflow-hidden z-10 ${
+              mobileTab === 'templates' ? 'flex' : 'hidden xl:flex'
+            }`}
+          >
+            <TemplateGallery
+              selectedTemplateId={draft.templateId}
+              onSelectTemplate={handleTemplateSelect}
+              theme={draft.theme || {}}
+              onUpdateColors={handleUpdateColors}
+              onUpdateTypography={handleUpdateTypography}
+              onUpdateLayout={handleUpdateLayout}
+            />
+          </aside>
+        )}
+
+      {/* Template Switch Confirmation Dialog */}
+      {pendingTemplateId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6E2F0] space-y-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[22px]">auto_awesome_mosaic</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-[#17152B] font-space leading-snug">
+                  Switching templates will apply the recommended section layout.
+                </h3>
+                <p className="text-xs text-[#77738A] font-jakarta leading-relaxed">
+                  Your event content will be preserved. Existing sections that are not part of this template remain available.
+                </p>
+              </div>
             </div>
-          )}
-        </aside>
 
-        <WebsitePreview 
-          event={event} 
-          draft={draft} 
-          viewport={viewport} 
-          zoom={zoom} 
-          activeSectionId={activeSectionId}
-          onSectionClick={setActiveSectionId}
-        />
+            <div className="p-3 bg-[#F6F1FF]/60 rounded-xl border border-[#E6E2F0] text-xs font-mono space-y-1.5">
+              <div className="text-[11px] font-bold text-[#17152B] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#7C5CFC]"></span>
+                <span>Template: {templates.find((t) => t.id === pendingTemplateId)?.name}</span>
+              </div>
+              <div className="text-[10px] text-[#77738A] leading-relaxed">
+                Recommended Order: {templates.find((t) => t.id === pendingTemplateId)?.defaultSections.map((s) => s.replace('_', ' ')).join(' → ')}
+              </div>
+            </div>
 
-        <TemplateGallery 
-          selectedTemplateId={draft.templateId} 
-          onSelect={handleTemplateSelect} 
-        />
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E2F0]">
+              <button
+                type="button"
+                onClick={() => setPendingTemplateId(null)}
+                className="px-3.5 py-2 text-xs font-semibold text-[#77738A] hover:text-[#17152B] hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => applyTemplateChange(pendingTemplateId, false)}
+                className="px-3.5 py-2 text-xs font-semibold text-[#7C5CFC] bg-[#F6F1FF] hover:bg-[#EAE2FD] rounded-lg transition-colors border border-[#7C5CFC]/20"
+              >
+                Keep Current Layout
+              </button>
+              <button
+                type="button"
+                onClick={() => applyTemplateChange(pendingTemplateId, true)}
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#7C5CFC] hover:bg-[#6847F3] rounded-lg shadow-xs transition-colors"
+              >
+                Apply Recommended Layout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

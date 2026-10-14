@@ -94,12 +94,16 @@ export const emailProvider = {
       throw new Error('EMAIL_INTEGRATION_NOT_CONFIGURED');
     }
 
-    let { registrationId, registrationNumber, attendee } = job.payload as {
+    const { registrationId } = job.payload as {
       registrationId: string;
       registrationNumber: string;
       attendee: { firstName: string; lastName: string; email: string };
     };
-
+    let { registrationNumber, attendee } = job.payload as {
+      registrationId: string;
+      registrationNumber: string;
+      attendee: { firstName: string; lastName: string; email: string };
+    };
     // 1. Resolve active QR credential
     const supabase = createAdminClient();
     const { data: credential, error: credError } = await supabase

@@ -31,16 +31,32 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup'
+  const isAuthRoute =
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/signup' ||
+    request.nextUrl.pathname === '/organizer/register'
+  const isVerifyRoute = request.nextUrl.pathname === '/organizer/verify'
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/app')
 
+  // Unauthenticated user attempting to access protected route
   if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (isAuthRoute && user) {
+  // Authenticated but unverified user attempting to access protected route
+  if (isProtectedRoute && user && !user.email_confirmed_at) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/organizer/verify'
+    if (user.email) {
+      redirectUrl.searchParams.set('email', user.email)
+    }
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Confirmed user visiting auth / register / verify routes
+  if ((isAuthRoute || isVerifyRoute) && user && user.email_confirmed_at) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/app'
     return NextResponse.redirect(redirectUrl)

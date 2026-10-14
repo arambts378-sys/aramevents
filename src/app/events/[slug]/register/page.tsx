@@ -31,12 +31,27 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
     );
   }
 
-  // 2. Fetch the registration settings
-  const { data: settings } = await supabase
+  // 2. Fetch the registration settings (auto-initialize if missing)
+  let { data: settings } = await supabase
     .from('event_registration_settings')
     .select('*')
     .eq('event_id', event.id)
     .maybeSingle();
+
+  if (!settings || !settings.is_enabled) {
+    const { data: upsertedSettings } = await supabase
+      .from('event_registration_settings')
+      .upsert({
+        event_id: event.id,
+        is_enabled: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'event_id' })
+      .select('*')
+      .single();
+    if (upsertedSettings) {
+      settings = upsertedSettings;
+    }
+  }
   // 3. Fetch Walkathon distances if applicable
   let walkathonDistances: any[] = [];
   if (event.type === 'Walkathon') {
@@ -52,6 +67,36 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
     }
   }
 
+  // 4. Fetch available tickets for this event (Sanitized public availability)
+  let tickets: any[] = [];
+  try {
+    const { data: ticketData, error: ticketError } = await supabase.rpc('get_event_ticket_availability', {
+      p_event_id: event.id
+    });
+    if (!ticketError && Array.isArray(ticketData)) {
+      tickets = ticketData;
+    } else {
+      // Fallback direct query if RPC is not yet created
+      const { data: fallbackTickets } = await supabase
+        .from('event_ticket_types')
+        .select('id, event_id, name, description, ticket_type, price_amount, currency, quantity_total, min_per_order, max_per_order, sales_start_at, sales_end_at')
+        .eq('event_id', event.id)
+        .eq('is_active', true)
+        .eq('visibility', 'public')
+        .order('price_amount', { ascending: true });
+      if (fallbackTickets) {
+        tickets = fallbackTickets.map((t: any) => ({
+          ...t,
+          quantity_sold: 0,
+          quantity_remaining: t.quantity_total,
+          status: 'on_sale'
+        }));
+      }
+    }
+  } catch (tErr) {
+    console.warn('Could not load tickets for public registration:', tErr);
+  }
+
   return (
     <PublicRegistrationClient 
       event={event} 
@@ -59,6 +104,7 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
       slug={slug} 
       walkathonDistances={walkathonDistances} 
       isWalkathon={event?.type === 'Walkathon'}
+      tickets={tickets}
     />
   );
 }

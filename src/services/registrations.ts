@@ -107,6 +107,9 @@ export const registrationsService = {
       phone?: string;
       organization?: string;
       job_title?: string;
+      ticket_type_id?: string;
+      quantity?: number;
+      [key: string]: any;
     }
   ): Promise<{ success: boolean; registration_id: string; registration_number: string }> => {
     const supabase = createClient();

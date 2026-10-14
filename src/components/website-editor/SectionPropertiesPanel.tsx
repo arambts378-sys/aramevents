@@ -13,7 +13,14 @@ import ContactPropertiesPanel from './ContactPropertiesPanel';
 import EventInfoPropertiesPanel from './EventInfoPropertiesPanel';
 import RegistrationPropertiesPanel from './RegistrationPropertiesPanel';
 
-export default function SectionPropertiesPanel({ section, updateSection }: { section: any; updateSection: (updates: any) => void }) {
+interface SectionPropertiesPanelProps {
+  section: any;
+  updateSection: (updates: any) => void;
+  eventId?: string;
+  workspaceId?: string;
+}
+
+export default function SectionPropertiesPanel({ section, updateSection, eventId, workspaceId }: SectionPropertiesPanelProps) {
   if (!section) return null;
 
   switch (section.type) {
@@ -29,7 +36,7 @@ export default function SectionPropertiesPanel({ section, updateSection }: { sec
     case 'about':
       return <AboutPropertiesPanel section={section} updateSection={updateSection} />;
     case 'speakers':
-      return <SpeakersPropertiesPanel section={section} updateSection={updateSection} />;
+      return <SpeakersPropertiesPanel section={section} updateSection={updateSection} eventId={eventId} workspaceId={workspaceId} />;
     case 'agenda':
       return <AgendaPropertiesPanel section={section} updateSection={updateSection} />;
     case 'venue':
@@ -48,3 +55,4 @@ export default function SectionPropertiesPanel({ section, updateSection }: { sec
       return <div className="text-sm text-gray-500">Settings for this section type are currently limited to ordering and visibility.</div>;
   }
 }
+
