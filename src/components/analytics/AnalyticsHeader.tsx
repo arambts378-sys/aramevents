@@ -37,10 +37,10 @@ export function AnalyticsHeader({
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#17152B] tracking-tight">
-            Analytics
+            Analytics & Insights
           </h1>
           <p className="text-xs sm:text-sm text-[#77738A] mt-1 font-normal">
-            Understand your events, registrations, participation and operations.
+            Track event performance, attendee registration velocity, and live checkpoint operations.
           </p>
         </div>
 

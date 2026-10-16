@@ -18,7 +18,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
         </span>
         <p className="text-xs font-semibold text-[#17152B]">No trend data available</p>
         <p className="text-[11px] text-[#77738A] mt-1">
-          No registrations or check-in activity recorded for this period.
+          Registration and check-in activity will appear here once data is recorded.
         </p>
       </div>
     );
@@ -61,6 +61,11 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
     n - 1
   )},${padding.top + plotHeight} Z`;
 
+  // Area path for check-ins fill
+  const chkAreaD = `M ${getX(0)},${padding.top + plotHeight} L ${chkPoints.join(' L ')} L ${getX(
+    n - 1
+  )},${padding.top + plotHeight} Z`;
+
   // Horizontal Grid Lines (4 steps)
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map((pct) => ({
     val: Math.round(pct * maxValue),
@@ -73,6 +78,10 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
   const activePoint = hoveredIndex !== null ? trend[hoveredIndex] : null;
   const activeX = hoveredIndex !== null ? getX(hoveredIndex) : null;
 
+  // Updated, more vibrant & accessible color palette
+  const regColor = '#6366F1';  // Indigo — vivid & distinct
+  const chkColor = '#10B981';  // Emerald — high contrast against indigo
+
   return (
     <div className="bg-white border border-[#E6E2F0] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col gap-4">
       {/* Header & Legend */}
@@ -82,18 +91,18 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
             Registration & Attendance Trends
           </h2>
           <p className="text-xs text-[#77738A] mt-0.5 font-normal">
-            Volume of registrations and validated participant check-ins over time.
+            Track how registrations and validated check-ins trend over time.
           </p>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-xs font-semibold">
+        <div className="flex items-center gap-5 text-xs font-semibold">
           <div className="flex items-center gap-1.5 text-[#17152B]">
-            <span className="w-3 h-3 rounded-full bg-[#7C5CFC]" />
+            <span className="w-3 h-1.5 rounded-full" style={{ background: regColor }} />
             <span>Registrations</span>
           </div>
           <div className="flex items-center gap-1.5 text-[#17152B]">
-            <span className="w-3 h-3 rounded-full bg-[#22C55E]" />
+            <span className="w-3 h-1.5 rounded-full" style={{ background: chkColor }} />
             <span>Check-ins</span>
           </div>
         </div>
@@ -106,9 +115,13 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
           className="w-full h-auto max-h-[320px] overflow-visible"
         >
           <defs>
-            <linearGradient id="regGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7C5CFC" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#7C5CFC" stopOpacity="0.0" />
+            <linearGradient id="regGradientV2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={regColor} stopOpacity="0.20" />
+              <stop offset="100%" stopColor={regColor} stopOpacity="0.0" />
+            </linearGradient>
+            <linearGradient id="chkGradientV2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={chkColor} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={chkColor} stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -135,24 +148,27 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
             </g>
           ))}
 
-          {/* Registration Area Fill */}
-          <path d={regAreaD} fill="url(#regGradient)" />
+          {/* Check-in Area Fill */}
+          <path d={chkAreaD} fill="url(#chkGradientV2)" />
 
-          {/* Registration Line */}
-          <path
-            d={regPathD}
-            fill="none"
-            stroke="#7C5CFC"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {/* Registration Area Fill */}
+          <path d={regAreaD} fill="url(#regGradientV2)" />
 
           {/* Check-in Line */}
           <path
             d={chkPathD}
             fill="none"
-            stroke="#22C55E"
+            stroke={chkColor}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Registration Line */}
+          <path
+            d={regPathD}
+            fill="none"
+            stroke={regColor}
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -165,10 +181,10 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
               y1={padding.top}
               x2={activeX}
               y2={padding.top + plotHeight}
-              stroke="#7C5CFC"
+              stroke={regColor}
               strokeWidth="1.5"
               strokeDasharray="3 3"
-              opacity="0.7"
+              opacity="0.5"
             />
           )}
 
@@ -186,7 +202,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
                   cx={x}
                   cy={yReg}
                   r={isHovered ? 5.5 : 3.5}
-                  fill="#7C5CFC"
+                  fill={regColor}
                   stroke="#FFFFFF"
                   strokeWidth="2"
                   className="transition-all"
@@ -196,7 +212,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
                   cx={x}
                   cy={yChk}
                   r={isHovered ? 5.5 : 3.5}
-                  fill="#22C55E"
+                  fill={chkColor}
                   stroke="#FFFFFF"
                   strokeWidth="2"
                   className="transition-all"
@@ -233,7 +249,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
         {/* Floating Tooltip */}
         {activePoint && activeX !== null && (
           <div
-            className="absolute top-2 pointer-events-none bg-[#17152B] text-white text-xs px-3 py-2 rounded-xl shadow-lg border border-white/10 z-10 animate-in fade-in zoom-in-95 duration-100"
+            className="absolute top-2 pointer-events-none bg-[#17152B] text-white text-xs px-3.5 py-2.5 rounded-xl shadow-lg border border-white/10 z-10 animate-in fade-in zoom-in-95 duration-100"
             style={{
               left: `${Math.min(
                 Math.max(activeX, 70),
@@ -242,18 +258,18 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="font-bold border-b border-white/10 pb-1 mb-1 text-[11px] text-[#E6E2F0]">
+            <div className="font-bold border-b border-white/10 pb-1.5 mb-1.5 text-[11px] text-[#E6E2F0]">
               {activePoint.label}
             </div>
             <div className="flex items-center justify-between gap-4 py-0.5">
-              <span className="text-[#A19EB0] flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#7C5CFC]" /> Registrations:
+              <span className="text-[#A19EB0] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ background: regColor }} /> Registrations:
               </span>
               <span className="font-bold tabular-nums">{activePoint.registrations}</span>
             </div>
             <div className="flex items-center justify-between gap-4 py-0.5">
-              <span className="text-[#A19EB0] flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#22C55E]" /> Check-ins:
+              <span className="text-[#A19EB0] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ background: chkColor }} /> Check-ins:
               </span>
               <span className="font-bold tabular-nums">{activePoint.checkIns}</span>
             </div>

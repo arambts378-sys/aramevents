@@ -90,14 +90,14 @@ export default function HeroPropertiesPanel({ section, updateSection }: { sectio
       </div>
 
       <div className="space-y-2">
-        <label className="font-semibold block">Image Fit</label>
+        <label className="font-semibold block">Image Scaling</label>
         <select 
-          className="w-full border rounded px-2 py-1.5 bg-white"
+          className="w-full border rounded px-2 py-1.5 bg-white text-sm"
           value={content.imageFit || 'contain'}
           onChange={(e) => updateSection({ imageFit: e.target.value })}
         >
-          <option value="contain">Contain</option>
-          <option value="cover">Cover</option>
+          <option value="contain">Fit to Frame (Entire Image)</option>
+          <option value="cover">Fill Area (Crop to Cover)</option>
         </select>
       </div>
 

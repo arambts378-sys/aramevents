@@ -17,39 +17,47 @@ export function AnalyticsOverview({
 }: AnalyticsOverviewProps) {
   const cards = [
     {
-      label: 'Total Events',
+      label: 'Total Events Hosted',
       value: totalEvents.toLocaleString(),
       icon: 'event',
-      iconBg: 'bg-[#7C5CFC]/10',
-      iconColor: 'text-[#7C5CFC]',
-      subtext: 'In selected scope',
+      gradient: 'from-[#6366F1] to-[#8B5CF6]',
+      iconBg: 'bg-[#6366F1]/10',
+      iconColor: 'text-[#6366F1]',
+      borderColor: 'hover:border-[#6366F1]/40',
+      subtext: 'Across selected scope',
     },
     {
-      label: 'Total Registrations',
+      label: 'Registered Attendees',
       value: totalRegistrations.toLocaleString(),
       icon: 'how_to_reg',
-      iconBg: 'bg-[#7C5CFC]/10',
-      iconColor: 'text-[#7C5CFC]',
-      subtext: 'Eligible registrations recorded',
+      gradient: 'from-[#0284C7] to-[#0EA5E9]',
+      iconBg: 'bg-[#0284C7]/10',
+      iconColor: 'text-[#0284C7]',
+      borderColor: 'hover:border-[#0284C7]/40',
+      subtext: 'Confirmed event registrations',
     },
     {
-      label: 'Total Check-ins',
+      label: 'Validated Check-ins',
       value: totalCheckIns.toLocaleString(),
-      icon: 'check_circle',
-      iconBg: 'bg-[#22C55E]/10',
-      iconColor: 'text-[#22C55E]',
-      subtext: 'Unique allowed attendees',
+      icon: 'verified',
+      gradient: 'from-[#10B981] to-[#059669]',
+      iconBg: 'bg-[#10B981]/10',
+      iconColor: 'text-[#10B981]',
+      borderColor: 'hover:border-[#10B981]/40',
+      subtext: 'Unique attendees verified at gates',
     },
     {
-      label: 'Attendance Rate',
+      label: 'Overall Attendance Rate',
       value: attendanceRate !== null ? `${attendanceRate}%` : '—',
       icon: 'insights',
-      iconBg: 'bg-[#7C5CFC]/10',
-      iconColor: 'text-[#7C5CFC]',
+      gradient: 'from-[#F59E0B] to-[#EA580C]',
+      iconBg: 'bg-[#F59E0B]/10',
+      iconColor: 'text-[#F59E0B]',
+      borderColor: 'hover:border-[#F59E0B]/40',
       subtext:
         attendanceRate !== null
-          ? 'Check-ins / registrations'
-          : 'No registrations to calculate',
+          ? 'Check-ins / total registrations'
+          : 'Pending registration records',
     },
   ];
 
@@ -58,24 +66,31 @@ export function AnalyticsOverview({
       {cards.map((card, index) => (
         <div
           key={index}
-          className="bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#7C5CFC]/40 transition-colors"
+          className={`bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:shadow-md ${card.borderColor} group`}
         >
+          {/* Vibrant top accent border on hover */}
+          <div
+            className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity`}
+          />
+
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#77738A] uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-[#77738A] uppercase tracking-wider">
               {card.label}
             </span>
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconBg} ${card.iconColor}`}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 duration-200 ${card.iconBg} ${card.iconColor}`}
             >
-              <span className="material-symbols-outlined text-lg">{card.icon}</span>
+              <span className="material-symbols-outlined text-[20px]">{card.icon}</span>
             </div>
           </div>
 
-          <div className="mt-3">
+          <div className="mt-4">
             <div className="text-2xl sm:text-3xl font-extrabold text-[#17152B] tracking-tight">
               {card.value}
             </div>
-            <p className="text-[11px] text-[#77738A] mt-1 font-normal">{card.subtext}</p>
+            <p className="text-[11px] text-[#77738A] mt-1.5 font-normal leading-relaxed">
+              {card.subtext}
+            </p>
           </div>
         </div>
       ))}

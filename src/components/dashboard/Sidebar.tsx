@@ -132,7 +132,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
           <div className="pb-6 border-b border-[#E6E2F0]">
             <div className="flex items-center justify-between">
               <Link href="/app" className="flex min-w-0 items-center gap-2.5 group" onClick={onClose}>
-                <div className="w-8 h-8 rounded-lg bg-[#7C5CFC] flex items-center justify-center text-white shadow-xs group-hover:bg-[#5B3FE8] transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all">
                   <span className="material-symbols-outlined text-[20px]" data-icon="deployed_code">
                     deployed_code
                   </span>
@@ -141,7 +141,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                   <span className="font-space font-bold text-[#17152B] tracking-tight text-[16px]">
                     ARAM BTS
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-[#7C5CFC]"></span>
+                  <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
                 </div>
               </Link>
               {onClose && (
@@ -224,7 +224,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
               collapsed ? 'md:justify-center' : ''
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center font-bold text-[14px] border border-[#E6E2F0] shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1]/15 to-[#8B5CF6]/15 text-[#6366F1] flex items-center justify-center font-bold text-[14px] border border-[#6366F1]/20 shrink-0">
               {initials}
             </div>
             <div className={`flex-col min-w-0 flex-1 ${collapsed ? 'hidden' : 'flex'}`}>

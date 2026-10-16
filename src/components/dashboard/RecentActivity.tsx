@@ -66,34 +66,44 @@ export function RecentActivity({ events }: RecentActivityProps) {
             <p className="text-[13px] text-[#77738A] italic">No recent activity yet.</p>
           </div>
         ) : (
-          activities.map((item, idx) => (
-            <div
-              key={item.id}
-              className={`flex items-start gap-3 ${
-                idx === 0 ? 'pb-3.5 pt-1' : idx === activities.length - 1 ? 'pt-3.5 pb-1' : 'py-3.5'
-              }`}
-            >
-              <div className="w-8 h-8 rounded-lg bg-[#F6F1FF] flex items-center justify-center text-[#7C5CFC] shrink-0 mt-0.5">
-                <span className="material-symbols-outlined text-[18px]" data-icon={item.icon}>
-                  {item.icon}
-                </span>
+          activities.map((item, idx) => {
+            const colorThemes = [
+              { bg: 'bg-[#6366F1]/10', text: 'text-[#6366F1]' },
+              { bg: 'bg-[#10B981]/10', text: 'text-[#10B981]' },
+              { bg: 'bg-[#0EA5E9]/10', text: 'text-[#0EA5E9]' },
+              { bg: 'bg-[#F59E0B]/10', text: 'text-[#D97706]' },
+            ];
+            const theme = colorThemes[idx % colorThemes.length];
+
+            return (
+              <div
+                key={item.id}
+                className={`flex items-start gap-3 ${
+                  idx === 0 ? 'pb-3.5 pt-1' : idx === activities.length - 1 ? 'pt-3.5 pb-1' : 'py-3.5'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-lg ${theme.bg} flex items-center justify-center ${theme.text} shrink-0 mt-0.5`}>
+                  <span className="material-symbols-outlined text-[18px]" data-icon={item.icon}>
+                    {item.icon}
+                  </span>
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-[13px] text-[#17152B] leading-tight font-medium font-jakarta">
+                    {item.title}
+                  </span>
+                  <Link
+                    href={`/app/events/${item.id}`}
+                    className="text-[13px] text-[#6366F1] font-semibold truncate mt-0.5 hover:underline font-jakarta"
+                  >
+                    {item.eventName}
+                  </Link>
+                  <span className="text-[11px] text-[#77738A] mt-0.5 font-jakarta">
+                    {item.time}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-[14px] text-[#17152B] leading-tight font-medium font-jakarta">
-                  {item.title}
-                </span>
-                <Link
-                  href={`/app/events/${item.id}`}
-                  className="text-[13px] text-[#7C5CFC] font-semibold truncate mt-0.5 hover:underline font-jakarta"
-                >
-                  {item.eventName}
-                </Link>
-                <span className="text-[11px] text-[#77738A] mt-1 font-jakarta">
-                  {item.time}
-                </span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </section>
