@@ -2,7 +2,12 @@ import React, { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from "react
 
 export function Table({ className = "", ...props }: HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="w-full overflow-auto border border-brand-border rounded-sm bg-brand-white">
+    <div
+      className="w-full max-w-full overflow-x-auto overscroll-x-contain border border-brand-border rounded-sm bg-brand-white"
+      role="region"
+      aria-label="Scrollable table"
+      tabIndex={0}
+    >
       <table className={`w-full text-sm text-left ${className}`} {...props} />
     </div>
   );

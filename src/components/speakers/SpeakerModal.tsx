@@ -126,7 +126,7 @@ export default function SpeakerModal({ isOpen, onClose, onSave, initialData, mod
                 Personal Identity
               </h3>
               
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-label-sm font-medium text-on-surface-variant">First Name *</label>
                   <input 
@@ -150,7 +150,7 @@ export default function SpeakerModal({ isOpen, onClose, onSave, initialData, mod
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-label-sm font-medium text-on-surface-variant">Email Address *</label>
                   <input 
@@ -175,7 +175,7 @@ export default function SpeakerModal({ isOpen, onClose, onSave, initialData, mod
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-label-sm font-medium text-on-surface-variant">Organization</label>
                   <input 

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:plans": "node scripts/run-plan-tests.cjs"
+    "test:plans": "node scripts/run-plan-tests.cjs",
+    "test:auth": "node scripts/run-auth-tests.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

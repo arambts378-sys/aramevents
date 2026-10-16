@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="min-w-0 p-4 sm:p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20">
       <div className="flex items-center justify-between">
         <div>
           <Link href={`/app/events/${eventId}`} className="text-primary hover:underline text-sm font-medium mb-2 inline-block">
@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
       {stats && (
         <>
           <h2 className="text-title-lg font-bold mt-8 mb-4">Registrations</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm">
               <p className="text-label-md uppercase font-bold text-on-surface-variant">Total Registered</p>
               <p className="text-display-sm font-bold text-primary mt-2">{stats.totalRegistered}</p>
@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
           </div>
 
           <h2 className="text-title-lg font-bold mt-8 mb-4">Progress</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-white border border-outline-variant p-6 rounded-2xl shadow-sm">
               <p className="text-label-md uppercase font-bold text-on-surface-variant">Started</p>
               <p className="text-display-sm font-bold text-green-600 mt-2">{stats.progress.started}</p>
