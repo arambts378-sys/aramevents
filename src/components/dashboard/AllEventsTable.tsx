@@ -129,22 +129,25 @@ export function AllEventsTable({ events, registrationCounts = {} }: AllEventsTab
                         {/* Status */}
                         <td className="py-3.5 px-4">
                           {isDraft ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#F6F1FF] text-[#77738A] border border-[#E6E2F0]">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-[#6B7280] border border-[#E6E2F0]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF]" />
                               Draft
                             </span>
                           ) : isPublished ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#7C5CFC]/10 text-[#7C5CFC] border border-[#7C5CFC]/20">
-                              Upcoming
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#059669] border border-[#10B981]/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                              Published
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#22C55E]/10 text-[#16A34A] border border-[#22C55E]/20">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6366F1]/10 text-[#4F46E5] border border-[#6366F1]/20">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
                               {event.status}
                             </span>
                           )}
                         </td>
 
                         {/* Registrations */}
-                        <td className="py-3.5 px-4 text-right font-space font-semibold text-[#17152B]">
+                        <td className="py-3.5 px-4 text-right font-space font-bold text-[#6366F1]">
                           {regCount.toLocaleString()}
                         </td>
 
@@ -152,11 +155,11 @@ export function AllEventsTable({ events, registrationCounts = {} }: AllEventsTab
                         <td className="py-3.5 px-5 text-right">
                           <Link
                             href={`/app/events/${event.id}`}
-                            className="text-[13px] font-bold text-[#7C5CFC] hover:text-[#5B3FE8] inline-flex items-center gap-0.5"
+                            className="text-[12px] font-bold text-[#6366F1] bg-[#6366F1]/10 hover:bg-[#6366F1] hover:text-white px-2.5 py-1 rounded-md transition-colors inline-flex items-center gap-0.5"
                           >
-                            <span>Open</span>
+                            <span>Manage</span>
                             <span
-                              className="material-symbols-outlined text-[15px]"
+                              className="material-symbols-outlined text-[14px]"
                               data-icon="chevron_right"
                             >
                               chevron_right
@@ -185,20 +188,23 @@ export function AllEventsTable({ events, registrationCounts = {} }: AllEventsTab
                     <div className="flex items-start justify-between gap-2">
                       <Link
                         href={`/app/events/${event.id}`}
-                        className="font-semibold text-[#17152B] hover:text-[#7C5CFC] text-[14px] leading-snug line-clamp-2"
+                        className="font-semibold text-[#17152B] hover:text-[#6366F1] text-[14px] leading-snug line-clamp-2"
                       >
                         {event.name}
                       </Link>
                       {isDraft ? (
-                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F6F1FF] text-[#77738A] border border-[#E6E2F0]">
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-[#6B7280] border border-[#E6E2F0]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF]" />
                           Draft
                         </span>
                       ) : isPublished ? (
-                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#7C5CFC]/10 text-[#7C5CFC] border border-[#7C5CFC]/20">
-                          Upcoming
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#059669] border border-[#10B981]/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                          Published
                         </span>
                       ) : (
-                        <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#22C55E]/10 text-[#16A34A] border border-[#22C55E]/20">
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6366F1]/10 text-[#4F46E5] border border-[#6366F1]/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
                           {event.status}
                         </span>
                       )}
@@ -208,11 +214,11 @@ export function AllEventsTable({ events, registrationCounts = {} }: AllEventsTab
                       <div className="flex items-center gap-2">
                         <span>{formatDate(event.startDate)}</span>
                         <span>·</span>
-                        <span>{event.type || event.format || 'Event'}</span>
+                        <span className="font-medium text-[#17152B]">{event.type || event.format || 'Event'}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-[11px] font-medium text-[#77738A]">Reg:</span>
-                        <span className="font-space font-semibold text-[#17152B]">
+                        <span className="font-space font-bold text-[#6366F1]">
                           {regCount.toLocaleString()}
                         </span>
                       </div>
@@ -221,11 +227,11 @@ export function AllEventsTable({ events, registrationCounts = {} }: AllEventsTab
                     <div className="pt-2 border-t border-[#E6E2F0]/60 flex items-center justify-end">
                       <Link
                         href={`/app/events/${event.id}`}
-                        className="text-[13px] font-bold text-[#7C5CFC] hover:text-[#5B3FE8] inline-flex items-center gap-0.5"
+                        className="text-[12px] font-bold text-[#6366F1] bg-[#6366F1]/10 hover:bg-[#6366F1] hover:text-white px-3 py-1 rounded-md transition-colors inline-flex items-center gap-0.5"
                       >
-                        <span>Open</span>
+                        <span>Manage</span>
                         <span
-                          className="material-symbols-outlined text-[15px]"
+                          className="material-symbols-outlined text-[14px]"
                           data-icon="chevron_right"
                         >
                           chevron_right

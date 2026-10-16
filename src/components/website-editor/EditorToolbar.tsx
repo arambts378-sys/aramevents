@@ -177,7 +177,7 @@ export default function EditorToolbar({
             className="appearance-none flex items-center gap-1 pl-3 pr-7 py-1.5 rounded-lg border border-[#E6E2F0] text-[13px] font-semibold text-[#17152B] bg-white hover:bg-[#F6F1FF] transition-colors cursor-pointer outline-none font-jakarta"
             aria-label="Preview zoom level"
           >
-            <option value="fit">FIT</option>
+            <option value="fit">Fit to Screen</option>
             <option value="0.5">50%</option>
             <option value="0.6">60%</option>
             <option value="0.75">75%</option>

@@ -41,8 +41,8 @@ export function KpiOverview({
 
     if (futureEvents.length > 0) {
       const days = futureEvents[0].diffDays;
-      if (days === 0) return 'Next event today';
-      if (days === 1) return 'Next event tomorrow';
+      if (days === 0) return 'Next event is today';
+      if (days === 1) return 'Next event is tomorrow';
       return `Next event in ${days} days`;
     }
     return `${upcomingCount} event${upcomingCount > 1 ? 's' : ''} in portfolio`;
@@ -53,111 +53,90 @@ export function KpiOverview({
     (e) => e.status === 'published'
   ).length;
 
+  const kpiCards = [
+    {
+      label: 'Upcoming Events',
+      value: upcomingCount,
+      subtext: getNextEventSubtext(),
+      icon: 'calendar_today',
+      gradient: 'from-[#7C5CFC] to-[#6366F1]',
+      iconBg: 'bg-[#7C5CFC]/12',
+      iconColor: 'text-[#7C5CFC]',
+      dotColor: upcomingCount > 0 ? 'bg-[#7C5CFC]' : 'bg-[#E6E2F0]',
+      accentBorder: 'hover:border-[#7C5CFC]/40',
+      glowClass: 'hover:shadow-[#7C5CFC]/8',
+    },
+    {
+      label: 'Live Events',
+      value: activeCount,
+      subtext: activeCount > 0 ? `${activeCount} running right now` : 'No events live currently',
+      icon: 'sensors',
+      gradient: 'from-[#10B981] to-[#06B6D4]',
+      iconBg: 'bg-[#10B981]/12',
+      iconColor: 'text-[#10B981]',
+      dotColor: activeCount > 0 ? 'bg-[#10B981]' : 'bg-[#E6E2F0]',
+      accentBorder: 'hover:border-[#10B981]/40',
+      glowClass: 'hover:shadow-[#10B981]/8',
+    },
+    {
+      label: 'Total Registrations',
+      value: registrationsCount.toLocaleString(),
+      subtext: 'Across all active events',
+      icon: 'how_to_reg',
+      gradient: 'from-[#F59E0B] to-[#F97316]',
+      iconBg: 'bg-[#F59E0B]/12',
+      iconColor: 'text-[#F59E0B]',
+      dotColor: registrationsCount > 0 ? 'bg-[#F59E0B]' : 'bg-[#E6E2F0]',
+      accentBorder: 'hover:border-[#F59E0B]/40',
+      glowClass: 'hover:shadow-[#F59E0B]/8',
+    },
+    {
+      label: 'Team Members',
+      value: teamMembersCount,
+      subtext: teamMembersCount > 1 ? `${teamMembersCount} collaborators` : 'Workspace admin',
+      icon: 'group',
+      gradient: 'from-[#F43F5E] to-[#D946EF]',
+      iconBg: 'bg-[#F43F5E]/12',
+      iconColor: 'text-[#F43F5E]',
+      dotColor: 'bg-[#F43F5E]',
+      accentBorder: 'hover:border-[#F43F5E]/40',
+      glowClass: 'hover:shadow-[#F43F5E]/8',
+    },
+  ];
+
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Card 1: UPCOMING EVENTS */}
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-5 shadow-xs flex flex-col justify-between hover:border-[#7C5CFC]/40 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
-            UPCOMING EVENTS
-          </span>
-          <span className="w-7 h-7 rounded-lg bg-[#F6F1FF] flex items-center justify-center text-[#7C5CFC]">
-            <span className="material-symbols-outlined text-[16px]" data-icon="calendar_today">
-              calendar_today
+      {kpiCards.map((card, index) => (
+        <div
+          key={index}
+          className={`bg-white rounded-xl border border-[#E6E2F0] p-5 shadow-xs flex flex-col justify-between ${card.accentBorder} hover:shadow-lg ${card.glowClass} transition-all duration-300 group relative overflow-hidden`}
+        >
+          {/* Subtle gradient accent strip at top */}
+          <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+              {card.label}
             </span>
-          </span>
-        </div>
-        <div>
-          <div className="text-[36px] font-bold text-[#17152B] leading-none font-space">
-            {upcomingCount}
-          </div>
-          <div className="text-[12px] text-[#77738A] mt-2 flex items-center gap-1.5 font-jakarta">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                upcomingCount > 0 ? 'bg-[#7C5CFC]' : 'bg-[#E6E2F0]'
-              }`}
-            ></span>
-            {getNextEventSubtext()}
-          </div>
-        </div>
-      </div>
-
-      {/* Card 2: ACTIVE EVENTS */}
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-5 shadow-xs flex flex-col justify-between hover:border-[#7C5CFC]/40 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
-            ACTIVE EVENTS
-          </span>
-          <span className="w-7 h-7 rounded-lg bg-[#F6F1FF] flex items-center justify-center text-[#7C5CFC]">
-            <span className="material-symbols-outlined text-[16px]" data-icon="sensors">
-              sensors
+            <span className={`w-8 h-8 rounded-lg ${card.iconBg} flex items-center justify-center ${card.iconColor} group-hover:scale-110 transition-transform duration-200`}>
+              <span className="material-symbols-outlined text-[17px]" data-icon={card.icon}>
+                {card.icon}
+              </span>
             </span>
-          </span>
-        </div>
-        <div>
-          <div className="text-[36px] font-bold text-[#17152B] leading-none font-space">
-            {activeCount}
           </div>
-          <div className="text-[12px] text-[#77738A] mt-2 flex items-center gap-1.5 font-jakarta">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                activeCount > 0 ? 'bg-[#22C55E]' : 'bg-[#E6E2F0]'
-              }`}
-            ></span>
-            {activeCount > 0 ? `${activeCount} live right now` : 'All systems ready'}
+          <div>
+            <div className="text-[36px] font-bold text-[#17152B] leading-none font-space">
+              {card.value}
+            </div>
+            <div className="text-[12px] text-[#77738A] mt-2 flex items-center gap-1.5 font-jakarta">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${card.dotColor}`}
+              ></span>
+              {card.subtext}
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Card 3: REGISTRATIONS */}
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-5 shadow-xs flex flex-col justify-between hover:border-[#7C5CFC]/40 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
-            REGISTRATIONS
-          </span>
-          <span className="w-7 h-7 rounded-lg bg-[#F6F1FF] flex items-center justify-center text-[#7C5CFC]">
-            <span className="material-symbols-outlined text-[16px]" data-icon="how_to_reg">
-              how_to_reg
-            </span>
-          </span>
-        </div>
-        <div>
-          <div className="text-[36px] font-bold text-[#17152B] leading-none font-space">
-            {registrationsCount.toLocaleString()}
-          </div>
-          <div className="text-[12px] text-[#77738A] mt-2 flex items-center gap-1.5 font-jakarta">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                registrationsCount > 0 ? 'bg-[#7C5CFC]' : 'bg-[#E6E2F0]'
-              }`}
-            ></span>
-            Across current cycle
-          </div>
-        </div>
-      </div>
-
-      {/* Card 4: TEAM MEMBERS */}
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-5 shadow-xs flex flex-col justify-between hover:border-[#7C5CFC]/40 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
-            TEAM MEMBERS
-          </span>
-          <span className="w-7 h-7 rounded-lg bg-[#F6F1FF] flex items-center justify-center text-[#7C5CFC]">
-            <span className="material-symbols-outlined text-[16px]" data-icon="badge">
-              badge
-            </span>
-          </span>
-        </div>
-        <div>
-          <div className="text-[36px] font-bold text-[#17152B] leading-none font-space">
-            {teamMembersCount}
-          </div>
-          <div className="text-[12px] text-[#77738A] mt-2 flex items-center gap-1.5 font-jakarta">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#7C5CFC]"></span>
-            {teamMembersCount > 1 ? `${teamMembersCount} collaborators` : 'Active workspace admin'}
-          </div>
-        </div>
-      </div>
+      ))}
     </section>
   );
 }

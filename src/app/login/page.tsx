@@ -19,26 +19,41 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    if (!email || !email.includes('@')) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setError('Please enter a valid email address.');
       setLoading(false);
       return;
     }
 
-    if (!password) {
+    if (!cleanPassword) {
       setError('Password is required.');
       setLoading(false);
       return;
     }
 
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      let { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
       });
 
+      // If failed and raw password had whitespace, fallback retry with raw password
+      if (authError && password !== cleanPassword) {
+        const retry = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: password,
+        });
+        if (!retry.error) {
+          authError = null;
+          data = retry.data;
+        }
+      }
+
       if (authError) {
-        if (authError.message.toLowerCase().includes('confirm')) {
+        if (authError.message.toLowerCase().includes('confirm') || authError.message.toLowerCase().includes('verified')) {
           setError('Your email has not been verified yet. Please complete verification before logging in.');
         } else {
           setError(authError.message);
@@ -50,7 +65,7 @@ export default function LoginPage() {
       // Check if email is confirmed
       const { data: { user } } = await supabase.auth.getUser();
       if (user && !user.email_confirmed_at) {
-        router.push(`/organizer/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        router.push(`/organizer/verify?email=${encodeURIComponent(cleanEmail)}`);
         return;
       }
 

@@ -73,13 +73,13 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-[20px] font-bold text-[#17152B] tracking-tight font-space">
-            Upcoming events
+            Upcoming Events
           </h2>
-          <p className="text-[13px] text-[#77738A] font-jakarta">See what's happening next.</p>
+          <p className="text-[13px] text-[#77738A] font-jakarta">Scheduled events and live operations.</p>
         </div>
         <Link
           href="/app/events"
-          className="text-[13px] font-semibold text-[#7C5CFC] hover:text-[#5B3FE8] flex items-center gap-1 group transition-colors"
+          className="text-[13px] font-semibold text-[#6366F1] hover:text-[#4F46E5] flex items-center gap-1 group transition-colors"
         >
           <span>View all events</span>
           <span
@@ -94,18 +94,18 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
       {upcomingEvents.length === 0 ? (
         /* Empty State */
         <div className="bg-white rounded-xl border border-[#E6E2F0] p-10 shadow-xs flex flex-col items-center justify-center text-center">
-          <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mb-3">
+          <div className="w-12 h-12 rounded-xl bg-[#6366F1]/10 text-[#6366F1] flex items-center justify-center mb-3">
             <span className="material-symbols-outlined text-[24px]">calendar_today</span>
           </div>
           <h3 className="text-[16px] font-bold text-[#17152B] font-space mb-1">
-            No upcoming events yet.
+            No upcoming events yet
           </h3>
           <p className="text-[13px] text-[#77738A] mb-5 font-jakarta">
             Create your first event to get started.
           </p>
           <Link
             href="/app/events/new"
-            className="h-[40px] px-5 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[13px] font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.98]"
+            className="h-[40px] px-5 bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[13px] font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.98]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Create Event</span>
@@ -121,7 +121,7 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
             return (
               <div
                 key={event.id}
-                className="bg-white rounded-xl border border-[#E6E2F0] overflow-hidden shadow-xs hover:shadow-md hover:border-[#7C5CFC]/40 transition-all flex flex-col group"
+                className="bg-white rounded-xl border border-[#E6E2F0] overflow-hidden shadow-xs hover:shadow-md hover:border-[#6366F1]/40 transition-all flex flex-col group"
               >
                 {/* Image Section */}
                 <div className="relative aspect-video w-full overflow-hidden bg-[#F6F1FF]">
@@ -134,15 +134,18 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
                   {/* Status Badge */}
                   <div className="absolute top-3 right-3 z-10">
                     {isDraft ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E6E2F0] text-[11px] text-[#77738A] uppercase font-bold tracking-wider">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E6E2F0] text-[10px] text-[#6B7280] uppercase font-bold tracking-wider shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF]" />
                         Draft
                       </span>
                     ) : isPublished ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#7C5CFC] text-white text-[11px] uppercase font-bold tracking-wider shadow-xs">
-                        Upcoming
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#10B981] text-white text-[10px] uppercase font-bold tracking-wider shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        Live
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#16A34A] text-[11px] uppercase font-bold tracking-wider">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#6366F1] text-white text-[10px] uppercase font-bold tracking-wider shadow-xs">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
                         {event.status}
                       </span>
                     )}
@@ -154,11 +157,11 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
                   <div>
                     <Link
                       href={`/app/events/${event.id}`}
-                      className="text-[18px] font-bold text-[#17152B] group-hover:text-[#7C5CFC] transition-colors line-clamp-1 font-space block"
+                      className="text-[17px] font-bold text-[#17152B] group-hover:text-[#6366F1] transition-colors line-clamp-1 font-space block"
                     >
                       {event.name}
                     </Link>
-                    <div className="mt-2.5 flex items-center gap-2 text-[13px] text-[#77738A] font-jakarta">
+                    <div className="mt-2.5 flex items-center gap-2 text-[12px] text-[#77738A] font-jakarta">
                       <span
                         className="material-symbols-outlined text-[16px] text-[#77738A] shrink-0"
                         data-icon="schedule"
@@ -173,14 +176,14 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
 
                   {/* Card Footer */}
                   <div className="pt-4 mt-4 border-t border-[#E6E2F0] flex items-center justify-between">
-                    <span className="text-[11px] text-[#77738A] uppercase font-semibold">
+                    <span className="text-[10px] font-bold text-[#6366F1] bg-[#6366F1]/10 px-2.5 py-1 rounded-md uppercase tracking-wider">
                       {event.type || event.format || 'Event'}
                     </span>
                     <Link
                       href={`/app/events/${event.id}`}
-                      className="h-[36px] px-3.5 rounded-lg bg-[#F6F1FF] text-[#7C5CFC] hover:bg-[#7C5CFC] hover:text-white text-[13px] font-bold group-hover:shadow-xs transition-all flex items-center gap-1.5"
+                      className="h-[34px] px-3.5 rounded-lg bg-[#6366F1]/10 text-[#6366F1] hover:bg-[#6366F1] hover:text-white text-[12px] font-bold group-hover:shadow-xs transition-all flex items-center gap-1.5"
                     >
-                      <span>Open Event</span>
+                      <span>Manage</span>
                       <span
                         className="material-symbols-outlined text-[15px]"
                         data-icon="arrow_forward"

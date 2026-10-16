@@ -148,21 +148,21 @@ export function EventPerformance({ events }: EventPerformanceProps) {
                     <span className="font-semibold text-[#17152B]">{event.type}</span>
                     <span className="text-[11px] block">{event.format}</span>
                   </td>
-                  <td className="py-3.5 px-4 text-right font-bold text-[#17152B] tabular-nums">
-                    {event.registrationsCount}
+                  <td className="py-3.5 px-4 text-right font-bold text-[#6366F1] tabular-nums">
+                    {event.registrationsCount.toLocaleString()}
                   </td>
-                  <td className="py-3.5 px-4 text-right font-bold text-[#22C55E] tabular-nums">
-                    {event.checkInsCount}
+                  <td className="py-3.5 px-4 text-right font-bold text-[#10B981] tabular-nums">
+                    {event.checkInsCount.toLocaleString()}
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     {event.attendanceRate !== null ? (
                       <span
-                        className={`font-bold tabular-nums px-2 py-0.5 rounded-md ${
+                        className={`font-bold tabular-nums px-2.5 py-0.5 rounded-full text-[11px] inline-block ${
                           event.attendanceRate >= 70
-                            ? 'bg-[#22C55E]/10 text-[#22C55E]'
+                            ? 'bg-[#10B981]/15 text-[#059669]'
                             : event.attendanceRate >= 40
-                            ? 'bg-[#7C5CFC]/10 text-[#7C5CFC]'
-                            : 'bg-[#F59E0B]/10 text-[#D97706]'
+                            ? 'bg-[#6366F1]/15 text-[#4F46E5]'
+                            : 'bg-[#F59E0B]/15 text-[#D97706]'
                         }`}
                       >
                         {event.attendanceRate}%
@@ -173,14 +173,23 @@ export function EventPerformance({ events }: EventPerformanceProps) {
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-center">
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         event.status.toLowerCase() === 'published'
-                          ? 'bg-[#22C55E]/10 text-[#22C55E]'
+                          ? 'bg-[#10B981]/10 text-[#059669]'
                           : event.status.toLowerCase() === 'draft'
-                          ? 'bg-[#77738A]/10 text-[#77738A]'
-                          : 'bg-[#7C5CFC]/10 text-[#7C5CFC]'
+                          ? 'bg-[#77738A]/10 text-[#6B7280]'
+                          : 'bg-[#6366F1]/10 text-[#4F46E5]'
                       }`}
                     >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          event.status.toLowerCase() === 'published'
+                            ? 'bg-[#10B981]'
+                            : event.status.toLowerCase() === 'draft'
+                            ? 'bg-[#9CA3AF]'
+                            : 'bg-[#6366F1]'
+                        }`}
+                      />
                       {event.status}
                     </span>
                   </td>
