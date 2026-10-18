@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.*
+!/.env.example
 
 # vercel
 .vercel
@@ -40,5 +42,29 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
-.env*
+# build and cache output
+/dist/
+/coverage/
+/out/
+/.turbo/
+/build/
+
+# local tool state and generated assets
+/supabase/.temp/
+/scripts/generated-qrs/
+
+# local scratch, logs, and temporary files
+/scratch_*
+/test-api.ts
+/test-db.ts
+/test_jobs.ts
+/test_sharp.ts
+/test_ticket.ts
+/verify_db.js
+/lint_output.txt
+/ticket_test.png
+*.log
+*.tmp
+*.temp
+*.swp
+*~

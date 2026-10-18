@@ -13,10 +13,13 @@ export default function AboutPropertiesPanel({ section, updateSection }: { secti
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `website_images/${fileName}`;
 
     try {
       setUploading(true);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Please sign in again before uploading.');
+      const filePath = `${user.id}/website_images/${fileName}`;
+
       const { error: uploadError } = await supabase.storage
         .from('event-flyers')
         .upload(filePath, file);

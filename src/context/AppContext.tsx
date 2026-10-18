@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Event, UserPreferences, WorkspaceDetails } from '../types';
 import { createClient } from '@/lib/supabase/client';
+import { recordWorkspaceActivityFailureAction } from '@/app/actions/activityActions';
 
 export type Workspace = WorkspaceDetails;
 
@@ -292,30 +293,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
       throw new Error('No active workspace found. Please select or create a workspace.');
     }
 
-    const { data, error } = await supabase
-      .from('events')
-      .insert([{
-        workspace_id: effectiveWorkspace.id,
-        created_by: effectiveUser.id,
-        name: newEventData.name,
-        slug: newEventData.slug,
-        type: newEventData.type,
-        format: newEventData.format,
-        status: newEventData.status || 'draft',
-        start_date: newEventData.startDate,
-        end_date: newEventData.endDate,
-        start_time: newEventData.startTime,
-        end_time: newEventData.endTime,
-        timezone: newEventData.timezone || 'UTC',
-        location: newEventData.location,
-        description: newEventData.description,
-        flyer_url: newEventData.flyer,
-        website: newEventData.website || {}
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
+    let data;
+    try {
+      const result = await supabase
+        .from('events')
+        .insert([{
+          workspace_id: effectiveWorkspace.id,
+          created_by: effectiveUser.id,
+          name: newEventData.name,
+          slug: newEventData.slug,
+          type: newEventData.type,
+          format: newEventData.format,
+          status: newEventData.status || 'draft',
+          start_date: newEventData.startDate,
+          end_date: newEventData.endDate,
+          start_time: newEventData.startTime,
+          end_time: newEventData.endTime,
+          timezone: newEventData.timezone || 'UTC',
+          location: newEventData.location,
+          description: newEventData.description,
+          flyer_url: newEventData.flyer,
+          website: newEventData.website || {}
+        }])
+        .select()
+        .single();
+      if (result.error) throw result.error;
+      data = result.data;
+    } catch (error) {
+      try {
+        await recordWorkspaceActivityFailureAction(
+          newEventData.id || '',
+          'event.create_failed',
+          'EVENT_CREATE_FAILED',
+          effectiveWorkspace.id,
+        );
+      } catch {
+        console.warn('Failed to record event creation failure activity.');
+      }
+      throw error;
+    }
 
     const mappedCreatedEvent: Event = {
       id: data.id,
@@ -350,29 +366,59 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateEvent = async (updatedEvent: Event): Promise<Event> => {
-    const { data, error } = await supabase
-      .from('events')
-      .update({
-        name: updatedEvent.name,
-        slug: updatedEvent.slug,
-        type: updatedEvent.type,
-        format: updatedEvent.format,
-        status: updatedEvent.status,
-        start_date: updatedEvent.startDate,
-        end_date: updatedEvent.endDate,
-        start_time: updatedEvent.startTime,
-        end_time: updatedEvent.endTime,
-        timezone: updatedEvent.timezone,
-        location: updatedEvent.location,
-        description: updatedEvent.description,
-        flyer_url: updatedEvent.flyer,
-        website: updatedEvent.website
-      })
-      .eq('id', updatedEvent.id)
-      .select()
-      .single();
-
-    if (error) throw error;
+    const previousEvent = events.find((event) => event.id === updatedEvent.id);
+    let data;
+    try {
+      const result = await supabase
+        .from('events')
+        .update({
+          name: updatedEvent.name,
+          slug: updatedEvent.slug,
+          type: updatedEvent.type,
+          format: updatedEvent.format,
+          status: updatedEvent.status,
+          start_date: updatedEvent.startDate,
+          end_date: updatedEvent.endDate,
+          start_time: updatedEvent.startTime,
+          end_time: updatedEvent.endTime,
+          timezone: updatedEvent.timezone,
+          location: updatedEvent.location,
+          description: updatedEvent.description,
+          flyer_url: updatedEvent.flyer,
+          website: updatedEvent.website
+        })
+        .eq('id', updatedEvent.id)
+        .select()
+        .single();
+      if (result.error) throw result.error;
+      data = result.data;
+    } catch (error) {
+      const publishingFailed = previousEvent?.status !== 'published' && updatedEvent.status === 'published';
+      const websiteChanged = JSON.stringify(previousEvent?.website) !== JSON.stringify(updatedEvent.website);
+      const websitePublishingFailed = websiteChanged && updatedEvent.website?.status === 'published';
+      const action = publishingFailed
+        ? 'event.publish_failed'
+        : websitePublishingFailed
+          ? 'website.publish_failed'
+          : websiteChanged
+            ? 'website.save_failed'
+            : null;
+      const errorCode = publishingFailed
+        ? 'EVENT_PUBLISH_FAILED'
+        : websitePublishingFailed
+          ? 'WEBSITE_PUBLISH_FAILED'
+          : websiteChanged
+            ? 'WEBSITE_SAVE_FAILED'
+            : null;
+      if (action && errorCode) {
+        try {
+          await recordWorkspaceActivityFailureAction(updatedEvent.id, action, errorCode);
+        } catch {
+          console.warn('Failed to record event update failure activity.');
+        }
+      }
+      throw error;
+    }
 
     setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
     return updatedEvent;

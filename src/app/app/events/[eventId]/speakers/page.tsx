@@ -238,9 +238,11 @@ export default function SpeakersPage() {
 
     try {
       const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Please sign in again before uploading.');
       const fileExt = file.name.split('.').pop() || 'png';
       const cleanFileName = `speaker_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const filePath = `speakers/${cleanFileName}`;
+      const filePath = `${user.id}/speakers/${cleanFileName}`;
 
       let bucketName = 'organization-logos';
       let uploadResult = await supabase.storage.from(bucketName).upload(filePath, file, {
@@ -249,7 +251,7 @@ export default function SpeakersPage() {
 
       if (uploadResult.error) {
         bucketName = 'event-flyers';
-        uploadResult = await supabase.storage.from(bucketName).upload(`speaker_avatars/${cleanFileName}`, file, {
+        uploadResult = await supabase.storage.from(bucketName).upload(`${user.id}/speaker_avatars/${cleanFileName}`, file, {
           upsert: true,
         });
 

@@ -1,5 +1,16 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { attendeeImportService, FieldMapping, ImportedAttendeeRow, AttendeeImportPreview, AttendeeImportResult } from '@/services/attendeeImport';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  attendeeImportService,
+  FieldMapping,
+  AttendeeImportInputRow,
+  AttendeeImportPreview,
+  AttendeeImportResult,
+  WalkathonDistanceCategory,
+  MAX_ATTENDEE_IMPORT_FILE_SIZE,
+  MAX_ATTENDEE_IMPORT_UNCOMPRESSED_SIZE,
+  MAX_ATTENDEE_IMPORT_ROWS,
+  MAX_ATTENDEE_IMPORT_COLUMNS,
+} from '@/services/attendeeImport';
 import { useAppContext } from '@/context/AppContext';
 import { createClient } from '@/lib/supabase/client';
 interface AttendeeImportModalProps {
@@ -17,7 +28,7 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
   
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
-  const [rawRows, setRawRows] = useState<any[]>([]);
+  const [rawRows, setRawRows] = useState<AttendeeImportInputRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
   
   const [mapping, setMapping] = useState<FieldMapping>({
@@ -35,7 +46,7 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
   const [error, setError] = useState<string | null>(null);
 
   const [isWalkathon, setIsWalkathon] = useState(false);
-  const [distanceCategories, setDistanceCategories] = useState<any[]>([]);
+  const [distanceCategories, setDistanceCategories] = useState<WalkathonDistanceCategory[]>([]);
 
   useEffect(() => {
     if (isOpen && eventId) {
@@ -82,7 +93,7 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
     setError(null);
     
     // Validate size (5MB)
-    if (selectedFile.size > 5 * 1024 * 1024) {
+    if (selectedFile.size > MAX_ATTENDEE_IMPORT_FILE_SIZE) {
       setError('File size must be less than 5MB');
       return;
     }
@@ -131,8 +142,8 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
       setMapping(newMapping);
 
       setStep('mapping');
-    } catch (err: any) {
-      setError(err.message || 'Failed to parse file');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to parse file');
       setFile(null);
     }
   };
@@ -165,8 +176,8 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
       setResult(importResult);
       setStep('result');
       onSuccess(); // Refresh people list
-    } catch (err: any) {
-      setError(err.message || 'Import failed unexpectedly.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Import failed unexpectedly.');
     } finally {
       setIsImporting(false);
     }
@@ -207,7 +218,9 @@ export default function AttendeeImportModal({ isOpen, onClose, eventId, onSucces
                 <span className="material-symbols-outlined text-[32px]">upload_file</span>
               </div>
               <h3 className="text-title-md font-bold mb-2">Click to upload or drag and drop</h3>
-              <p className="text-body-md text-on-surface-variant">.csv or .xlsx (Max 5MB)</p>
+              <p className="text-body-md text-on-surface-variant">
+                .csv or .xlsx (Max {(MAX_ATTENDEE_IMPORT_FILE_SIZE / (1024 * 1024)).toLocaleString()}MB upload, {(MAX_ATTENDEE_IMPORT_UNCOMPRESSED_SIZE / (1024 * 1024)).toLocaleString()}MB expanded, {MAX_ATTENDEE_IMPORT_ROWS.toLocaleString()} rows, {MAX_ATTENDEE_IMPORT_COLUMNS} columns)
+              </p>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".csv, .xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" className="hidden" />
             </div>
           )}

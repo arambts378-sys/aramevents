@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server';
 import { processIntegrationJobs } from '@/services/integrations/processor';
-import crypto from 'crypto';
+import { checkCronAuthorization } from '@/lib/security/cronAuthorization';
 
 function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  return checkCronAuthorization(`Bearer ${a}`, b) === 'authorized';
 }
 
 async function handleProcess(req: Request) {
   try {
     const cronSecret = process.env.CRON_SECRET;
+    const authorization = checkCronAuthorization(
+      req.headers.get('authorization'),
+      cronSecret
+    );
+    if (authorization === 'misconfigured') {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
     
     // Enforce Bearer token authentication if CRON_SECRET is configured
     if (cronSecret) {

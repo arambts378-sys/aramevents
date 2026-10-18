@@ -202,9 +202,11 @@ export default function CreateEventPage() {
           } else {
             // Fallback: direct Supabase Storage upload
             const supabase = createClient();
+            const { data: { user }, error: authError } = await supabase.auth.getUser();
+            if (authError || !user) throw new Error('Please sign in again before uploading.');
             const fileExt = file.name.split('.').pop() || 'png';
             const storedFileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-            const filePath = `website_flyers/${storedFileName}`;
+            const filePath = `${user.id}/website_flyers/${storedFileName}`;
 
             const { error: directErr } = await supabase.storage
               .from('event-flyers')

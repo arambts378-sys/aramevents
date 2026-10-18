@@ -13,6 +13,7 @@ const result = spawnSync(
     path.join(__dirname, 'auth-test-setup.cjs'),
     '--test',
     'src/lib/validation/__tests__/auth.test.ts',
+    'src/lib/auth/__tests__/passwordRecoveryState.test.ts',
     'src/app/api/organizer/__tests__/organizerAuthFlow.test.ts',
   ],
   {

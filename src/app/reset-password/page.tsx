@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { passwordRecoveryState } from '@/lib/auth/passwordRecoveryState';
 import {
   getConfirmPasswordState,
   PASSWORD_MAX_LENGTH,
@@ -21,7 +22,7 @@ const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]'
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
-  const [hasSession, setHasSession] = useState(false);
+  const [hasRecoverySession, setHasRecoverySession] = useState(false);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,20 +36,23 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     let mounted = true;
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) setHasSession(!!session);
+    const unsubscribeRecoveryState = passwordRecoveryState.subscribe((verified) => {
+      if (mounted) setHasRecoverySession(verified);
     });
 
-    supabase.auth.getSession().then(({ data, error: sessionError }) => {
+    supabase.auth.getSession().then(({ error: sessionError }) => {
       if (!mounted) return;
-      setHasSession(!!data.session);
       if (sessionError) setError('We could not validate this reset link. Request a new one and try again.');
+      setSessionChecked(true);
+    }).catch(() => {
+      if (!mounted) return;
+      setError('We could not validate this reset link. Request a new one and try again.');
       setSessionChecked(true);
     });
 
     return () => {
       mounted = false;
-      authListener.subscription.unsubscribe();
+      unsubscribeRecoveryState();
     };
   }, [supabase]);
 
@@ -62,7 +66,7 @@ export default function ResetPasswordPage() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (loading || submitGuard.current || !hasSession) return;
+    if (loading || submitGuard.current || !hasRecoverySession) return;
     setSubmitted(true);
     setError('');
     const newPasswordError = validatePassword(password);
@@ -85,6 +89,7 @@ export default function ResetPasswordPage() {
         return;
       }
       setUpdated(true);
+      passwordRecoveryState.clear();
       router.push('/app');
       router.refresh();
     } catch {
@@ -128,7 +133,7 @@ export default function ResetPasswordPage() {
           <div role="status" className="flex justify-center py-4">
             <span className="w-5 h-5 border-2 border-[#7C5CFC] border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : !hasSession ? (
+        ) : !hasRecoverySession ? (
           <div className="text-center">
             <p className="text-xs text-[#77738A]">
               This reset link is invalid or expired. Request a new password reset email.

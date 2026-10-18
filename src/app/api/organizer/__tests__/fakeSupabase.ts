@@ -203,6 +203,7 @@ export class FakeSupabase {
     for (const c of this.tables.organizer_verification_challenges) {
       if (c.email === email) {
         c.last_sent_at = new Date(new Date(c.last_sent_at).getTime() - seconds * 1000).toISOString();
+        c.created_at = new Date(new Date(c.created_at).getTime() - seconds * 1000).toISOString();
       }
     }
   }

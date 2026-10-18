@@ -5,6 +5,7 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
 import { OtpRateLimitError, verifyOtpChallenge } from '@/services/otpService';
 import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
 import { normalizeEmail, normalizeIndianMobile, validateEmail } from '@/lib/validation/auth';
+import { getActivityCorrelationId, recordPlatformActivity } from '@/services/platformActivity.server';
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
@@ -123,6 +124,7 @@ async function ensureProvisioned(
 }
 
 export async function POST(req: NextRequest) {
+  let activityActorId: string | null = null;
   try {
     let body: Record<string, unknown>;
     try {
@@ -155,6 +157,12 @@ export async function POST(req: NextRequest) {
     const verification = await verifyOtpChallenge(normEmail, cleanOtp, 'organizer_registration');
 
     if (!verification.success) {
+      await recordPlatformActivity({
+        action: 'auth.verification_failed',
+        outcome: 'failure',
+        errorCode: 'AUTH_VERIFICATION_FAILED',
+        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+      });
       return NextResponse.json(
         {
           error: verification.error || 'Invalid verification code.',
@@ -169,14 +177,28 @@ export async function POST(req: NextRequest) {
     const user = await findAuthUserByEmail(adminClient, normEmail);
 
     if (!user) {
+      await recordPlatformActivity({
+        action: 'auth.verification_failed',
+        outcome: 'failure',
+        errorCode: 'AUTH_VERIFICATION_FAILED',
+        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+      });
       return NextResponse.json(
         { error: 'Invalid or expired verification code. Please request a new code.' },
         { status: 400 }
       );
     }
+    activityActorId = user.id;
 
     // An already-verified account must not be re-provisioned or silently signed in via OTP.
     if (user.email_confirmed_at) {
+      await recordPlatformActivity({
+        actorUserId: user.id,
+        action: 'auth.verification_failed',
+        outcome: 'failure',
+        errorCode: 'AUTH_VERIFICATION_FAILED',
+        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+      });
       return NextResponse.json(
         { error: 'This email is already verified. Please sign in.' },
         { status: 400 }
@@ -189,6 +211,13 @@ export async function POST(req: NextRequest) {
       await ensureProvisioned(adminClient, user, normEmail);
     } catch (provErr) {
       if (provErr instanceof ProvisioningError) {
+        await recordPlatformActivity({
+          actorUserId: user.id,
+          action: 'auth.verification_failed',
+          outcome: 'failure',
+          errorCode: 'AUTH_VERIFICATION_FAILED',
+          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+        });
         return NextResponse.json(
           { error: 'We could not finish setting up your workspace. Please request a new code and try again.' },
           { status: 500 }
@@ -203,6 +232,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (confirmError) {
+      await recordPlatformActivity({
+        actorUserId: user.id,
+        action: 'auth.verification_failed',
+        outcome: 'failure',
+        errorCode: 'AUTH_VERIFICATION_FAILED',
+        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+      });
       logError('email confirmation failed', confirmError);
       return NextResponse.json(
         { error: 'We could not activate your account. Please request a new code and try again.' },
@@ -229,6 +265,12 @@ export async function POST(req: NextRequest) {
       // The account is verified, so the user can still sign in manually.
     }
 
+    await recordPlatformActivity({
+      actorUserId: user.id,
+      action: 'auth.verification_succeeded',
+      outcome: 'success',
+      correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+    });
     return NextResponse.json({
       success: true,
       message: 'Account verified successfully.',
@@ -238,6 +280,13 @@ export async function POST(req: NextRequest) {
     if (err instanceof OtpRateLimitError) {
       return NextResponse.json({ error: err.message }, { status: 429 });
     }
+    await recordPlatformActivity({
+      actorUserId: activityActorId,
+      action: 'auth.verification_failed',
+      outcome: 'failure',
+      errorCode: 'AUTH_VERIFICATION_FAILED',
+      correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+    });
     logError('unexpected error', err);
     return NextResponse.json(
       { error: 'An unexpected error occurred during verification. Please try again.' },

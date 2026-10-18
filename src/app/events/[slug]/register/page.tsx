@@ -1,6 +1,7 @@
 import React from 'react';
 import PublicRegistrationClient from '@/components/event/PublicRegistrationClient';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isPublicRegistrationEnabled } from '@/lib/security/publicRegistration';
 import Link from 'next/link';
 
 export default async function PublicRegistrationPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -9,12 +10,22 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
   
   const supabase = createAdminClient();
   
-  // 1. Fetch the event either by slug or id
-  const { data: event, error: eventError } = await supabase
+  const eventColumns = 'id,name,type,format,start_date,start_time,end_date,end_time,timezone,location,description';
+  let { data: event, error: eventError } = await supabase
     .from('events')
-    .select('*')
-    .or(`slug.eq.${slug},id.eq.${slug}`)
+    .select(eventColumns)
+    .eq('slug', slug)
     .maybeSingle();
+
+  if (!event && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
+    const byId = await supabase
+      .from('events')
+      .select(eventColumns)
+      .eq('id', slug)
+      .maybeSingle();
+    event = byId.data;
+    eventError = byId.error;
+  }
 
   if (eventError || !event) {
     return (
@@ -31,26 +42,26 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
     );
   }
 
-  // 2. Fetch the registration settings (auto-initialize if missing)
-  let { data: settings } = await supabase
+  // Rendering the public page must not enable registrations as a side effect.
+  const { data: settings, error: settingsError } = await supabase
     .from('event_registration_settings')
     .select('*')
     .eq('event_id', event.id)
     .maybeSingle();
 
-  if (!settings || !settings.is_enabled) {
-    const { data: upsertedSettings } = await supabase
-      .from('event_registration_settings')
-      .upsert({
-        event_id: event.id,
-        is_enabled: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'event_id' })
-      .select('*')
-      .single();
-    if (upsertedSettings) {
-      settings = upsertedSettings;
-    }
+  if (settingsError || !isPublicRegistrationEnabled(settings)) {
+    return (
+      <div className="min-h-screen bg-surface-container-lowest flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl border border-outline-variant/40 text-center shadow-sm">
+          <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4">event_busy</span>
+          <h1 className="text-title-lg font-bold text-on-surface mb-2">Registration Unavailable</h1>
+          <p className="text-body-md text-on-surface-variant mb-8">Registration is currently closed for this event.</p>
+          <Link href={`/events/${encodeURIComponent(slug)}`} className="px-6 py-2.5 bg-surface-container-highest text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-colors">
+            Return to Event Page
+          </Link>
+        </div>
+      </div>
+    );
   }
   // 3. Fetch Walkathon distances if applicable
   let walkathonDistances: any[] = [];

@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "test:plans": "node scripts/run-plan-tests.cjs",
-    "test:auth": "node scripts/run-auth-tests.cjs"
+    "test:auth": "node scripts/run-auth-tests.cjs",
+    "test:security": "node scripts/run-security-tests.cjs",
+    "test:import": "node scripts/run-attendee-import-tests.cjs",
+    "test:super-admin": "node scripts/run-super-admin-tests.cjs",
+    "provision:super-admin": "node scripts/provision-super-admin.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -16,6 +20,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/papaparse": "^5.5.2",
     "@types/qrcode": "^1.5.6",
+    "@e965/xlsx": "0.20.3",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
@@ -26,8 +31,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sharp": "^0.35.5",
-    "use-debounce": "^10.1.1",
-    "xlsx": "^0.18.5"
+    "use-debounce": "^10.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -35,7 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^14.2.35",
+    "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"

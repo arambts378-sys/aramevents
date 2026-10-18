@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     const fileExt = file.name.split('.').pop() || 'png';
     const storedFileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `website_flyers/${storedFileName}`;
+    const filePath = `${user.id}/website_flyers/${storedFileName}`;
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const adminSupabase = createAdminClient();

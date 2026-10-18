@@ -19,6 +19,11 @@ Module._resolveFilename = function (request, ...rest) {
 const fake = () => globalThis.__authTest;
 
 const mocks = {
+  'server-only': {},
+  '@/services/platformActivity.server': {
+    getActivityCorrelationId: () => '20000000-0000-4000-8000-000000000002',
+    recordPlatformActivity: async () => true,
+  },
   '@/lib/supabase/admin': {
     createAdminClient: () => fake().client(),
   },

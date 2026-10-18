@@ -10,6 +10,7 @@ import { TicketTemplate } from '../ticket/TicketTemplate';
 import { submitRegistrationServerAction } from '@/app/actions/registrationActions';
 import { PublicTicketAvailability } from '@/types';
 import { formatPaiseToINR } from '@/services/ticketService';
+import { isPublicRegistrationEnabled } from '@/lib/security/publicRegistration';
 
 interface Props {
   event: any;
@@ -23,7 +24,7 @@ interface Props {
 export default function PublicRegistrationClient({ event, settings, slug, walkathonDistances = [], isWalkathon = false, tickets = [] }: Props) {
   const router = useRouter();
   
-  const isRegistrationOpen = (tickets && tickets.length > 0) || (settings?.is_enabled ?? true);
+  const isRegistrationOpen = isPublicRegistrationEnabled(settings);
   const [error, setError] = useState<string | null>(isRegistrationOpen ? null : "Registration is currently closed for this event.");
   const [formError, setFormError] = useState<string | null>(null);
 

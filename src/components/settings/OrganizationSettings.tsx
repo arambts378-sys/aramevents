@@ -88,9 +88,11 @@ export function OrganizationSettings() {
       setSuccessMessage('');
 
       const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Please sign in again before uploading.');
       const fileExt = file.name.split('.').pop() || 'png';
       const fileName = `${activeWorkspace.id}_${Date.now()}.${fileExt}`;
-      const filePath = `logos/${fileName}`;
+      const filePath = `${user.id}/logos/${fileName}`;
 
       // Upload to organization-logos bucket (with fallback if needed)
       let bucketName = 'organization-logos';
@@ -101,7 +103,7 @@ export function OrganizationSettings() {
       if (uploadResult.error) {
         // Fallback to event-flyers if organization-logos is not yet initialized
         bucketName = 'event-flyers';
-        uploadResult = await supabase.storage.from(bucketName).upload(`org_logos/${fileName}`, file, {
+        uploadResult = await supabase.storage.from(bucketName).upload(`${user.id}/org_logos/${fileName}`, file, {
           upsert: true,
         });
 

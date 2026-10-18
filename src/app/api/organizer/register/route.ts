@@ -15,6 +15,7 @@ import {
   isWeakPasswordError,
 } from '@/lib/auth/adminUsers';
 import { validateRegistration } from '@/lib/validation/auth';
+import { getActivityCorrelationId, recordPlatformActivity } from '@/services/platformActivity.server';
 
 function getClientIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
@@ -44,6 +45,8 @@ const GENERIC_SUCCESS_MESSAGE =
   'If this address is awaiting verification, check your email for a code. If you already have an account, sign in or reset your password.';
 
 export async function POST(req: NextRequest) {
+  let activityActorId: string | null = null;
+  let createdNewAccount = false;
   try {
     let body: Record<string, unknown>;
     try {
@@ -105,6 +108,12 @@ export async function POST(req: NextRequest) {
       }
 
       if (!isEmailExistsError(createError)) {
+        await recordPlatformActivity({
+          action: 'auth.registration_failed',
+          outcome: 'failure',
+          errorCode: 'AUTH_REGISTRATION_FAILED',
+          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+        });
         logAuthError('createUser failed', createError);
         return NextResponse.json(
           { error: 'Unable to create your account right now. Please try again.' },
@@ -116,6 +125,12 @@ export async function POST(req: NextRequest) {
       // workspace). Only decide which email to send.
       const existing = await findAuthUserByEmail(adminClient, email);
       if (!existing) {
+        await recordPlatformActivity({
+          action: 'auth.registration_failed',
+          outcome: 'failure',
+          errorCode: 'AUTH_REGISTRATION_FAILED',
+          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+        });
         logAuthError('email_exists reported but user not found', null);
         return NextResponse.json(
           { error: 'Unable to create your account right now. Please try again.' },
@@ -125,6 +140,8 @@ export async function POST(req: NextRequest) {
       accountState = existing.email_confirmed_at ? 'verified' : 'pending';
     } else {
       accountState = 'new';
+      activityActorId = created.user.id;
+      createdNewAccount = true;
     }
 
     // 3. Challenge + email. Challenge creation is serialized in the database so concurrent
@@ -139,6 +156,13 @@ export async function POST(req: NextRequest) {
           await sendOrganizerVerificationEmail(email, challenge.rawOtp, 10);
         }
       } catch (mailErr) {
+        await recordPlatformActivity({
+          actorUserId: activityActorId,
+          action: 'auth.registration_failed',
+          outcome: 'failure',
+          errorCode: 'AUTH_EMAIL_DELIVERY_FAILED',
+          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+        });
         logAuthError('email delivery failed', mailErr);
         return NextResponse.json(
           { error: 'We could not send the verification email. Please try again.' },
@@ -147,6 +171,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (createdNewAccount) {
+      await recordPlatformActivity({
+        actorUserId: activityActorId,
+        action: 'auth.registration_succeeded',
+        outcome: 'success',
+        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+      });
+    }
     return NextResponse.json({
       success: true,
       message: GENERIC_SUCCESS_MESSAGE,
@@ -156,6 +188,13 @@ export async function POST(req: NextRequest) {
     if (err instanceof OtpRateLimitError) {
       return NextResponse.json({ error: err.message }, { status: 429 });
     }
+    await recordPlatformActivity({
+      actorUserId: activityActorId,
+      action: 'auth.registration_failed',
+      outcome: 'failure',
+      errorCode: 'AUTH_REGISTRATION_FAILED',
+      correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
+    });
     logAuthError('unexpected error', err);
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },

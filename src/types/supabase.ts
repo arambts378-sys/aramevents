@@ -901,6 +901,65 @@ export type Database = {
           },
         ]
       }
+      platform_activity_events: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          category: string
+          correlation_id: string
+          error_code: string | null
+          id: string
+          message: string
+          metadata: Json
+          occurred_at: string
+          outcome: string
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          workspace_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          category: string
+          correlation_id?: string
+          error_code?: string | null
+          id?: string
+          message: string
+          metadata?: Json
+          occurred_at?: string
+          outcome: string
+          resource_id?: string | null
+          resource_type?: string | null
+          severity: string
+          workspace_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          category?: string
+          correlation_id?: string
+          error_code?: string | null
+          id?: string
+          message?: string
+          metadata?: Json
+          occurred_at?: string
+          outcome?: string
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_activity_events_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -956,6 +1015,43 @@ export type Database = {
         Returns: Json
       }
       is_workspace_member: { Args: { workspace_id: string }; Returns: boolean }
+      has_platform_permission: { Args: { p_permission: string }; Returns: boolean }
+      list_platform_customers: {
+        Args: {
+          p_page: number
+          p_page_size: number
+          p_plan: string | null
+          p_search: string | null
+          p_sort: string
+          p_sort_direction: string
+        }
+        Returns: Json
+      }
+      get_platform_customer_detail: {
+        Args: {
+          p_event_page: number
+          p_member_page: number
+          p_page_size: number
+          p_workspace_id: string
+        }
+        Returns: Json
+      }
+      list_platform_activity: {
+        Args: {
+          p_action: string | null
+          p_category: string | null
+          p_correlation_id: string | null
+          p_from: string | null
+          p_outcome: string | null
+          p_page: number
+          p_page_size: number
+          p_search: string | null
+          p_severity: string | null
+          p_to: string | null
+          p_workspace_id: string | null
+        }
+        Returns: Json
+      }
       submit_event_registration: {
         Args: { p_event_id: string; p_person_data: Json }
         Returns: Json
