@@ -79,7 +79,7 @@ export default function AccessControlPage() {
           registrations (
             registration_number,
             event_people (
-              people ( full_name, email )
+              people ( first_name, last_name, email )
             )
           )
         `)

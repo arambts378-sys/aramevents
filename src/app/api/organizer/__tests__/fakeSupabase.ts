@@ -141,41 +141,89 @@ export class FakeSupabase {
     return {
       auth: { admin: this.authAdmin },
       rpc: async (name: string, args: Row) => {
-        if (name !== 'create_organizer_verification_challenge') {
-          return { data: null, error: { code: '42883', message: 'function does not exist' } };
+        if (name === 'create_organizer_verification_challenge') {
+          const email = String(args.p_email).trim().toLowerCase();
+          const purpose = String(args.p_purpose);
+          const challenges = this.tables.organizer_verification_challenges
+            .filter((row) => row.email === email && row.purpose === purpose)
+            .sort((a, b) => b.created_at.localeCompare(a.created_at));
+          const latest = challenges[0];
+          if (latest && Date.now() - new Date(latest.last_sent_at).getTime() < 45_000) {
+            return { data: [{ challenge_id: latest.id, created: false }], error: null };
+          }
+
+          const now = new Date().toISOString();
+          for (const challenge of challenges) {
+            if (!challenge.verified_at && new Date(challenge.expires_at).getTime() > Date.now()) {
+              challenge.expires_at = new Date(Date.now() - 1000).toISOString();
+            }
+          }
+          const id = crypto.randomUUID();
+          this.tables.organizer_verification_challenges.push({
+            id,
+            email,
+            otp_hash: args.p_otp_hash,
+            purpose,
+            expires_at: args.p_expires_at,
+            attempt_count: 0,
+            max_attempts: args.p_max_attempts,
+            verified_at: null,
+            created_at: now,
+            last_sent_at: now,
+            request_ip_hash: args.p_request_ip_hash,
+            pending_payload: args.p_pending_payload || null,
+          });
+          return { data: [{ challenge_id: id, created: true }], error: null };
         }
 
-        const email = String(args.p_email).trim().toLowerCase();
-        const purpose = String(args.p_purpose);
-        const challenges = this.tables.organizer_verification_challenges
-          .filter((row) => row.email === email && row.purpose === purpose)
-          .sort((a, b) => b.created_at.localeCompare(a.created_at));
-        const latest = challenges[0];
-        if (latest && Date.now() - new Date(latest.last_sent_at).getTime() < 45_000) {
-          return { data: [{ challenge_id: latest.id, created: false }], error: null };
-        }
+        if (name === 'verify_organizer_verification_challenge') {
+          const email = String(args.p_email).trim().toLowerCase();
+          const purpose = String(args.p_purpose);
+          const otpHashed = String(args.p_otp_hash);
+          const challenges = this.tables.organizer_verification_challenges
+            .filter((row) => row.email === email && row.purpose === purpose)
+            .sort((a, b) => b.created_at.localeCompare(a.created_at));
+          const challenge = challenges[0];
+          if (!challenge) {
+            return { data: [{ status: 'NOT_FOUND', challenge_id: null, attempts_remaining: 0, pending_payload: null }], error: null };
+          }
+          if (challenge.verified_at) {
+            return { data: [{ status: 'ALREADY_USED', challenge_id: challenge.id, attempts_remaining: 0, pending_payload: null }], error: null };
+          }
+          if (new Date(challenge.expires_at).getTime() <= Date.now()) {
+            return { data: [{ status: 'EXPIRED', challenge_id: challenge.id, attempts_remaining: 0, pending_payload: null }], error: null };
+          }
+          if (challenge.attempt_count >= challenge.max_attempts) {
+            return { data: [{ status: 'MAX_ATTEMPTS_EXCEEDED', challenge_id: challenge.id, attempts_remaining: 0, pending_payload: null }], error: null };
+          }
 
-        const now = new Date().toISOString();
-        for (const challenge of challenges) {
-          if (!challenge.verified_at && new Date(challenge.expires_at).getTime() > Date.now()) {
-            challenge.expires_at = new Date(Date.now() - 1000).toISOString();
+          challenge.attempt_count++;
+          if (challenge.otp_hash === otpHashed) {
+            challenge.verified_at = new Date().toISOString();
+            return {
+              data: [{
+                status: 'SUCCESS',
+                challenge_id: challenge.id,
+                attempts_remaining: challenge.max_attempts - challenge.attempt_count,
+                pending_payload: challenge.pending_payload || null,
+              }],
+              error: null,
+            };
+          } else {
+            const status = challenge.attempt_count >= challenge.max_attempts ? 'MAX_ATTEMPTS_EXCEEDED' : 'INVALID_OTP';
+            return {
+              data: [{
+                status,
+                challenge_id: challenge.id,
+                attempts_remaining: Math.max(0, challenge.max_attempts - challenge.attempt_count),
+                pending_payload: null,
+              }],
+              error: null,
+            };
           }
         }
-        const id = crypto.randomUUID();
-        this.tables.organizer_verification_challenges.push({
-          id,
-          email,
-          otp_hash: args.p_otp_hash,
-          purpose,
-          expires_at: args.p_expires_at,
-          attempt_count: 0,
-          max_attempts: args.p_max_attempts,
-          verified_at: null,
-          created_at: now,
-          last_sent_at: now,
-          request_ip_hash: args.p_request_ip_hash,
-        });
-        return { data: [{ challenge_id: id, created: true }], error: null };
+
+        return { data: null, error: { code: '42883', message: 'function does not exist' } };
       },
       from: (table: string) => new FakeQuery(this, table),
     };

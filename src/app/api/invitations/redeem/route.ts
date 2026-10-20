@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, eventId: result.event_id });
 
   } catch (error: any) {
-    console.error('Error redeeming invite:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    console.error('Error redeeming invite:', error?.message || error);
+    return NextResponse.json({ error: 'Failed to redeem invitation.' }, { status: 500 });
   }
 }

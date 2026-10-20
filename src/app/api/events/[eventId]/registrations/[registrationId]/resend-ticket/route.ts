@@ -43,6 +43,32 @@ export async function POST(
       return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 });
     }
 
+    // Require registrations.manage permission (M13)
+    const { data: hasPerm } = await supabase.rpc('has_permission', {
+      workspace_id: event.workspace_id,
+      required_permission: 'registrations.manage'
+    });
+
+    if (!hasPerm) {
+      return NextResponse.json({ error: 'Forbidden. You do not have permission to resend tickets.' }, { status: 403 });
+    }
+
+    // Enforce 60-second per-registration cooldown (M13)
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { data: recentJobs } = await adminClient
+      .from('integration_jobs')
+      .select('id')
+      .eq('registration_id', registrationId)
+      .eq('event_type', 'qr_delivery')
+      .gte('created_at', oneMinuteAgo);
+
+    if (recentJobs && recentJobs.length > 0) {
+      return NextResponse.json(
+        { error: 'Please wait at least 60 seconds before resending this ticket.' },
+        { status: 429 }
+      );
+    }
+
     const { data: registration, error: regError } = await adminClient
       .from('registrations')
       .select(`
@@ -93,8 +119,9 @@ export async function POST(
       return NextResponse.json({ error: 'No active QR credential found to resend. Please regenerate it first.' }, { status: 400 });
     }
 
-    // 4. Create a new qr_delivery integration job WITHOUT regenerating QR
-    const idempotencyKey = `${eventId}:${registrationId}:email:qr_delivery:resend_${Date.now()}`;
+    // 4. Create a new qr_delivery integration job with concurrency-safe bucketed idempotency key
+    const cooldownBucket = Math.floor(Date.now() / 60000);
+    const idempotencyKey = `${eventId}:${registrationId}:email:qr_delivery:resend_${cooldownBucket}`;
     
     const payload = {
       registrationId: registration.id,
@@ -121,13 +148,20 @@ export async function POST(
       });
 
     if (jobError) {
-      console.error('Failed to create resend job:', jobError);
+      // If unique constraint on idempotency_key triggers, it's a concurrent race
+      if (jobError.code === '23505') {
+        return NextResponse.json(
+          { error: 'A ticket resend is already being processed for this registration.' },
+          { status: 429 }
+        );
+      }
+      console.error('Failed to create resend job');
       return NextResponse.json({ error: 'Failed to enqueue resend job' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: 'Ticket resend initiated successfully.' });
   } catch (error: any) {
-    console.error('Error in resend ticket:', error);
+    console.error('Error in resend ticket:', error?.message || error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

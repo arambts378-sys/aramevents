@@ -207,8 +207,25 @@ export async function POST(req: NextRequest) {
 
     // 3. Idempotent provisioning BEFORE confirming, so a failure leaves the account pending
     //    and retryable instead of "verified but without a workspace".
+    const pending = (verification.pendingPayload || {}) as {
+      fullName?: string;
+      organizationName?: string;
+      phone?: string;
+      password?: string;
+    };
+    const effectiveMetadata = {
+      ...user.user_metadata,
+      ...(pending.fullName ? { full_name: pending.fullName } : {}),
+      ...(pending.organizationName ? { organization_name: pending.organizationName } : {}),
+      ...(pending.phone ? { phone: pending.phone } : {}),
+    };
+    const effectiveUser = {
+      ...user,
+      user_metadata: effectiveMetadata,
+    };
+
     try {
-      await ensureProvisioned(adminClient, user, normEmail);
+      await ensureProvisioned(adminClient, effectiveUser, normEmail);
     } catch (provErr) {
       if (provErr instanceof ProvisioningError) {
         await recordPlatformActivity({
@@ -226,10 +243,20 @@ export async function POST(req: NextRequest) {
       throw provErr;
     }
 
-    // 4. Confirm email in Supabase Auth
-    const { error: confirmError } = await adminClient.auth.admin.updateUserById(user.id, {
+    // 4. Confirm email in Supabase Auth and bind verified password and metadata (H6)
+    const updateAttrs: {
+      email_confirm: boolean;
+      password?: string;
+      user_metadata?: Record<string, unknown>;
+    } = {
       email_confirm: true,
-    });
+      user_metadata: effectiveMetadata,
+    };
+    if (typeof pending.password === 'string' && pending.password.length > 0) {
+      updateAttrs.password = pending.password;
+    }
+
+    const { error: confirmError } = await adminClient.auth.admin.updateUserById(user.id, updateAttrs);
 
     if (confirmError) {
       await recordPlatformActivity({

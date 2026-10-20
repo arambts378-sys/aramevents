@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { normalizeEmail } from '@/lib/validation/auth';
+import { encryptSecret, decryptSecret } from '@/utils/encryption';
 
 export const RESEND_COOLDOWN_SECONDS = 45;
 export const EXPIRATION_MINUTES = 10;
@@ -20,6 +21,7 @@ export interface VerificationChallengeRecord {
   created_at: string;
   last_sent_at: string;
   request_ip_hash: string | null;
+  pending_payload?: string | null;
 }
 
 /**
@@ -50,7 +52,10 @@ export function hashIp(ip: string): string {
 }
 
 function getOtpHash(otp: string): string {
-  const pepper = process.env.ENCRYPTION_KEY || process.env.SUPABASE_SECRET_KEY || 'arambts-otp-secret-salt';
+  const pepper = process.env.OTP_PEPPER_SECRET || process.env.ENCRYPTION_KEY || process.env.SUPABASE_SECRET_KEY;
+  if (!pepper) {
+    throw new Error('Required OTP pepper secret is missing. Set OTP_PEPPER_SECRET or ENCRYPTION_KEY.');
+  }
   return crypto.createHmac('sha256', pepper).update(otp).digest('hex');
 }
 
@@ -76,7 +81,8 @@ export function generateSecureOtp(): string {
 export async function createChallenge(
   email: string,
   clientIp: string = '127.0.0.1',
-  purpose: string = 'organizer_registration'
+  purpose: string = 'organizer_registration',
+  pendingPayload?: Record<string, unknown>
 ): Promise<
   | { created: true; challengeId: string; rawOtp: string; expiresAt: Date }
   | { created: false; challengeId: string; expiresAt: Date }
@@ -91,6 +97,15 @@ export async function createChallenge(
   // Rate Limiting Check: per-email hourly quota & per-IP hourly quota
   await enforceCreationRateLimits(normEmail, ipHash);
 
+  let encryptedPayload: string | null = null;
+  if (pendingPayload) {
+    try {
+      encryptedPayload = encryptSecret(JSON.stringify(pendingPayload));
+    } catch {
+      encryptedPayload = JSON.stringify(pendingPayload);
+    }
+  }
+
   const adminClient = createAdminClient();
   const { data, error } = await adminClient.rpc('create_organizer_verification_challenge', {
     p_email: normEmail,
@@ -99,6 +114,7 @@ export async function createChallenge(
     p_expires_at: expiresAt.toISOString(),
     p_max_attempts: MAX_ATTEMPTS,
     p_request_ip_hash: ipHash,
+    p_pending_payload: encryptedPayload,
   });
   if (error) throw error;
 
@@ -151,13 +167,19 @@ export async function resendChallengeOtp(
 }
 
 /**
- * Verifies an entered OTP against the latest active challenge for an email.
+ * Verifies an entered OTP against the active challenge for an email atomically.
  */
 export async function verifyOtpChallenge(
   email: string,
   enteredOtp: string,
   purpose: string = 'organizer_registration'
-): Promise<{ success: boolean; error?: string; attemptsRemaining?: number; challengeId?: string }> {
+): Promise<{
+  success: boolean;
+  error?: string;
+  attemptsRemaining?: number;
+  challengeId?: string;
+  pendingPayload?: Record<string, unknown> | null;
+}> {
   const normEmail = normalizeEmail(email);
   const cleanedOtp = enteredOtp.trim();
 
@@ -165,6 +187,71 @@ export async function verifyOtpChallenge(
     return { success: false, error: 'Verification code must be exactly 6 digits.' };
   }
 
+  const otpHashed = getOtpHash(cleanedOtp);
+  const adminClient = createAdminClient();
+
+  // 1. Concurrency-safe atomic database verification RPC
+  try {
+    const { data, error } = await adminClient.rpc('verify_organizer_verification_challenge', {
+      p_email: normEmail,
+      p_purpose: purpose,
+      p_otp_hash: otpHashed,
+    });
+
+    if (!error && data) {
+      const result = Array.isArray(data) ? data[0] : data;
+      if (result && typeof result.status === 'string') {
+        const { status, challenge_id, attempts_remaining, pending_payload } = result;
+
+        let parsedPayload: Record<string, unknown> | null = null;
+        if (pending_payload) {
+          try {
+            parsedPayload = JSON.parse(decryptSecret(pending_payload));
+          } catch {
+            try {
+              parsedPayload = JSON.parse(pending_payload);
+            } catch {
+              parsedPayload = null;
+            }
+          }
+        }
+
+        switch (status) {
+          case 'SUCCESS':
+            return {
+              success: true,
+              challengeId: challenge_id,
+              pendingPayload: parsedPayload,
+            };
+          case 'INVALID_OTP':
+            return {
+              success: false,
+              error: `Incorrect verification code. ${attempts_remaining} attempt${attempts_remaining === 1 ? '' : 's'} remaining.`,
+              attemptsRemaining: attempts_remaining,
+              challengeId: challenge_id,
+            };
+          case 'MAX_ATTEMPTS_EXCEEDED':
+            return {
+              success: false,
+              error: 'Maximum verification attempts exceeded. Please request a new code.',
+              attemptsRemaining: 0,
+              challengeId: challenge_id,
+            };
+          case 'EXPIRED':
+            return { success: false, error: 'Verification code has expired. Please request a new code.' };
+          case 'ALREADY_USED':
+            return { success: false, error: 'This verification code has already been used. Please request a new code.' };
+          case 'NOT_FOUND':
+          default:
+            return { success: false, error: 'No active verification code found. Please request a new code.' };
+        }
+      }
+    }
+  } catch {
+    // If the atomic RPC is unavailable, fallback to database-level transactional check below
+  }
+
+  // 2. Transactional fallback
   const challenge = await getLatestActiveChallenge(normEmail, purpose);
 
   if (!challenge) {
@@ -172,11 +259,11 @@ export async function verifyOtpChallenge(
   }
 
   if (challenge.verified_at) {
-    return { success: false, error: 'This verification code has already been used.' };
+    return { success: false, error: 'This verification code has already been used. Please request a new code.' };
   }
 
   if (challenge.attempt_count >= challenge.max_attempts) {
-    return { success: false, error: 'Maximum verification attempts exceeded. Please request a new code.' };
+    return { success: false, error: 'Maximum verification attempts exceeded. Please request a new code.', attemptsRemaining: 0 };
   }
 
   const now = new Date();
@@ -185,12 +272,14 @@ export async function verifyOtpChallenge(
     return { success: false, error: 'Verification code has expired. Please request a new code.' };
   }
 
+  // Increment attempt count FIRST to prevent race conditions
+  const newAttemptCount = challenge.attempt_count + 1;
+  await updateAttemptCount(challenge.id, newAttemptCount);
+
   // Cryptographic constant-time comparison
   const isValid = safeCompareHash(cleanedOtp, challenge.otp_hash);
 
   if (!isValid) {
-    const newAttemptCount = challenge.attempt_count + 1;
-    await updateAttemptCount(challenge.id, newAttemptCount);
     const attemptsRemaining = Math.max(0, challenge.max_attempts - newAttemptCount);
 
     if (attemptsRemaining === 0) {
@@ -208,12 +297,25 @@ export async function verifyOtpChallenge(
     };
   }
 
-  // Mark the OTP consumed once even if two verification requests race.
+  // Mark the OTP consumed once
   if (!(await markChallengeVerified(challenge.id))) {
     return { success: false, error: 'This verification code has already been used. Please request a new code.' };
   }
 
-  return { success: true, challengeId: challenge.id };
+  let parsedPayload: Record<string, unknown> | null = null;
+  if (challenge.pending_payload) {
+    try {
+      parsedPayload = JSON.parse(decryptSecret(challenge.pending_payload));
+    } catch {
+      try {
+        parsedPayload = JSON.parse(challenge.pending_payload);
+      } catch {
+        parsedPayload = null;
+      }
+    }
+  }
+
+  return { success: true, challengeId: challenge.id, pendingPayload: parsedPayload };
 }
 
 async function enforceCreationRateLimits(email: string, ipHash: string): Promise<void> {

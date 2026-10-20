@@ -71,7 +71,7 @@ export async function submitRegistrationServerAction(
       }
       
       if (credential) {
-        qrToken = qrCredentialsService.recoverRawToken(credential.id);
+        qrToken = qrCredentialsService.recoverRawToken(credential.id, credential.credential_token_hash);
       } else {
         await recordPlatformActivity({
           workspaceId: await resolveActivityWorkspace(eventId),

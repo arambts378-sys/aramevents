@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import nodemailer from 'nodemailer';
+import { isSafeSmtpHost, isValidSmtpPort } from '@/lib/security/smtpValidator';
+import { decryptSecret } from '@/utils/encryption';
 
 export async function POST(
   request: Request,
@@ -9,7 +11,7 @@ export async function POST(
   try {
     const { eventId } = await params;
     const body = await request.json();
-    const { host, port, user, pass, encryption, fromName, fromEmail, testEmail } = body;
+    const { host, port, user, pass, fromName, fromEmail, testEmail } = body;
 
     const supabase = await createClient();
 
@@ -19,7 +21,7 @@ export async function POST(
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Validate Event Access / Workspace Role
+    // 2. Validate Event Access / Workspace Role (events.update required)
     const { data: eventData, error: eventError } = await supabase
       .from('events')
       .select('workspace_id')
@@ -39,8 +41,22 @@ export async function POST(
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
-    // 3. Resolve password if it was left blank (use existing from db)
+    // 3. SSRF Protection: Validate Host and Port
+    const hostValidation = isSafeSmtpHost(host);
+    if (!hostValidation.safe) {
+      return NextResponse.json({ success: false, message: hostValidation.reason || 'Invalid SMTP host.' }, { status: 400 });
+    }
+
+    const parsedPort = parseInt(port, 10);
+    if (!isValidSmtpPort(parsedPort)) {
+      return NextResponse.json({ success: false, message: 'Invalid SMTP port. Allowed ports are 25, 465, 587, 2525.' }, { status: 400 });
+    }
+
+    // 4. Resolve password: NEVER send stored credentials to an altered destination (H4)
     let finalPassword = pass;
+    const normHost = (host || '').trim().toLowerCase();
+    const normUser = (user || '').trim().toLowerCase();
+
     if (!finalPassword || finalPassword.trim() === '') {
       const { data: existingIntegration } = await supabase
         .from('event_integrations')
@@ -48,13 +64,22 @@ export async function POST(
         .eq('event_id', eventId)
         .eq('provider', 'email')
         .maybeSingle();
-      
+
+      const existingHost = (existingIntegration?.config?.host || '').trim().toLowerCase();
+      const existingUser = (existingIntegration?.config?.user || '').trim().toLowerCase();
+
+      // If the user did not provide a password, the host and user MUST match the saved config
+      if (normHost !== existingHost || normUser !== existingUser) {
+        return NextResponse.json({
+          success: false,
+          message: 'Password is required when testing a different SMTP host or username.',
+        }, { status: 400 });
+      }
+
       if (existingIntegration?.config?.pass) {
         try {
-          const { decryptSecret } = await import('@/utils/encryption');
           finalPassword = decryptSecret(existingIntegration.config.pass);
-        } catch (e) {
-          console.error("Failed to decrypt stored password during test");
+        } catch {
           return NextResponse.json({ success: false, message: 'Existing password could not be decrypted.' }, { status: 400 });
         }
       } else {
@@ -62,37 +87,38 @@ export async function POST(
       }
     }
 
-    // 4. Create Transporter
+    // 5. Create Transporter with connection timeout
     const transporter = nodemailer.createTransport({
-      host: host,
-      port: parseInt(port),
-      secure: parseInt(port) === 465,
+      host: normHost,
+      port: parsedPort,
+      secure: parsedPort === 465,
       auth: {
-        user: user,
+        user: normUser,
         pass: finalPassword
-      }
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 5000,
+      socketTimeout: 15000,
     });
 
-    // 5. Test connection
+    // 6. Test connection
     try {
       await transporter.verify();
-    } catch (error: any) {
-      console.error('SMTP Verification Failed:', error.message);
+    } catch {
       return NextResponse.json({ success: false, message: 'Unable to connect to the email server. Check credentials.' }, { status: 400 });
     }
 
-    // 6. Optionally send a test email
+    // 7. Optionally send a test email
     if (testEmail) {
       try {
         await transporter.sendMail({
-          from: `"${fromName}" <${fromEmail}>`,
+          from: `"${fromName || 'ARAM BTS'}" <${fromEmail}>`,
           to: testEmail,
           subject: 'ARAM BTS Email Configuration Test',
           text: 'Your ARAM BTS email configuration is working correctly.\n\nThis is a test email.',
           html: '<p>Your ARAM BTS email configuration is working correctly.</p><p>This is a test email.</p>'
         });
-      } catch (error: any) {
-        console.error('Test Email Failed:', error.message);
+      } catch {
         return NextResponse.json({ success: false, message: 'Connected, but failed to send test email.' }, { status: 400 });
       }
     }
@@ -100,7 +126,7 @@ export async function POST(
     return NextResponse.json({ success: true, message: 'Email connection verified.' });
 
   } catch (error: any) {
-    console.error('Error in email test API:', error);
-    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 });
+    console.error('Error in email test API:', error?.message || error);
+    return NextResponse.json({ success: false, message: 'Unable to complete email test.' }, { status: 500 });
   }
 }

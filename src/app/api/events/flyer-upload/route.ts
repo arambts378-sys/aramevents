@@ -32,26 +32,30 @@ export async function POST(req: Request) {
       );
     }
 
-    // Accept standard image types and PDF
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
-    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|gif|pdf)$/i)) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Validate true image format via magic bytes (M5)
+    const { detectSafeImageFormat } = await import('@/lib/security/fileValidator');
+    const format = detectSafeImageFormat(buffer);
+
+    if (!format.valid) {
       return NextResponse.json(
-        { error: 'Invalid file format. Please upload a JPG, PNG, WEBP, or PDF.' },
+        { error: format.reason || 'Invalid file format. Please upload a valid JPG, PNG, or WEBP image.' },
         { status: 400 }
       );
     }
 
-    const fileExt = file.name.split('.').pop() || 'png';
-    const storedFileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `${user.id}/website_flyers/${storedFileName}`;
+    // Generate cryptographically random, extension-safe storage filename
+    const crypto = await import('crypto');
+    const safeFileName = `${crypto.randomUUID()}.${format.ext}`;
+    const filePath = `${user.id}/website_flyers/${safeFileName}`;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
     const adminSupabase = createAdminClient();
 
     const { error: uploadError } = await adminSupabase.storage
       .from('event-flyers')
       .upload(filePath, buffer, {
-        contentType: file.type || 'application/octet-stream',
+        contentType: format.mime,
         upsert: false,
       });
 

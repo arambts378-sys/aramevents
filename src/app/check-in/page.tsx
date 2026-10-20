@@ -53,6 +53,27 @@ export default async function CheckInPage({ searchParams }: { searchParams: Prom
     );
   }
 
+  // Authorize caller for this event (L14)
+  const { data: hasScanPerm } = await supabase.rpc('has_permission', {
+    workspace_id: eventData.workspace_id,
+    required_permission: 'checkin.scan',
+  });
+  const { data: isMember } = await supabase.rpc('is_workspace_member', {
+    workspace_id: eventData.workspace_id,
+  });
+
+  if (!hasScanPerm && !isMember) {
+    return (
+      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-3xl shadow-sm text-center max-w-sm w-full border border-outline-variant">
+          <span className="material-symbols-outlined text-[48px] text-error mb-4">gpp_maybe</span>
+          <h1 className="text-title-lg font-bold mb-2">Access Denied</h1>
+          <p className="text-body-md text-on-surface-variant">You do not have authorization to access scanner checkpoints for this event.</p>
+        </div>
+      </div>
+    );
+  }
+
   // 2. Fetch all active zones for the event
   const { data: activeZones, error: zonesError } = await adminClient
     .from('access_zones')
@@ -65,6 +86,19 @@ export default async function CheckInPage({ searchParams }: { searchParams: Prom
   }
 
   const zones = activeZones || [];
+
+  // If a specific zone is requested, ensure it belongs to this event (L14)
+  if (zoneId && !zones.some((z) => z.id === zoneId)) {
+    return (
+      <div className="min-h-screen bg-surface-container-lowest flex items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-3xl shadow-sm text-center max-w-sm w-full border border-outline-variant">
+          <span className="material-symbols-outlined text-[48px] text-error mb-4">location_off</span>
+          <h1 className="text-title-lg font-bold mb-2">Checkpoint Not Found</h1>
+          <p className="text-body-md text-on-surface-variant">The requested checkpoint does not exist or does not belong to this event.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Helper for generating links
   const getZoneLink = (zId?: string) => {

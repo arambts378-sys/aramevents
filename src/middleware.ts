@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -36,12 +36,17 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/signup' ||
     request.nextUrl.pathname === '/organizer/register'
   const isVerifyRoute = request.nextUrl.pathname === '/organizer/verify'
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/app')
+  const isProtectedRoute =
+    request.nextUrl.pathname.startsWith('/app') ||
+    request.nextUrl.pathname.startsWith('/super-admin') ||
+    request.nextUrl.pathname.startsWith('/check-in')
 
   // Unauthenticated user attempting to access protected route
   if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
+    redirectUrl.search = ''
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname + request.nextUrl.search)
     return NextResponse.redirect(redirectUrl)
   }
 

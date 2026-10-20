@@ -16,18 +16,7 @@ import {
 } from '@/lib/auth/adminUsers';
 import { validateRegistration } from '@/lib/validation/auth';
 import { getActivityCorrelationId, recordPlatformActivity } from '@/services/platformActivity.server';
-
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp.trim();
-  }
-  return '127.0.0.1';
-}
+import { getTrustedClientIp } from '@/lib/security/clientIp';
 
 /** Log only non-sensitive error attributes (never request bodies / passwords). */
 function logAuthError(context: string, err: unknown) {
@@ -73,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { fullName, organizationName, email, phone, password } = validation.values;
-    const clientIp = getClientIp(req);
+    const clientIp = getTrustedClientIp(req);
     const adminClient = createAdminClient();
 
     // 2. Create the Auth user. Supabase Auth's unique-email constraint is the source of truth,
@@ -145,8 +134,17 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Challenge + email. Challenge creation is serialized in the database so concurrent
-    // requests cannot replace one another's code.
-    const challenge = await createChallenge(email, clientIp, 'organizer_registration');
+    // requests cannot replace one another's code. For pending (unverified) accounts, we bind
+    // the registrant's chosen password and profile metadata so that upon OTP verification,
+    // any squatted/attacker-initiated password cannot retain control of the account (H6).
+    const challenge = await createChallenge(
+      email,
+      clientIp,
+      'organizer_registration',
+      accountState === 'verified'
+        ? undefined
+        : { password, fullName, organizationName, phone }
+    );
     if (challenge.created) {
 
       try {

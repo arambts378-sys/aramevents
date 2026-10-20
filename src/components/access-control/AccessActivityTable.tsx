@@ -12,6 +12,8 @@ export interface ScanRecord {
     registration_number?: string;
     event_people?: Array<{
       people?: {
+        first_name?: string;
+        last_name?: string;
         full_name?: string;
         email?: string;
       };
@@ -21,6 +23,22 @@ export interface ScanRecord {
 
 interface AccessActivityTableProps {
   scans: ScanRecord[];
+}
+
+function getAttendeeName(person?: { first_name?: string; last_name?: string; full_name?: string }): string {
+  if (!person) return 'Anonymous Participant';
+  const combined = [person.first_name, person.last_name].filter(Boolean).join(' ').trim();
+  return combined || person.full_name || 'Anonymous Participant';
+}
+
+function sanitizeCsvValue(val: unknown): string {
+  if (val === null || val === undefined) return '""';
+  let str = String(val).trim();
+  // Formula injection mitigation (L16): prefix leading =, +, -, @, \t, \r with single quote
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
 }
 
 export function AccessActivityTable({ scans }: AccessActivityTableProps) {
@@ -37,10 +55,9 @@ export function AccessActivityTable({ scans }: AccessActivityTableProps) {
       // Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const personName =
-          scan.registrations?.event_people?.[0]?.people?.full_name?.toLowerCase() || '';
-        const personEmail =
-          scan.registrations?.event_people?.[0]?.people?.email?.toLowerCase() || '';
+        const person = scan.registrations?.event_people?.[0]?.people;
+        const personName = getAttendeeName(person).toLowerCase();
+        const personEmail = person?.email?.toLowerCase() || '';
         const regNumber = scan.registrations?.registration_number?.toLowerCase() || '';
         const zoneName = scan.access_zones?.name?.toLowerCase() || '';
         const reason = scan.reason?.toLowerCase() || '';
@@ -60,26 +77,25 @@ export function AccessActivityTable({ scans }: AccessActivityTableProps) {
     });
   }, [scans, searchQuery, filterResult]);
 
-  // Export CSV Handler
+  // Export CSV Handler with Formula Injection Protection (L16)
   const handleExportCSV = () => {
     if (scans.length === 0) return;
 
     const headers = ['Time', 'Attendee Name', 'Attendee Email', 'Registration #', 'Zone', 'Result', 'Reason'];
     const rows = filteredScans.map((s) => {
       const time = new Date(s.scanned_at).toLocaleString();
-      const name = s.registrations?.event_people?.[0]?.people?.full_name || 'Unknown';
-      const email = s.registrations?.event_people?.[0]?.people?.email || '';
+      const person = s.registrations?.event_people?.[0]?.people;
+      const name = getAttendeeName(person);
+      const email = person?.email || '';
       const regNum = s.registrations?.registration_number || '';
       const zone = s.access_zones?.name || 'Unknown Zone';
       const result = s.result || '';
       const reason = s.reason || '';
 
-      return [time, name, email, regNum, zone, result, reason].map((val) =>
-        `"${String(val).replace(/"/g, '""')}"`
-      );
+      return [time, name, email, regNum, zone, result, reason].map(sanitizeCsvValue);
     });
 
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = [headers.map(sanitizeCsvValue).join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -204,7 +220,7 @@ export function AccessActivityTable({ scans }: AccessActivityTableProps) {
               <tbody className="divide-y divide-[#E6E2F0]/60">
                 {filteredScans.map((scan) => {
                   const person = scan.registrations?.event_people?.[0]?.people;
-                  const personName = person?.full_name || 'Anonymous Participant';
+                  const personName = getAttendeeName(person);
                   const regNum = scan.registrations?.registration_number;
                   const zoneName = scan.access_zones?.name || 'Unknown Zone';
                   const scanDate = new Date(scan.scanned_at);

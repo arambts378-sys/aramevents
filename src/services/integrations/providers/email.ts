@@ -3,6 +3,26 @@ import QRCode from 'qrcode';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { qrCredentialsService } from '@/services/qrCredentials';
 
+function escapeHtml(str: unknown): string {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeHeader(val: unknown): string {
+  if (val === null || val === undefined) return '';
+  return String(val).replace(/[\r\n\t]/g, ' ').trim();
+}
+
+function isValidEmail(email: unknown): boolean {
+  if (typeof email !== 'string') return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && !/[\r\n]/.test(email);
+}
+
 interface EventPayload {
   id: string;
   name: string;
@@ -46,34 +66,48 @@ export const emailProvider = {
       attendee: { firstName: string; email: string };
     };
 
+    if (!attendee?.email || !isValidEmail(attendee.email)) {
+      throw new Error('INVALID_RECIPIENT_EMAIL');
+    }
+
     const transporter = nodemailer.createTransport({
-      host,
+      host: sanitizeHeader(host),
       port: parseInt(port) || 587,
       secure: parseInt(port) === 465,
-      auth: { user, pass }
+      auth: { user: sanitizeHeader(user), pass },
+      connectionTimeout: 10000,
     });
 
+    const safeFromName = sanitizeHeader(fromName || event.name);
+    const safeFromEmail = sanitizeHeader(fromEmail || user);
+    const safeSubject = sanitizeHeader(subject || `Registration Confirmed: ${event.name}`);
+    const safeFirstName = escapeHtml(attendee.firstName);
+    const safeEventName = escapeHtml(event.name);
+    const safeRegNumber = escapeHtml(registrationNumber);
+    const safeCustomMessage = escapeHtml(customMessage);
+
     const mailOptions = {
-      from: `"${fromName || event.name}" <${fromEmail || user}>`,
-      to: attendee.email,
-      subject: subject || `Registration Confirmed: ${event.name}`,
+      from: `"${safeFromName}" <${safeFromEmail}>`,
+      to: attendee.email.trim(),
+      subject: safeSubject,
+      text: `Hi ${attendee.firstName},\n\nYour registration for ${event.name} has been successfully confirmed.\nRegistration Number: ${registrationNumber}\nEvent: ${event.name}\n\n${customMessage || ''}\n\nBest regards,\nThe ${event.name} Team`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-w-xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100 text-gray-800">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff; border-radius: 8px; border: 1px solid #f3f4f6; color: #1f2937;">
           <h1 style="color: #4F46E5; margin-bottom: 20px;">Registration Confirmed!</h1>
-          <p>Hi ${attendee.firstName},</p>
-          <p>Your registration for <strong>${event.name}</strong> has been successfully confirmed.</p>
+          <p>Hi ${safeFirstName},</p>
+          <p>Your registration for <strong>${safeEventName}</strong> has been successfully confirmed.</p>
           
-          <div style="background-color: #f3f4f6; padding: 16px; rounded: 8px; margin: 24px 0;">
-            <p style="margin: 0 0 8px 0;"><strong>Registration Number:</strong> <span style="color: #4F46E5;">${registrationNumber}</span></p>
-            <p style="margin: 0 0 8px 0;"><strong>Event:</strong> ${event.name}</p>
+          <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0;"><strong>Registration Number:</strong> <span style="color: #4F46E5;">${safeRegNumber}</span></p>
+            <p style="margin: 0 0 8px 0;"><strong>Event:</strong> ${safeEventName}</p>
           </div>
 
-          ${customMessage ? `<p style="margin-bottom: 24px;">${customMessage}</p>` : ''}
+          ${safeCustomMessage ? `<p style="margin-bottom: 24px;">${safeCustomMessage}</p>` : ''}
           
           <p>We look forward to seeing you there!</p>
-          <p>Best regards,<br>The ${event.name} Team</p>
+          <p>Best regards,<br>The ${safeEventName} Team</p>
         </div>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -96,15 +130,14 @@ export const emailProvider = {
 
     const { registrationId } = job.payload as {
       registrationId: string;
-      registrationNumber: string;
-      attendee: { firstName: string; lastName: string; email: string };
+      registrationNumber?: string;
     };
-    let { registrationNumber, attendee } = job.payload as {
-      registrationId: string;
-      registrationNumber: string;
-      attendee: { firstName: string; lastName: string; email: string };
-    };
-    // 1. Resolve active QR credential
+
+    if (!registrationId) {
+      throw new Error('registrationId is required for QR delivery');
+    }
+
+    // 1. Resolve active QR credential AND verified attendee details strictly from the database (L3)
     const supabase = createAdminClient();
     const { data: credential, error: credError } = await supabase
       .from('qr_credentials')
@@ -133,29 +166,23 @@ export const emailProvider = {
       throw new Error('Active QR credential not found for this registration');
     }
 
-    // Fallback if payload is missing full attendee info
-    if (!attendee || !attendee.email) {
-      // Types are complex from Supabase relation joins
-      const person = credential.registrations?.event_people?.[0]?.people;
-      if (!person) throw new Error('Attendee details not found');
-      
-      attendee = {
-        firstName: person.first_name,
-        lastName: person.last_name,
-        email: person.email
-      };
-      
-      registrationNumber = credential.registrations?.registration_number;
+    // Strictly enforce recipient email from database record (L3)
+    const person = credential.registrations?.event_people?.[0]?.people;
+    if (!person || !person.email || !isValidEmail(person.email)) {
+      throw new Error('Verified attendee email not found in database');
     }
 
+    const recipientEmail = person.email.trim();
+    const attendeeFirstName = person.first_name || 'Attendee';
+    const attendeeLastName = person.last_name || '';
+    const registrationNumber = credential.registrations?.registration_number || 'N/A';
+
     // Fetch Distance Category for Walkathons
-    let distanceCategoryName = null;
-    
+    let distanceCategoryName: string | null = null;
     if (event.type === 'Walkathon' && credential.registrations?.distance_category_id) {
       const { data: distData } = await supabase
         .from('walkathon_distance_categories')
         .select('name')
-        
         .eq('id', credential.registrations.distance_category_id)
         .maybeSingle();
       if (distData) distanceCategoryName = distData.name;
@@ -170,74 +197,89 @@ export const emailProvider = {
       errorCorrectionLevel: 'H',
       margin: 2,
       width: 200,
-      color: { dark: '#000000', light: '#ffffff' }
+      color: { dark: '#000000', light: '#ffffff' },
     });
-    
+
     const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, '');
 
-    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Date TBA';
-    const eventTime = event?.date ? new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'Time TBA';
+    const eventDate = event?.date
+      ? new Date(event.date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })
+      : 'Date TBA';
+    const eventTime = event?.date
+      ? new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : 'Time TBA';
     const venue = event?.venue || 'Venue TBA';
 
     const transporter = nodemailer.createTransport({
-      host,
+      host: sanitizeHeader(host),
       port: parseInt(port) || 587,
       secure: parseInt(port) === 465,
-      auth: { user, pass }
+      auth: { user: sanitizeHeader(user), pass },
+      connectionTimeout: 10000,
     });
 
+    const safeFromName = sanitizeHeader(fromName || event.name);
+    const safeFromEmail = sanitizeHeader(fromEmail || user);
+    const safeSubject = sanitizeHeader(subject || `Registration Confirmed — ${event.name}`);
+    const safeFirstName = escapeHtml(attendeeFirstName);
+    const safeLastName = escapeHtml(attendeeLastName);
+    const safeEventName = escapeHtml(event.name);
+    const safeRegNumber = escapeHtml(registrationNumber);
+    const safeVenue = escapeHtml(venue);
+    const safeEventDate = escapeHtml(eventDate);
+    const safeEventTime = escapeHtml(eventTime);
+    const safeDistanceCategory = escapeHtml(distanceCategoryName);
+    const safeCustomMessage = escapeHtml(customMessage);
+
     const mailOptions = {
-      from: `"${fromName || event.name}" <${fromEmail || user}>`,
-      to: attendee.email,
-      subject: subject || `Registration Confirmed — ${event.name}`,
+      from: `"${safeFromName}" <${safeFromEmail}>`,
+      to: recipientEmail,
+      subject: safeSubject,
+      text: `Hello ${attendeeFirstName},\n\nYour registration for ${event.name} is confirmed.\nRegistration ID: ${registrationNumber}\nDate: ${eventDate} (${eventTime})\nVenue: ${venue}\n${distanceCategoryName ? `Distance: ${distanceCategoryName}\n` : ''}\n${customMessage || ''}\n\nPresent your attached ticket QR code at the event.\nRegards,\nThe ${event.name} Team`,
       html: `
         <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px 0;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             
-            <!-- Email Header -->
             <div style="padding: 30px; text-align: center; border-bottom: 1px solid #e5e7eb;">
               <h1 style="color: #4F46E5; margin: 0 0 10px 0; font-size: 24px;">Registration Confirmed</h1>
-              <p style="margin: 0; color: #4b5563; font-size: 16px;">Hello ${attendee.firstName}, your registration for <strong>${event.name}</strong> is confirmed.</p>
+              <p style="margin: 0; color: #4b5563; font-size: 16px;">Hello ${safeFirstName}, your registration for <strong>${safeEventName}</strong> is confirmed.</p>
             </div>
 
-            <!-- Ticket Container -->
             <div style="padding: 30px; background-color: #ffffff;">
               <div style="border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
-                <!-- Ticket Header -->
                 <div style="background-color: #4F46E5; padding: 20px; text-align: center; color: white;">
                   <div style="font-size: 12px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px;">ARAM BTS</div>
-                  <div style="font-size: 22px; font-weight: 900;">${event.name}</div>
+                  <div style="font-size: 22px; font-weight: 900;">${safeEventName}</div>
                 </div>
 
-                <!-- Ticket Details -->
                 <div style="padding: 20px;">
                   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                     <tr>
                       <td width="50%" valign="top" style="padding-bottom: 15px;">
                         <div style="font-size: 11px; font-weight: bold; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Attendee</div>
-                        <div style="font-size: 16px; font-weight: bold; color: #111827;">${attendee.firstName} ${attendee.lastName || ''}</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #111827;">${safeFirstName} ${safeLastName}</div>
                       </td>
                       <td width="50%" valign="top" style="padding-bottom: 15px;">
                         <div style="font-size: 11px; font-weight: bold; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Registration ID</div>
-                        <div style="font-size: 14px; font-family: monospace; font-weight: bold; color: #4F46E5;">${registrationNumber}</div>
+                        <div style="font-size: 14px; font-family: monospace; font-weight: bold; color: #4F46E5;">${safeRegNumber}</div>
                       </td>
                     </tr>
                     <tr>
                       <td width="50%" valign="top" style="padding-bottom: 15px;">
                         <div style="font-size: 11px; font-weight: bold; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Date</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #111827;">${eventDate}</div>
-                        <div style="font-size: 12px; color: #6b7280;">${eventTime}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #111827;">${safeEventDate}</div>
+                        <div style="font-size: 12px; color: #6b7280;">${safeEventTime}</div>
                       </td>
                       <td width="50%" valign="top" style="padding-bottom: 15px;">
                         <div style="font-size: 11px; font-weight: bold; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Venue</div>
-                        <div style="font-size: 14px; font-weight: 600; color: #111827;">${venue}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #111827;">${safeVenue}</div>
                       </td>
                     </tr>
-                    ${distanceCategoryName ? `
+                    ${safeDistanceCategory ? `
                     <tr>
                       <td colspan="2" valign="top" style="padding: 12px; background-color: #f3f4ff; border-radius: 8px;">
                         <div style="font-size: 11px; font-weight: bold; color: #4F46E5; text-transform: uppercase; margin-bottom: 4px;">Distance</div>
-                        <div style="font-size: 18px; font-weight: 900; color: #111827;">${distanceCategoryName}</div>
+                        <div style="font-size: 18px; font-weight: 900; color: #111827;">${safeDistanceCategory}</div>
                       </td>
                     </tr>
                     ` : ''}
@@ -251,10 +293,9 @@ export const emailProvider = {
               </div>
             </div>
 
-            <!-- Instructions -->
             <div style="padding: 0 30px 30px 30px; text-align: center;">
-              ${customMessage ? `<p style="margin-bottom: 20px; font-size: 14px; color: #4b5563;">${customMessage}</p>` : ''}
-              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${event.name} Team</p>
+              ${safeCustomMessage ? `<p style="margin-bottom: 20px; font-size: 14px; color: #4b5563;">${safeCustomMessage}</p>` : ''}
+              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${safeEventName} Team</p>
             </div>
           </div>
         </div>
@@ -264,14 +305,12 @@ export const emailProvider = {
           filename: `qr-${registrationNumber}.png`,
           content: qrBase64,
           encoding: 'base64',
-          cid: 'event_ticket_qr'
-        }
-      ]
+          cid: 'event_ticket_qr',
+        },
+      ],
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    await transporter.sendMail(mailOptions);
     return { success: true };
   },
 
@@ -297,47 +336,63 @@ export const emailProvider = {
       expiresAt: string;
     };
 
+    if (!volunteerEmail || !isValidEmail(volunteerEmail)) {
+      throw new Error('INVALID_VOLUNTEER_EMAIL');
+    }
+
     const transporter = nodemailer.createTransport({
-      host,
+      host: sanitizeHeader(host),
       port: parseInt(port) || 587,
       secure: parseInt(port) === 465,
-      auth: { user, pass }
+      auth: { user: sanitizeHeader(user), pass },
+      connectionTimeout: 10000,
     });
 
+    const safeFromName = sanitizeHeader(fromName || event.name);
+    const safeFromEmail = sanitizeHeader(fromEmail || user);
+    const safeSubject = sanitizeHeader(subject || `Scanner Access — ${event.name}`);
+    const safeEventName = escapeHtml(event.name);
+    const safeScannerLink = escapeHtml(scannerLink);
+    const safeZones = (allowedZones || []).map(escapeHtml).join(', ');
+    const safeDistances = (allowedDistances && allowedDistances.length > 0)
+      ? allowedDistances.map(escapeHtml).join(', ')
+      : 'All Participants';
+    const safeExpires = expiresAt ? escapeHtml(new Date(expiresAt).toLocaleString()) : '';
+
     const mailOptions = {
-      from: `"${fromName || event.name}" <${fromEmail || user}>`,
-      to: volunteerEmail,
-      subject: subject || `Scanner Access — ${event.name}`,
+      from: `"${safeFromName}" <${safeFromEmail}>`,
+      to: volunteerEmail.trim(),
+      subject: safeSubject,
+      text: `You have been granted scanner access for ${event.name}.\nAllowed Zones: ${safeZones}\nAllowed Distances: ${safeDistances}\n${safeExpires ? `Expires: ${safeExpires}\n` : ''}\nOpen Scanner Link: ${scannerLink}\n\nSECURITY WARNING: Do not share this link with anyone.\nRegards,\nThe ${event.name} Team`,
       html: `
         <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px 0;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
             
             <div style="padding: 30px; text-align: center; border-bottom: 1px solid #e5e7eb;">
               <h1 style="color: #4F46E5; margin: 0 0 10px 0; font-size: 24px;">Event Scanner Access</h1>
-              <p style="margin: 0; color: #4b5563; font-size: 16px;">You have been granted scanner access for <strong>${event.name}</strong>.</p>
+              <p style="margin: 0; color: #4b5563; font-size: 16px;">You have been granted scanner access for <strong>${safeEventName}</strong>.</p>
             </div>
 
             <div style="padding: 30px;">
-              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Zones:</strong> ${allowedZones.join(', ')}</p>
-              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Distances:</strong> ${allowedDistances.length > 0 ? allowedDistances.join(', ') : 'All Participants'}</p>
-              ${expiresAt ? `<p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Expires:</strong> ${new Date(expiresAt).toLocaleString()}</p>` : ''}
+              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Zones:</strong> ${safeZones}</p>
+              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Distances:</strong> ${safeDistances}</p>
+              ${safeExpires ? `<p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Expires:</strong> ${safeExpires}</p>` : ''}
               
               <div style="text-align: center; margin-top: 30px;">
-                <a href="${scannerLink}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">Open Scanner</a>
+                <a href="${safeScannerLink}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">Open Scanner</a>
               </div>
             </div>
 
             <div style="padding: 0 30px 30px 30px; text-align: center;">
               <p style="margin-bottom: 20px; font-size: 14px; color: #ef4444; font-weight: bold;">SECURITY WARNING: Do not share this link with anyone. It provides direct scanning authorization without a password.</p>
-              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${event.name} Team</p>
+              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${safeEventName} Team</p>
             </div>
           </div>
         </div>
-      `
+      `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: %s", info.messageId);
+    await transporter.sendMail(mailOptions);
     return { success: true };
   },
 
@@ -362,63 +417,74 @@ export const emailProvider = {
       distance: string;
       certificateUrl: string;
     };
-    
-    // Download certificate from storage
+
+    if (!email || !isValidEmail(email)) {
+      throw new Error('INVALID_CERTIFICATE_RECIPIENT_EMAIL');
+    }
+
     const supabase = createAdminClient();
     const { data: fileData, error: dlError } = await supabase.storage.from('certificates').download(certificateUrl);
-    
+
     if (dlError || !fileData) {
-      throw new Error(`Failed to download certificate image: ${dlError?.message}`);
+      throw new Error('Failed to download certificate image');
     }
-    
+
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
     const transporter = nodemailer.createTransport({
-      host,
+      host: sanitizeHeader(host),
       port: parseInt(port) || 587,
       secure: parseInt(port) === 465,
-      auth: { user, pass }
+      auth: { user: sanitizeHeader(user), pass },
+      connectionTimeout: 10000,
     });
 
+    const safeFromName = sanitizeHeader(fromName || event.name);
+    const safeFromEmail = sanitizeHeader(fromEmail || user);
+    const safeSubject = sanitizeHeader(`Your Certificate of Participation — ${event.name}`);
+    const safeName = escapeHtml(name);
+    const safeEventName = escapeHtml(event.name);
+    const safeDistance = escapeHtml(distance);
+    const safeCertNumber = escapeHtml(certificateNumber);
+
     const mailOptions = {
-      from: `"${fromName || event.name}" <${fromEmail || user}>`,
-      to: email,
-      subject: `Your Certificate of Participation — ${event.name}`,
+      from: `"${safeFromName}" <${safeFromEmail}>`,
+      to: email.trim(),
+      subject: safeSubject,
+      text: `Hi ${name},\n\nCongratulations on successfully participating in the ${event.name} ${distance} Category.\nCertificate Number: ${certificateNumber}\n\nPlease find your official certificate attached to this email.\n\nBest regards,\nThe ${event.name} Team`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-w-xl mx-auto p-6 bg-white rounded-lg shadow-sm border border-gray-100 text-gray-800">
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff; border-radius: 8px; border: 1px solid #f3f4f6; color: #1f2937;">
           <h1 style="color: #4F46E5; margin-bottom: 20px;">Certificate Ready!</h1>
-          <p>Hi ${name},</p>
-          <p>Congratulations on successfully participating in the <strong>${event.name}</strong> ${distance} Category.</p>
+          <p>Hi ${safeName},</p>
+          <p>Congratulations on successfully participating in the <strong>${safeEventName}</strong> ${safeDistance} Category.</p>
           
-          <div style="background-color: #f3f4f6; padding: 16px; rounded: 8px; margin: 24px 0;">
-            <p style="margin: 0 0 8px 0;"><strong>Certificate Number:</strong> <span style="color: #4F46E5;">${certificateNumber}</span></p>
-            <p style="margin: 0 0 8px 0;"><strong>Distance:</strong> ${distance}</p>
+          <div style="background-color: #f3f4f6; padding: 16px; border-radius: 8px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0;"><strong>Certificate Number:</strong> <span style="color: #4F46E5;">${safeCertNumber}</span></p>
+            <p style="margin: 0 0 8px 0;"><strong>Distance:</strong> ${safeDistance}</p>
           </div>
 
           <p>Please find your official certificate attached to this email.</p>
           
-          <p>Best regards,<br>The ${event.name} Team</p>
+          <p>Best regards,<br>The ${safeEventName} Team</p>
         </div>
       `,
       attachments: [
         {
-          filename: `${certificateNumber}.png`,
+          filename: `${safeCertNumber}.png`,
           content: buffer,
-          contentType: 'image/png'
-        }
-      ]
+          contentType: 'image/png',
+        },
+      ],
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Certificate email sent: %s", info.messageId);
-    
-    // Update email status
-    await supabase.from('certificate_issuances')
+    await transporter.sendMail(mailOptions);
+
+    await supabase
+      .from('certificate_issuances')
       .update({ email_status: 'sent' })
       .eq('certificate_number', certificateNumber);
-      
+
     return { success: true };
   },
-
 };

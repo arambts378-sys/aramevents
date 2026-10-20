@@ -7,18 +7,7 @@ import {
 } from '@/services/organizerMailer';
 import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
 import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
-
-function getClientIp(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp.trim();
-  }
-  return '127.0.0.1';
-}
+import { getTrustedClientIp } from '@/lib/security/clientIp';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const normEmail = normalizeEmail(body.email as string);
-    const clientIp = getClientIp(req);
+    const clientIp = getTrustedClientIp(req);
 
     // Cooldown + hourly limits apply identically whether or not the email has an account,
     // so throttling responses cannot be used to probe for registered emails.

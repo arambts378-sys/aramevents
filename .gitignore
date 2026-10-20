@@ -61,6 +61,7 @@ next-env.d.ts
 /test_sharp.ts
 /test_ticket.ts
 /verify_db.js
+/scripts/test_rpc.js
 /lint_output.txt
 /ticket_test.png
 *.log

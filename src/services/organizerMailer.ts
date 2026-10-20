@@ -1,8 +1,6 @@
 import nodemailer from 'nodemailer';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { decryptSecret } from '@/utils/encryption';
 
-interface SmtpOptions {
+export interface SmtpOptions {
   host: string;
   port: number;
   secure: boolean;
@@ -12,68 +10,32 @@ interface SmtpOptions {
   fromName: string;
 }
 
-async function resolveSmtpConfig(): Promise<SmtpOptions | null> {
-  // 1. Check environment variables
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+/**
+ * Resolves platform SMTP transport credentials.
+ * SECURITY FIX (H2): Platform credentials MUST be sourced exclusively from trusted
+ * platform environment configuration. Under NO circumstances should signup verification
+ * OTPs fall back to tenant/customer event_integrations records.
+ */
+export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
+  const host = process.env.PLATFORM_SMTP_HOST || process.env.SMTP_HOST;
+  const user = process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER;
+  const pass = process.env.PLATFORM_SMTP_PASS || process.env.SMTP_PASS;
+
+  if (host && user && pass) {
+    const rawPort = process.env.PLATFORM_SMTP_PORT || process.env.SMTP_PORT || '587';
+    const port = parseInt(rawPort, 10);
+    const fromEmail = process.env.PLATFORM_SMTP_FROM || process.env.SMTP_FROM || user;
+    const fromName = process.env.PLATFORM_SMTP_FROM_NAME || process.env.SMTP_FROM_NAME || 'ARAM BTS';
+
     return {
-      host: process.env.SMTP_HOST,
+      host,
       port,
       secure: port === 465,
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-      fromEmail: process.env.SMTP_FROM || process.env.SMTP_USER,
-      fromName: process.env.SMTP_FROM_NAME || 'ARAM BTS',
+      user,
+      pass,
+      fromEmail,
+      fromName,
     };
-  }
-
-  // 2. Query existing active email integration in Supabase
-  try {
-    const adminClient = createAdminClient();
-    const { data, error } = await adminClient
-      .from('event_integrations')
-      .select('config')
-      .eq('provider', 'email')
-      .eq('is_active', true)
-      .limit(1)
-      .maybeSingle();
-
-    if (!error && data?.config) {
-      const config = data.config as {
-        host?: string;
-        port?: string | number;
-        user?: string;
-        pass?: string;
-        from?: string;
-        fromEmail?: string;
-        fromName?: string;
-      };
-
-      if (config.host && config.user && config.pass) {
-        let rawPass = config.pass;
-        if (rawPass.startsWith('v1:')) {
-          try {
-            rawPass = decryptSecret(rawPass);
-          } catch (decErr) {
-            console.error('Failed to decrypt SMTP secret from integration config:', decErr);
-            return null;
-          }
-        }
-
-        const port = typeof config.port === 'string' ? parseInt(config.port, 10) : config.port || 465;
-        return {
-          host: config.host,
-          port,
-          secure: port === 465,
-          user: config.user,
-          pass: rawPass,
-          fromEmail: config.fromEmail || config.from || config.user,
-          fromName: config.fromName || 'ARAM BTS',
-        };
-      }
-    }
-  } catch (err) {
-    console.warn('Could not retrieve SMTP credentials from event_integrations:', err);
   }
 
   return null;
@@ -84,7 +46,16 @@ export async function sendOrganizerVerificationEmail(
   otpCode: string,
   expirationMinutes: number = 10
 ): Promise<{ success: boolean; messageId?: string }> {
-  const smtp = await resolveSmtpConfig();
+  const smtp = await resolvePlatformSmtpConfig();
+
+  if (!smtp) {
+    // In automated tests or local development without platform credentials, allow explicit mock or simulation
+    if (process.env.NODE_ENV === 'test' || process.env.ALLOW_SIMULATED_EMAIL === 'true') {
+      return { success: true, messageId: 'simulated-dev-id' };
+    }
+    // Fail closed in production / live environments
+    throw new Error('Platform email delivery service is not configured. Please contact support.');
+  }
 
   const subject = 'Verify your ARAM BTS organizer account';
 
@@ -186,12 +157,6 @@ If you did not request this account creation, please ignore this email.
 © 2026 ARAM BTS.
 `.trim();
 
-  if (!smtp) {
-    // In dev environment when no SMTP is configured, log sanitized notice
-    console.info(`[OrganizerMailer] Simulated email dispatched to ${toEmail} (SMTP not configured). Code generated securely.`);
-    return { success: true, messageId: 'simulated-dev-id' };
-  }
-
   const transporter = nodemailer.createTransport({
     host: smtp.host,
     port: smtp.port,
@@ -222,11 +187,18 @@ If you did not request this account creation, please ignore this email.
 export async function sendExistingAccountNoticeEmail(
   toEmail: string
 ): Promise<{ success: boolean; messageId?: string }> {
-  const smtp = await resolveSmtpConfig();
+  const smtp = await resolvePlatformSmtpConfig();
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const loginUrl = `${appUrl}/login`;
   const recoveryUrl = `${appUrl}/forgot-password`;
   const subject = 'You already have an ARAM BTS account';
+
+  if (!smtp) {
+    if (process.env.NODE_ENV === 'test' || process.env.ALLOW_SIMULATED_EMAIL === 'true') {
+      return { success: true, messageId: 'simulated-dev-id' };
+    }
+    throw new Error('Platform email delivery service is not configured. Please contact support.');
+  }
 
   const html = `
 <!DOCTYPE html>
@@ -265,11 +237,6 @@ Reset password: ${recoveryUrl}
 
 If this wasn't you, you can safely ignore this email.
 `.trim();
-
-  if (!smtp) {
-    console.info(`[OrganizerMailer] Simulated existing-account notice dispatched to ${toEmail} (SMTP not configured).`);
-    return { success: true, messageId: 'simulated-dev-id' };
-  }
 
   const transporter = nodemailer.createTransport({
     host: smtp.host,

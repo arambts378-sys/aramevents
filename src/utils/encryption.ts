@@ -55,10 +55,23 @@ export function decryptSecret(encryptedPayload: string): string {
 
   const [, ivHex, authTagHex, ciphertextHex] = parts;
 
+  if (ivHex.length !== IV_LENGTH * 2) {
+    throw new Error('Invalid IV length: must be exactly 16 bytes.');
+  }
+  if (authTagHex.length !== 32) {
+    throw new Error('Invalid authentication tag length: must be exactly 16 bytes.');
+  }
+
   const iv = Buffer.from(ivHex, 'hex');
+  if (iv.length !== IV_LENGTH) {
+    throw new Error('Invalid IV byte length.');
+  }
   const authTag = Buffer.from(authTagHex, 'hex');
+  if (authTag.length !== 16) {
+    throw new Error('Invalid authentication tag byte length.');
+  }
+
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  
   decipher.setAuthTag(authTag);
 
   let decrypted = decipher.update(ciphertextHex, 'hex', 'utf8');

@@ -6,6 +6,9 @@
 const Module = require('node:module');
 const path = require('node:path');
 
+process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+process.env.OTP_PEPPER_SECRET = process.env.OTP_PEPPER_SECRET || 'test-otp-pepper-secret-32-chars-long-x!';
+
 const srcRoot = path.resolve(__dirname, '..', 'src');
 
 const originalResolve = Module._resolveFilename;

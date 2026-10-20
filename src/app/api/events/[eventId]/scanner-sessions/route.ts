@@ -63,8 +63,12 @@ export async function POST(
     const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
     const allowedScopes = { distance_category_ids: distanceCategoryIds };
     
-    // Set default expiration to 24 hours if not provided
-    const expDate = expiresAt ? new Date(expiresAt) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Enforce maximum token lifetime of 7 days (M7)
+    const MAX_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000;
+    const requestedExp = expiresAt ? new Date(expiresAt).getTime() : Date.now() + 24 * 60 * 60 * 1000;
+    const maxAllowedExp = Date.now() + MAX_LIFETIME_MS;
+    const finalExpTime = Math.min(Math.max(requestedExp, Date.now() + 60 * 1000), maxAllowedExp);
+    const expDate = new Date(finalExpTime);
 
     const adminSupabase = createAdminClient();
 
@@ -113,13 +117,6 @@ export async function POST(
       return NextResponse.json({ error: 'Email integration is not configured for this event.' }, { status: 400 });
     }
 
-    // Format data for email
-    const allowedZoneNames = zones.map(z => z.id).map(id => {
-      const zone = zones.find(z => z.id === id);
-      return zone ? zone.id : 'Unknown Zone'; // Should map to names if we queried them, but we only queried IDs in `zones`. Let's assume the UI sends it or we can fetch names. Wait, we fetched zones with `select('id')`.
-    });
-
-    // Actually, let's fetch names for email
     const { data: fullZones } = await supabase.from('access_zones').select('name').in('id', zoneIds);
     const zoneNames = fullZones?.map(z => z.name) || [];
 
@@ -144,11 +141,12 @@ export async function POST(
     } catch (emailErr: any) {
       // Rollback session if email fails
       await adminSupabase.from('volunteer_scanner_sessions').delete().eq('id', session.id);
-      console.error('Failed to send scanner access email:', emailErr);
+      console.error('Failed to send scanner access email');
       return NextResponse.json({ error: 'Failed to send email. Session was not created.' }, { status: 500 });
     }
 
-    console.log(`[EMAIL DISPATCH] Sent scanner link ${scannerLink} to ${volunteerEmail} for event ${event.name}`);
+    // Retain only safe metadata in logs; never log raw tokens or full secret URLs (M7)
+    console.log(`[SCANNER_SESSION] Created session ${session.id} for event ${event.id}`);
 
     return NextResponse.json({
       success: true,
@@ -156,8 +154,8 @@ export async function POST(
     });
 
   } catch (error: any) {
-    console.error('Error creating scanner session:', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    console.error('Error creating scanner session:', error?.message || error);
+    return NextResponse.json({ error: 'Failed to create scanner session.' }, { status: 500 });
   }
 }
 

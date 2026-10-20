@@ -80,11 +80,16 @@ function InviteRedemption() {
           </p>
           <button 
             onClick={() => {
-              // Ensure nextParam is a safe internal relative path
-              if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) {
-                router.push(nextParam);
-              } else {
+              // Ensure nextParam is a safe internal relative path (L1)
+              const isSafeRelative = (p: string | null) =>
+                !!p && /^\/[a-zA-Z0-9_\-/.?&=#%]+$/.test(p) && !p.startsWith('//') && !p.includes('\\');
+
+              if (isSafeRelative(nextParam)) {
+                router.push(nextParam!);
+              } else if (eventId) {
                 router.push(`/app/events/${eventId}/operations/check-in`);
+              } else {
+                router.push('/app');
               }
             }}
             className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"

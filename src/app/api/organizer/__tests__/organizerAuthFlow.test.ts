@@ -329,6 +329,62 @@ describe('OTP verification and provisioning', () => {
       memberships: 1,
     });
   });
+
+  test('H5 regression: concurrent incorrect OTP attempts lock out cleanly within max attempts', async () => {
+    await register();
+    const user = db.userByEmail('asha@example.com')!;
+    const otp = db.latestOtp('asha@example.com') as string;
+    const wrong = otp === '123456' ? '654321' : '123456';
+
+    // 10 concurrent bad guesses
+    const results = await Promise.all(
+      Array.from({ length: 10 }).map(() => verify('asha@example.com', wrong))
+    );
+    // All 10 must fail
+    assert.equal(results.every((r) => r.status === 400), true);
+
+    // Any subsequent attempt, even with the correct code, must fail due to lock out
+    const subsequent = await verify('asha@example.com', otp);
+    assert.equal(subsequent.status, 400);
+    assert.equal(user.email_confirmed_at, null, 'account remains unconfirmed');
+  });
+
+  test('H6 regression: unfinished registration by attacker has password replaced upon legitimate owner verification', async () => {
+    // 1. Attacker registers victim email with attacker password
+    const attackerReg = await register({
+      email: 'victim@example.com',
+      password: 'AttackerPassword123!',
+      confirmPassword: 'AttackerPassword123!',
+      fullName: 'Attacker Impersonator',
+      organizationName: 'Attacker Org',
+    });
+    assert.equal(attackerReg.status, 200);
+    const user = db.userByEmail('victim@example.com')!;
+    assert.equal(user.password, 'AttackerPassword123!');
+    assert.equal(user.email_confirmed_at, null);
+
+    // 2. Legitimate user later registers same email with legitimate password
+    db.ageChallenges('victim@example.com', 120); // age past cooldown
+    const legitimateReg = await register({
+      email: 'victim@example.com',
+      password: 'LegitimatePassword456!',
+      confirmPassword: 'LegitimatePassword456!',
+      fullName: 'Real Victim Owner',
+      organizationName: 'Real Victim Org',
+    });
+    assert.equal(legitimateReg.status, 200);
+
+    // 3. Legitimate user verifies with the OTP sent to their email
+    const otp = db.latestOtp('victim@example.com') as string;
+    const verifyRes = await verify('victim@example.com', otp);
+    assert.equal(verifyRes.status, 200);
+    assert.ok(user.email_confirmed_at);
+
+    // 4. Crucial H6 check: user password MUST now be LegitimatePassword456!, NOT AttackerPassword123!
+    assert.equal(user.password, 'LegitimatePassword456!');
+    assert.equal(user.user_metadata.full_name, 'Real Victim Owner');
+    assert.equal(user.user_metadata.organization_name, 'Real Victim Org');
+  });
 });
 
 describe('resend', () => {
