@@ -4,6 +4,16 @@ import Link from 'next/link';
 export function QuickActions() {
   const actions = [
     {
+      title: 'Create with AI',
+      description: 'Upload flyer, done',
+      href: '/app/agent',
+      icon: 'smart_toy',
+      iconBg: 'bg-gradient-to-br from-[#7C5CFC]/15 to-[#6366F1]/15 text-[#7C5CFC]',
+      borderHover: 'hover:border-[#7C5CFC]/50',
+      badgeHover: 'group-hover:bg-gradient-to-br group-hover:from-[#7C5CFC] group-hover:to-[#6366F1] group-hover:text-white',
+      badge: 'NEW',
+    },
+    {
       title: 'Create Event',
       description: 'Launch new experience',
       href: '/app/events/new',
@@ -52,24 +62,35 @@ export function QuickActions() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         {actions.map((action, idx) => (
           <Link
             key={idx}
             href={action.href}
-            className={`bg-white border border-[#E6E2F0] rounded-xl p-3.5 flex items-center gap-3 transition-all text-left group shadow-xs hover:shadow-sm ${action.borderHover}`}
+            className={`bg-white border rounded-xl p-3.5 flex items-center gap-3 transition-all text-left group shadow-xs hover:shadow-sm ${action.borderHover} ${
+              'badge' in action && action.badge
+                ? 'border-[#7C5CFC]/25 ring-1 ring-[#7C5CFC]/10'
+                : 'border-[#E6E2F0]'
+            }`}
           >
             <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors shadow-xs ${action.iconBg} ${action.badgeHover}`}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all shadow-xs ${action.iconBg} ${action.badgeHover}`}
             >
               <span className="material-symbols-outlined text-[19px]">
                 {action.icon}
               </span>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-bold text-[#17152B] leading-tight font-jakarta truncate group-hover:text-[#6366F1] transition-colors">
-                {action.title}
-              </span>
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[13px] font-bold text-[#17152B] leading-tight font-jakarta truncate transition-colors ${'badge' in action && action.badge ? 'group-hover:text-[#7C5CFC]' : 'group-hover:text-[#6366F1]'}`}>
+                  {action.title}
+                </span>
+                {'badge' in action && action.badge && (
+                  <span className="text-[8px] font-bold bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white rounded-full px-1.5 py-0.5 leading-none shrink-0">
+                    {action.badge}
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] text-[#77738A] mt-0.5 truncate font-normal">
                 {action.description}
               </span>
@@ -80,3 +101,4 @@ export function QuickActions() {
     </section>
   );
 }
+

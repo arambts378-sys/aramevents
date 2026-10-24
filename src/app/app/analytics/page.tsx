@@ -76,8 +76,8 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
-      <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -86,7 +86,7 @@ export default function AnalyticsPage() {
         />
 
         {/* Right Main Workspace */}
-        <main className="flex-1 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 py-8 flex flex-col gap-6 overflow-y-auto w-full md:w-[calc(100%-230px)]">
+        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
           {/* Top Breadcrumb & Mobile Menu Toggle */}
           <div className="flex items-center justify-between pb-2">
             <div className="flex items-center gap-1.5 text-xs text-[#77738A]">

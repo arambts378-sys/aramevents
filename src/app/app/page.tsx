@@ -73,8 +73,8 @@ export default function DashboardPage() {
   }, [events, activeWorkspace, isHydrated]);
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
-      <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -83,12 +83,34 @@ export default function DashboardPage() {
         />
 
         {/* Right Main Workspace */}
-        <main className="flex-1 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 py-8 flex flex-col gap-8 overflow-y-auto w-full md:w-[calc(100%-230px)]">
+        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 overflow-y-auto w-full">
           {/* Workspace Header */}
           <WorkspaceHeader
             currentUser={currentUser}
             onOpenMobileMenu={() => setMobileMenuOpen(true)}
           />
+
+          {/* Workspace Suspension Notice */}
+          {activeWorkspace?.is_suspended && (
+            <div
+              className="p-4 rounded-2xl bg-[#FEF2F2] border border-[#FCA5A5]/60 text-[#991B1B] flex items-start gap-3 shadow-xs animate-in fade-in"
+              role="alert"
+            >
+              <span className="material-symbols-outlined text-[22px] text-[#DC2626] shrink-0 mt-0.5">
+                pause_circle
+              </span>
+              <div className="flex-1 text-xs">
+                <p className="font-bold text-sm">Workspace Suspended by Platform Administration</p>
+                <p className="mt-1 leading-relaxed text-[#7F1D1D]">
+                  {activeWorkspace.suspended_reason ||
+                    'This workspace is currently under administrative suspension. Event creation and public registrations are restricted.'}
+                </p>
+                <p className="mt-2 text-[11px] font-medium text-[#991B1B]">
+                  Your data and events remain preserved. For inquiries or appeal, please contact platform administration.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* KPI Overview (4 Cards) */}
           <KpiOverview

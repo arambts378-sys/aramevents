@@ -230,6 +230,8 @@ export interface WorkspaceDetails {
   owner_id: string;
   email?: string | null;
   logo_url?: string | null;
+  is_suspended?: boolean;
+  suspended_reason?: string | null;
   created_at?: string;
   updated_at?: string;
 }

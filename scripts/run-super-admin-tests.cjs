@@ -12,6 +12,7 @@ const result = spawnSync(
     'src/lib/auth/__tests__/provisionInitialSuperAdmin.test.ts',
     'src/lib/super-admin/__tests__/customerDirectory.test.ts',
     'src/lib/super-admin/__tests__/activity.test.ts',
+    'src/lib/super-admin/__tests__/masterAdminPortal.test.ts',
   ],
   {
     stdio: 'inherit',

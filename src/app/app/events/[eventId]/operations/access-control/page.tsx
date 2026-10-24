@@ -347,11 +347,11 @@ export default function AccessControlPage() {
   // Loading state
   if (!isHydrated || loading) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
-        <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 bg-[#F7F5FF] min-h-screen px-6 py-8 lg:px-12 lg:py-12 overflow-y-auto w-full md:w-[calc(100%-230px)]">
-            <div className="max-w-[1240px] mx-auto space-y-8 animate-pulse">
+          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+            <div className="w-full space-y-8 animate-pulse">
               <div className="h-5 w-32 bg-[#E6E2F0] rounded-md" />
               <div className="flex justify-between items-end">
                 <div className="space-y-2">
@@ -376,10 +376,10 @@ export default function AccessControlPage() {
   // Event not found state
   if (!event) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
-        <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 bg-[#F7F5FF] min-h-screen p-6 flex items-center justify-center w-full md:w-[calc(100%-230px)]">
+          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen p-6 flex items-center justify-center w-full">
             <div className="max-w-md w-full bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs space-y-4">
               <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
                 <span className="material-symbols-outlined text-[24px]">event_busy</span>
@@ -402,8 +402,8 @@ export default function AccessControlPage() {
   }
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen">
-      <div className="min-h-screen flex flex-row w-full max-w-[1440px] mx-auto bg-[#F7F5FF]">
+    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
         {/* Persistent Left Sidebar */}
         <Sidebar
           currentUser={currentUser}
@@ -412,8 +412,8 @@ export default function AccessControlPage() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-[#F7F5FF] min-h-screen overflow-y-auto w-full md:w-[calc(100%-230px)]">
-          <div className="max-w-[1240px] mx-auto px-6 py-8 lg:px-10 lg:py-10 space-y-8">
+        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+          <div className="w-full space-y-8">
             {/* Top Navigation & Breadcrumb */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">

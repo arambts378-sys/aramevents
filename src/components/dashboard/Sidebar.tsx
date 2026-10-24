@@ -85,6 +85,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
   const navItems = [
     { name: 'Home', path: '/app', icon: 'home', exact: true },
     { name: 'Events', path: '/app/events', icon: 'calendar_today', exact: false },
+    { name: 'AI Event Agent', path: '/app/agent', icon: 'smart_toy', exact: false, badge: 'AI' },
     { name: 'People', path: '/app/people', icon: 'group', exact: false },
     { name: 'Analytics', path: '/app/analytics', icon: 'bar_chart', exact: false },
     { name: 'Settings', path: '/app/settings', icon: 'settings', exact: false },
@@ -141,40 +142,39 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                   <span className="font-space font-bold text-[#17152B] tracking-tight text-[16px]">
                     ARAM BTS
                   </span>
-                  <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
                 </div>
               </Link>
-              {onClose && (
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={onClose}
-                  data-sidebar-close
-                  className="md:hidden min-h-11 min-w-11 text-[#77738A] hover:text-[#17152B] p-2 rounded-md"
-                  aria-label="Close menu"
+                  onClick={() => setCollapsed((value) => !value)}
+                  aria-label={collapsed ? 'Expand workspace sidebar' : 'Collapse workspace sidebar'}
+                  aria-expanded={!collapsed}
+                  title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                  className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-[#77738A] hover:bg-[#F6F1FF] hover:text-[#17152B] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]"
                 >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
+                  <span aria-hidden="true" className="material-symbols-outlined text-[19px]">
+                    {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
+                  </span>
                 </button>
-              )}
+                {onClose && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    data-sidebar-close
+                    className="md:hidden min-h-11 min-w-11 text-[#77738A] hover:text-[#17152B] p-2 rounded-md"
+                    aria-label="Close menu"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">close</span>
+                  </button>
+                )}
+              </div>
             </div>
             <div className={`text-[#77738A] text-[10px] tracking-wider uppercase font-semibold mt-1.5 pl-0.5 ${
               collapsed ? 'hidden' : 'block'
             }`}>
               EVENT OPERATING SYSTEM
             </div>
-            <button
-              type="button"
-              onClick={() => setCollapsed((value) => !value)}
-              aria-label={collapsed ? 'Expand workspace sidebar' : 'Collapse workspace sidebar'}
-              aria-expanded={!collapsed}
-              className="mt-3 hidden min-h-10 w-full items-center justify-center rounded-lg text-[#77738A] hover:bg-[#F6F1FF] hover:text-[#17152B] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC] md:flex"
-            >
-              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
-                {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
-              </span>
-              <span className={collapsed ? 'sr-only' : 'ml-2 text-xs font-semibold'}>
-                Collapse sidebar
-              </span>
-            </button>
           </div>
 
           {/* Navigation Menu */}
@@ -205,10 +205,16 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                   >
                     {item.icon}
                   </span>
-                  <span className={collapsed ? 'md:sr-only' : ''}>{item.name}</span>
+                  <span className={`${collapsed ? 'md:sr-only' : ''} flex-1 min-w-0`}>{item.name}</span>
+                  {'badge' in item && item.badge && !collapsed && (
+                    <span className="text-[9px] font-bold bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white rounded-full px-1.5 py-0.5 leading-none shrink-0">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
+
           </nav>
         </div>
 

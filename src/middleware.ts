@@ -2,8 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   })
 
   const supabase = createServerClient(
@@ -17,7 +22,9 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders,
+            },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -36,13 +43,24 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/signup' ||
     request.nextUrl.pathname === '/organizer/register'
   const isVerifyRoute = request.nextUrl.pathname === '/organizer/verify'
-  const isProtectedRoute =
+  const isAdminLogin = request.nextUrl.pathname === '/super-admin/login'
+  const isSuperAdminRoute =
+    request.nextUrl.pathname.startsWith('/super-admin') && !isAdminLogin
+  const isAppProtectedRoute =
     request.nextUrl.pathname.startsWith('/app') ||
-    request.nextUrl.pathname.startsWith('/super-admin') ||
     request.nextUrl.pathname.startsWith('/check-in')
 
-  // Unauthenticated user attempting to access protected route
-  if (isProtectedRoute && !user) {
+  // Unauthenticated user attempting to access protected admin route
+  if (isSuperAdminRoute && !user) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/super-admin/login'
+    redirectUrl.search = ''
+    redirectUrl.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Unauthenticated user attempting to access protected organizer route
+  if (isAppProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.search = ''
@@ -51,7 +69,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Authenticated but unverified user attempting to access protected route
-  if (isProtectedRoute && user && !user.email_confirmed_at) {
+  if ((isSuperAdminRoute || isAppProtectedRoute) && user && !user.email_confirmed_at) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/organizer/verify'
     if (user.email) {
@@ -60,7 +78,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Confirmed user visiting auth / register / verify routes
+  // Confirmed user visiting standard auth / register / verify routes
   if ((isAuthRoute || isVerifyRoute) && user && user.email_confirmed_at) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/app'
