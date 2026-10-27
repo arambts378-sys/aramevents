@@ -1,5 +1,5 @@
 import 'server-only';
-import { forbidden, redirect } from 'next/navigation';
+import { forbidden, redirect, unstable_rethrow } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { resolvePlatformConsoleAccess } from '@/lib/auth/platformAccess';
 import type {
@@ -64,6 +64,8 @@ export async function getAdminSessionUser(): Promise<PlatformAdminUser | null> {
       createdAt: new Date().toISOString(),
     };
   } catch (err) {
+    // Let Next.js control-flow signals (dynamic rendering, redirect, forbidden) propagate
+    unstable_rethrow(err);
     console.error('Failed to get admin session user:', err);
     return null;
   }
@@ -77,6 +79,7 @@ export async function getPlatformOverview(): Promise<ServiceResult<PlatformOverv
     // exist yet if the full master admin migration hasn't been applied.
     return await fallbackOverviewMetrics(supabase);
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in getPlatformOverview:', err);
     return { ok: false, message: 'Platform overview metrics could not be loaded.' };
   }
@@ -146,6 +149,7 @@ async function fallbackOverviewMetrics(
       },
     };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Fallback overview metrics failed:', err);
     return { ok: false, message: 'Platform metrics could not be loaded.' };
   }
@@ -229,6 +233,7 @@ export async function getPlatformOrganizers(query: {
       },
     };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in getPlatformOrganizers:', err);
     return { ok: false, message: 'Failed to load organizers directory.' };
   }
@@ -249,6 +254,7 @@ export async function getPlatformEvents(query: {
     // Use direct query fallback since list_platform_events RPC is not in remote DB
     return await fallbackEventsList(supabase, query);
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in getPlatformEvents:', err);
     return { ok: false, message: 'Platform events could not be loaded.' };
   }
@@ -338,6 +344,7 @@ async function fallbackEventsList(
       },
     };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Fallback events list failed:', err);
     return { ok: false, message: 'Events could not be loaded.' };
   }
@@ -367,6 +374,7 @@ export async function manageWorkspaceSuspension(
 
     return { ok: true, data: { ok: true } };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in manageWorkspaceSuspension:', err);
     return { ok: false, message: 'An unexpected error occurred while updating status.' };
   }
@@ -396,6 +404,7 @@ export async function moderatePlatformEvent(
 
     return { ok: true, data: { ok: true } };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in moderatePlatformEvent:', err);
     return { ok: false, message: 'An unexpected error occurred during event moderation.' };
   }
@@ -476,6 +485,7 @@ export async function getPlatformAuditLogs(query: {
       },
     };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in getPlatformAuditLogs:', err);
     return { ok: false, message: 'Audit logs could not be loaded.' };
   }
@@ -498,6 +508,7 @@ export async function getPlatformAnalytics(): Promise<ServiceResult<PlatformAnal
       },
     };
   } catch (err) {
+    unstable_rethrow(err);
     console.error('Error in getPlatformAnalytics:', err);
     return { ok: false, message: 'Platform analytics could not be loaded.' };
   }

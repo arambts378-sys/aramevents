@@ -1,0 +1,30 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// Deployed Worker name. This is the Cloudflare Worker, not the npm package name ("arambts").
+	"name": "aramevents",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-08-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference service binding used by OpenNext; it must match "name" above.
+			// See https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "aramevents"
+		}
+	],
+	"images": {
+		// Image optimization for next/image. See https://opennext.js.org/cloudflare/howtos/image
+		"binding": "IMAGES"
+	},
+	"observability": {
+		"enabled": true
+	}
+	// R2 incremental cache is not enabled. To enable it, create the bucket
+	// (npx wrangler r2 bucket create aramevents-opennext-cache), add an "r2_buckets" entry with
+	// binding "NEXT_INC_CACHE_R2_BUCKET", and turn on incrementalCache in open-next.config.ts.
+}
