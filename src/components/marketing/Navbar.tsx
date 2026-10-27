@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Instrument_Serif } from 'next/font/google';
+
+// Display face for the "events" half of the wordmark next to the Aram logo
+const wordmarkFont = Instrument_Serif({ weight: '400', style: 'italic', subsets: ['latin'] });
 
 const navigationLinks = [
   { href: '/#features', label: 'Features' },
@@ -32,24 +37,22 @@ export function Navbar() {
         <Link
           href="/"
           onClick={closeMobileMenu}
-          aria-label="ARAM BTS home"
-          className="group flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
+          aria-label="Aram Events home"
+          className="flex items-end gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
         >
-          <div className="relative">
-            <div className="w-9 h-9 rounded-xl bg-ds-accent flex items-center justify-center text-white shadow-md shadow-black/5 group-hover:scale-105 transition-all duration-300">
-              <span className="material-symbols-outlined text-[20px]">deployed_code</span>
-            </div>
-            <div className="absolute -inset-1 rounded-xl bg-ds-accent/20 blur-xs -z-10 group-hover:bg-ds-accent/40 transition-all duration-300" />
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="font-space text-[22px] font-bold text-ds-ink tracking-tight">
-              ARAM <span className="bg-ds-accent bg-clip-text text-transparent">BTS</span>
-            </span>
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
-            </span>
-          </div>
+          <Image
+            src="/aram-logo.png"
+            alt="Aram"
+            width={1382}
+            height={418}
+            priority
+            className="h-7 w-auto"
+          />
+          <span
+            className={`${wordmarkFont.className} text-[30px] italic leading-[0.8] text-ds-ink`}
+          >
+            events
+          </span>
         </Link>
 
         {/* Center: Navigation Links */}
