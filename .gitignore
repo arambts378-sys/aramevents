@@ -78,3 +78,4 @@ next-env.d.ts
 .wrangler
 .dev.vars*
 !.dev.vars.example
+cloudflare-secrets.json

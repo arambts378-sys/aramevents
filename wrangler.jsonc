@@ -22,7 +22,17 @@
 		"binding": "IMAGES"
 	},
 	"observability": {
-		"enabled": true
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"invocation_logs": true,
+			"persist": true
+		},
+		"traces": {
+			"enabled": false,
+			"head_sampling_rate": 1,
+			"persist": true
+		}
 	}
 	// R2 incremental cache is not enabled. To enable it, create the bucket
 	// (npx wrangler r2 bucket create aramevents-opennext-cache), add an "r2_buckets" entry with
