@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'Public ARAM Tickets pricing and purchase terms have not been confirmed for this page.',
+  description: 'Public Aram Events pricing and purchase terms have not been confirmed for this page.',
 };
 
 export default function PricingPage() {
   return (
     <div className="mx-auto flex min-h-[65vh] max-w-3xl flex-col justify-center px-5 py-20 text-center sm:px-8">
       <p className="text-sm font-bold uppercase tracking-[0.14em] text-ds-accent-strong">
-        ARAM Tickets
+        Aram Events
       </p>
       <h1 className="mt-4 text-4xl font-bold tracking-tight text-ds-ink sm:text-5xl">
         Pricing details are being prepared.

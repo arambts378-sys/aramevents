@@ -15,6 +15,7 @@ import {
   type RegistrationField,
   type RegistrationFieldErrors,
 } from '@/lib/validation/auth';
+import { AramLogo } from '@/components/brand/AramLogo';
 
 const INPUT_BASE =
   'w-full px-4 py-2.5 bg-white border rounded-xl text-xs font-semibold text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
@@ -187,25 +188,14 @@ export default function OrganizerRegisterPage() {
       <div className="relative z-10 w-full max-w-[460px] bg-white rounded-3xl p-7 sm:p-9 border border-ds-line shadow-sm flex flex-col items-center">
         {/* Brand Logo & Header */}
         <Link href="/" className="flex flex-col items-center gap-2.5 group mb-5">
-          <div className="relative">
-            <div className="w-13 h-13 rounded-2xl bg-ds-accent flex items-center justify-center text-white shadow-lg shadow-black/5 group-hover:scale-105 transition-all duration-300">
-              <span className="material-symbols-outlined text-[28px]">deployed_code</span>
-            </div>
-            <div className="absolute -inset-1 rounded-2xl bg-ds-accent/25 blur-xs -z-10 group-hover:bg-ds-accent/45 transition-all duration-300" />
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <span className="text-xl font-bold tracking-tight text-ds-ink">
-              ARAM <span className="bg-ds-accent bg-clip-text text-transparent">BTS</span>
-            </span>
-            <span className="text-[11px] text-ds-muted tracking-wider uppercase font-semibold mt-0.5">Events Beyond Boundaries</span>
-          </div>
+          <AramLogo size="lg" priority />
         </Link>
 
         {/* Heading & Subtitle */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-ds-ink tracking-tight">Create your organizer account</h1>
           <p className="text-xs text-ds-muted mt-1.5 font-normal">
-            Start managing your events with ARAM BTS.
+            Start managing your events with Aram Events.
           </p>
         </div>
 
@@ -500,7 +490,7 @@ export default function OrganizerRegisterPage() {
           <span className="material-symbols-outlined text-[14px] text-[#10B981]">verified_user</span>
           <span>Bank-grade 256-bit SSL • Real-time zero-trust auth</span>
         </div>
-        <span>&copy; {new Date().getFullYear()} ARAM BTS. Events Beyond Boundaries.</span>
+        <span>&copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.</span>
       </footer>
     </div>
   );

@@ -24,7 +24,7 @@ export default function RegistrationPropertiesPanel({ section, updateSection }: 
           <input 
             type="text" 
             value={content.title || ''} 
-            placeholder="Join us at ARAM BTS"
+            placeholder="Join us at Aram Events"
             onChange={(e) => updateSection({ title: e.target.value })}
             className="w-full border rounded px-2 py-1.5 bg-white"
           />
@@ -64,7 +64,7 @@ export default function RegistrationPropertiesPanel({ section, updateSection }: 
             onChange={(e) => updateSection({ buttonUrl: e.target.value })}
             className="w-full border rounded px-2 py-1.5 bg-white font-mono text-xs"
           />
-          <p className="text-xs text-gray-500 mt-1">Leave empty to use the default ARAM BTS registration page.</p>
+          <p className="text-xs text-gray-500 mt-1">Leave empty to use the default Aram Events registration page.</p>
         </div>
       </div>
     </div>

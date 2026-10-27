@@ -11,7 +11,7 @@ export function EventWebsiteSection() {
               Build an event website without starting from scratch.
             </h2>
             <p className="text-lg text-brand-muted leading-relaxed mb-8">
-              Create your event website from structured event information or start from an uploaded flyer. ARAM BTS generates a premium, responsive website instantly.
+              Create your event website from structured event information or start from an uploaded flyer. Aram Events generates a premium, responsive website instantly.
             </p>
             
             <div className="bg-brand-white border border-brand-border p-6 shadow-sm mb-8 font-mono text-sm">

@@ -28,7 +28,7 @@ function EventImageWithFallback({
           <span className="material-symbols-outlined text-[24px]">event</span>
         </div>
         <span className="text-[12px] font-bold text-ds-accent tracking-wider uppercase font-space">
-          {format || 'ARAM BTS'}
+          {format || 'Aram Events'}
         </span>
         <span className="text-[10px] text-ds-muted truncate max-w-[160px] text-center mt-0.5">
           {name}

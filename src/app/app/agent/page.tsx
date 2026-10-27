@@ -473,7 +473,7 @@ export default function AgentPage() {
     setStage('done');
     push(
       assistantMsg(
-        "Your event is ready to create. In a live workspace this would add it to your ARAM BTS events.\n\n**This is mock mode, so no record was created.** Once a real AI provider is connected, this button will run the full event creation workflow.\n\nWant to start another event or refine this one?",
+        "Your event is ready to create. In a live workspace this would add it to your Aram Events events.\n\n**This is mock mode, so no record was created.** Once a real AI provider is connected, this button will run the full event creation workflow.\n\nWant to start another event or refine this one?",
       ),
     );
     setExtractedDetails(null);

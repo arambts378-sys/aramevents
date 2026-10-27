@@ -36,7 +36,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ARAM BTS — Event Operating System",
+  title: "Aram Events — Event Operating System",
   description: "One platform. Every event. Unified Event Management Platform",
 };
 

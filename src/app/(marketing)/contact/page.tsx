@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Contact information for ARAM Tickets will be published here once confirmed.',
+  description: 'Contact information for Aram Events will be published here once confirmed.',
 };
 
 export default function ContactPage() {

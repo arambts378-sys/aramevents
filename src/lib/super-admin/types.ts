@@ -1,5 +1,5 @@
 /**
- * ARAM BTS — Master Admin Portal Types
+ * Aram Events — Master Admin Portal Types
  */
 
 export type PlatformRole =

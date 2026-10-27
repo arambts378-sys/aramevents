@@ -984,7 +984,7 @@ export default function CreateEventPage() {
                           </span>
                         </div>
                         <p className="text-[12px] text-ds-muted mt-0.5 font-jakarta">
-                          ARAM BTS will use this flyer when preparing your event website.
+                          Aram Events will use this flyer when preparing your event website.
                         </p>
                       </div>
                     </div>

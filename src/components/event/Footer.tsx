@@ -19,7 +19,7 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
     { label: "Contact", href: "#contact" },
   ];
 
-  const logoText = content.logoText || event?.name || "ARAM BTS";
+  const logoText = content.logoText || event?.name || "Aram Events";
   const copyrightText = content.copyrightText || `${logoText}. All rights reserved.`;
 
   return (

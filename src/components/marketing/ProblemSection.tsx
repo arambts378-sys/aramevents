@@ -10,7 +10,7 @@ export function ProductStatement() {
         </h2>
         
         <p className="text-xl md:text-2xl text-brand-muted max-w-3xl mx-auto leading-relaxed">
-          ARAM BTS connects the entire workflow. From planning and registration to managing attendees, operating on-site, and analyzing the results.
+          Aram Events connects the entire workflow. From planning and registration to managing attendees, operating on-site, and analyzing the results.
         </p>
       </div>
     </section>
@@ -30,7 +30,7 @@ export function ProblemSection() {
               Event teams often manage websites, registration, tickets, spreadsheets, speakers, sponsors, attendees, check-in, communication, and analytics across disconnected platforms. This fragmentation leads to operational friction.
             </p>
             <p className="text-xl font-medium text-brand-maroon">
-              ARAM BTS connects the workflow.
+              Aram Events connects the workflow.
             </p>
           </div>
           

@@ -25,7 +25,7 @@ export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
     const rawPort = process.env.PLATFORM_SMTP_PORT || process.env.SMTP_PORT || '587';
     const port = parseInt(rawPort, 10);
     const fromEmail = process.env.PLATFORM_SMTP_FROM || process.env.SMTP_FROM || user;
-    const fromName = process.env.PLATFORM_SMTP_FROM_NAME || process.env.SMTP_FROM_NAME || 'ARAM BTS';
+    const fromName = process.env.PLATFORM_SMTP_FROM_NAME || process.env.SMTP_FROM_NAME || 'Aram Events';
 
     return {
       host,
@@ -57,7 +57,7 @@ export async function sendOrganizerVerificationEmail(
     throw new Error('Platform email delivery service is not configured. Please contact support.');
   }
 
-  const subject = 'Verify your ARAM BTS organizer account';
+  const subject = 'Verify your Aram Events organizer account';
 
   const html = `
 <!DOCTYPE html>
@@ -82,7 +82,7 @@ export async function sendOrganizerVerificationEmail(
                     <span style="color: #FFFFFF; font-size: 22px; font-weight: 800; line-height: 44px; display: inline-block;">✦</span>
                   </td>
                   <td style="padding-left: 12px; text-align: left;">
-                    <span style="font-size: 20px; font-weight: 800; color: #17152B; letter-spacing: -0.5px; display: block;">ARAM BTS</span>
+                    <span style="font-size: 20px; font-weight: 800; color: #17152B; letter-spacing: -0.5px; display: block;">Aram Events</span>
                     <span style="font-size: 11px; font-weight: 500; color: #77738A; letter-spacing: 0.5px; display: block;">Events Beyond Boundaries</span>
                   </td>
                 </tr>
@@ -97,7 +97,7 @@ export async function sendOrganizerVerificationEmail(
                 Verify your email address
               </h1>
               <p style="font-size: 14px; line-height: 22px; color: #77738A; margin: 0 0 28px;">
-                Welcome to ARAM BTS. Please enter the verification code below to confirm your organizer account and get started.
+                Welcome to Aram Events. Please enter the verification code below to confirm your organizer account and get started.
               </p>
 
               <!-- Verification Code Display -->
@@ -114,7 +114,7 @@ export async function sendOrganizerVerificationEmail(
               <!-- Security Notice -->
               <div style="background-color: #FFFBEB; border: 1px solid #FEF3C7; border-radius: 8px; padding: 12px 16px; text-align: left;">
                 <p style="font-size: 12px; line-height: 18px; color: #92400E; margin: 0;">
-                  <strong>Security notice:</strong> Never share this code with anyone. ARAM BTS representatives will never ask you for your verification code.
+                  <strong>Security notice:</strong> Never share this code with anyone. Aram Events representatives will never ask you for your verification code.
                 </p>
               </div>
             </td>
@@ -127,7 +127,7 @@ export async function sendOrganizerVerificationEmail(
                 If you did not request this account creation, you can safely ignore this email.
               </p>
               <p style="font-size: 11px; color: #A19EB0; margin: 0;">
-                © 2026 ARAM BTS. All rights reserved.
+                © 2026 Aram Events. All rights reserved.
               </p>
             </td>
           </tr>
@@ -141,20 +141,20 @@ export async function sendOrganizerVerificationEmail(
 `;
 
   const text = `
-ARAM BTS — Verify your organizer account
+Aram Events — Verify your organizer account
 
-Welcome to ARAM BTS. Please enter the verification code below to confirm your organizer account:
+Welcome to Aram Events. Please enter the verification code below to confirm your organizer account:
 
 Verification Code: ${otpCode}
 
 This code will expire in ${expirationMinutes} minutes.
 
 SECURITY NOTICE:
-Never share this code with anyone. ARAM BTS representatives will never ask you for your verification code.
+Never share this code with anyone. Aram Events representatives will never ask you for your verification code.
 
 If you did not request this account creation, please ignore this email.
 
-© 2026 ARAM BTS.
+© 2026 Aram Events.
 `.trim();
 
   const transporter = nodemailer.createTransport({
@@ -191,7 +191,7 @@ export async function sendExistingAccountNoticeEmail(
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const loginUrl = `${appUrl}/login`;
   const recoveryUrl = `${appUrl}/forgot-password`;
-  const subject = 'You already have an ARAM BTS account';
+  const subject = 'You already have an Aram Events account';
 
   if (!smtp) {
     if (process.env.NODE_ENV === 'test' || process.env.ALLOW_SIMULATED_EMAIL === 'true') {
@@ -211,7 +211,7 @@ export async function sendExistingAccountNoticeEmail(
         <tr><td style="padding:32px;text-align:center;">
           <h1 style="font-size:22px;font-weight:700;margin:0 0 12px;">You already have an account</h1>
           <p style="font-size:14px;line-height:22px;color:#77738A;margin:0 0 24px;">
-            Someone tried to create an ARAM BTS organizer account with this email address, but an account already exists. No changes were made.
+            Someone tried to create an Aram Events organizer account with this email address, but an account already exists. No changes were made.
           </p>
           <a href="${loginUrl}" style="display:inline-block;background-color:#7C5CFC;color:#FFFFFF;font-weight:700;font-size:14px;text-decoration:none;padding:12px 24px;border-radius:12px;">Sign in</a>
           <p style="font-size:12px;line-height:18px;color:#77738A;margin:16px 0 0;">
@@ -228,9 +228,9 @@ export async function sendExistingAccountNoticeEmail(
 </html>`;
 
   const text = `
-ARAM BTS — You already have an account
+Aram Events — You already have an account
 
-Someone tried to create an ARAM BTS organizer account with this email address, but an account already exists. No changes were made.
+Someone tried to create an Aram Events organizer account with this email address, but an account already exists. No changes were made.
 
 Sign in: ${loginUrl}
 Reset password: ${recoveryUrl}

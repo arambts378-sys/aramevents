@@ -112,11 +112,11 @@ export async function POST(
     if (testEmail) {
       try {
         await transporter.sendMail({
-          from: `"${fromName || 'ARAM BTS'}" <${fromEmail}>`,
+          from: `"${fromName || 'Aram Events'}" <${fromEmail}>`,
           to: testEmail,
-          subject: 'ARAM BTS Email Configuration Test',
-          text: 'Your ARAM BTS email configuration is working correctly.\n\nThis is a test email.',
-          html: '<p>Your ARAM BTS email configuration is working correctly.</p><p>This is a test email.</p>'
+          subject: 'Aram Events Email Configuration Test',
+          text: 'Your Aram Events email configuration is working correctly.\n\nThis is a test email.',
+          html: '<p>Your Aram Events email configuration is working correctly.</p><p>This is a test email.</p>'
         });
       } catch {
         return NextResponse.json({ success: false, message: 'Connected, but failed to send test email.' }, { status: 400 });

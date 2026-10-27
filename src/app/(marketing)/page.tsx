@@ -7,11 +7,11 @@ import { PeopleDataSection } from '@/components/marketing/PeopleDataSection';
 import { FinalCTA } from '@/components/marketing/FinalCTA';
 
 export const metadata: Metadata = {
-  title: 'Event registration, tickets and check-in | ARAM Tickets',
+  title: 'Event registration, tickets and check-in | Aram Events',
   description:
-    'Build an event website, manage registrations and tickets, coordinate event teams, and check guests in with ARAM Tickets.',
+    'Build an event website, manage registrations and tickets, coordinate event teams, and check guests in with Aram Events.',
   openGraph: {
-    title: 'ARAM Tickets | Event registration, tickets and check-in',
+    title: 'Aram Events | Event registration, tickets and check-in',
     description:
       'Event websites, registration, ticket management, QR check-in and event analytics in one workspace.',
     type: 'website',

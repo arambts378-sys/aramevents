@@ -126,7 +126,7 @@ export function RegistrationTicketFlow() {
             <div className="bg-ds-ink text-white rounded-xl p-4 shadow-inner relative overflow-hidden">
               <div className="flex justify-between items-center border-b border-white/20 pb-3 mb-3">
                 <div>
-                  <span className="text-[10px] text-[#EDE9FE] font-bold">ARAM BTS VERIFIED</span>
+                  <span className="text-[10px] text-[#EDE9FE] font-bold">ARAM EVENTS VERIFIED</span>
                   <div className="text-xs font-bold text-white">Priya Sharma</div>
                 </div>
                 <span className="px-2 py-0.5 rounded bg-ds-accent text-white text-[10px] font-bold">VIP PASS</span>

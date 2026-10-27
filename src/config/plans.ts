@@ -1,7 +1,7 @@
 import type { PlanDefinition, PlanId } from '../types/subscription';
 
 /**
- * Single source of truth for ARAM BTS plan definitions.
+ * Single source of truth for Aram Events plan definitions.
  *
  * All prices, limits and entitlements are PROPOSALS and may change before launch.
  * Prices are intentionally NOT stored in the database.
@@ -17,7 +17,7 @@ export const PLAN_DEFINITIONS: Readonly<Record<PlanId, PlanDefinition>> = {
     features: [
       'Up to 2 active events',
       'Basic website templates',
-      'ARAM BTS branding included',
+      'Aram Events branding included',
       'Basic registration & attendee management',
       'QR tickets & basic check-in',
       'Basic analytics',
@@ -48,7 +48,7 @@ export const PLAN_DEFINITIONS: Readonly<Record<PlanId, PlanDefinition>> = {
     features: [
       'Up to 10 active events',
       'All standard website templates',
-      'Option to remove ARAM BTS branding',
+      'Option to remove Aram Events branding',
       'Advanced analytics & exports',
       'Team collaboration',
       'Higher notification allowances',

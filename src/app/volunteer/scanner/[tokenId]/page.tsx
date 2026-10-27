@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import QRScanner from '@/components/check-in/QRScanner';
+import { AramLogo } from '@/components/brand/AramLogo';
 
 export default function VolunteerScannerPage({ params }: { params: Promise<{ tokenId: string }> }) {
   const { tokenId } = use(params);
@@ -64,7 +65,10 @@ export default function VolunteerScannerPage({ params }: { params: Promise<{ tok
     <div className="min-h-screen bg-surface flex flex-col">
       {/* Header */}
       <header className="bg-surface-variant/30 px-6 py-4 flex flex-col gap-2 border-b border-outline-variant/30">
-        <h1 className="text-xl font-bold">ARAM BTS Scanner</h1>
+        <h1 className="flex items-end gap-2 text-xl font-bold">
+          <AramLogo size="sm" />
+          <span className="leading-none">Scanner</span>
+        </h1>
         <div className="flex flex-col text-sm text-on-surface-variant gap-1">
           <p>Event: <span className="font-semibold text-on-surface">{sessionInfo.event.name}</span></p>
           <p>Access Scope: <span className="font-semibold text-on-surface">

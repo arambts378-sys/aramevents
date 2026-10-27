@@ -201,7 +201,7 @@ export default function OrganizerRegistrationPage() {
                 type="text" 
                 value={formData.title}
                 onChange={e => setFormData({...formData, title: e.target.value})}
-                placeholder="e.g. Register for ARAM BTS"
+                placeholder="e.g. Register for Aram Events"
                 className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md"
               />
             </div>

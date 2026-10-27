@@ -13,6 +13,7 @@ import {
   validateConfirmPassword,
   validatePassword,
 } from '@/lib/validation/auth';
+import { AramLogo } from '@/components/brand/AramLogo';
 
 const INPUT_BASE =
   'w-full px-3.5 py-3 bg-ds-canvas border rounded-xl text-xs font-semibold text-ds-body placeholder-ds-muted/60 focus:outline-none focus:ring-1 transition-colors';
@@ -105,10 +106,7 @@ export default function ResetPasswordPage() {
       <div />
       <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-ds-line shadow-xl shadow-black/5">
         <Link href="/" className="flex flex-col items-center gap-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-ds-accent flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-2xl">layers</span>
-          </div>
-          <span className="text-xl font-bold tracking-tight text-ds-body">ARAM BTS</span>
+          <AramLogo size="lg" priority />
         </Link>
 
         <div className="text-center mb-6">
@@ -246,7 +244,7 @@ export default function ResetPasswordPage() {
         </p>
       </main>
       <footer className="mt-8 text-center text-xs text-ds-muted">
-        © 2026 ARAM BTS. Events Beyond Boundaries.
+        © 2026 Aram Events. Events Beyond Boundaries.
       </footer>
     </div>
   );

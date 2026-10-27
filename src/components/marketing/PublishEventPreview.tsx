@@ -14,7 +14,7 @@ export function PublishEventPreview() {
             Your Event Gets a Home.
           </h2>
           <p className="text-base text-ds-muted mt-2 font-normal">
-            ARAM BTS generates high-converting branded event landing pages instantly with your domains, schedules, and custom ticketing widgets.
+            Aram Events generates high-converting branded event landing pages instantly with your domains, schedules, and custom ticketing widgets.
           </p>
         </div>
 

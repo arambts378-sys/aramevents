@@ -15,7 +15,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const content = section?.content || {};
-  const logoText = content.logoText || event?.name || "ARAM BTS";
+  const logoText = content.logoText || event?.name || "Aram Events";
   const showLogoText = content.showLogoText ?? true;
   const ctaText = content.ctaText || "Register Now";
   const showCta = content.showCta ?? true;

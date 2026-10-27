@@ -5,21 +5,21 @@ import { Footer } from "@/components/marketing/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "ARAM Tickets",
-    template: "%s | ARAM Tickets",
+    default: "Aram Events",
+    template: "%s | Aram Events",
   },
   description:
     "Build event websites, manage registrations and tickets, check attendees in with QR codes, and review event activity.",
   openGraph: {
     type: "website",
-    siteName: "ARAM Tickets",
-    title: "ARAM Tickets",
+    siteName: "Aram Events",
+    title: "Aram Events",
     description:
       "Event websites, registration, ticket management, QR check-in and event analytics in one workspace.",
   },
   twitter: {
     card: "summary",
-    title: "ARAM Tickets",
+    title: "Aram Events",
     description:
       "Event websites, registration, ticket management, QR check-in and event analytics in one workspace.",
   },

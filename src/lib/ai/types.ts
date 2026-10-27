@@ -1,5 +1,5 @@
 /**
- * ARAM BTS — AI Event Agent
+ * Aram Events — AI Event Agent
  * Provider-independent abstraction types.
  * Keep model-specific code out of UI components.
  */

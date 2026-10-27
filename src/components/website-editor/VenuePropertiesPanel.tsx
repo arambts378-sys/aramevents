@@ -23,7 +23,7 @@ export default function VenuePropertiesPanel({ section, updateSection }: { secti
           <label className="text-xs font-semibold text-gray-500 uppercase">Description</label>
           <textarea 
             value={content.description || ''} 
-            placeholder="Experience ARAM BTS in a state-of-the-art facility designed for collaboration."
+            placeholder="Experience Aram Events in a state-of-the-art facility designed for collaboration."
             onChange={(e) => updateSection({ description: e.target.value })}
             className="w-full border rounded px-2 py-1.5 bg-white min-h-[80px]"
           />

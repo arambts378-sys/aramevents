@@ -120,7 +120,7 @@ function InviteRedemption() {
         {!isAuthenticated ? (
           <div className="space-y-4">
             <p className="text-sm font-medium text-on-surface">
-              Create your ARAM BTS account to accept this invitation.
+              Create your Aram Events account to accept this invitation.
             </p>
             <div className="flex flex-col gap-3">
               <Link 

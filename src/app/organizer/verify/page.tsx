@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { AramLogo } from '@/components/brand/AramLogo';
 
 function maskEmailClient(email: string): string {
   const norm = email.trim().toLowerCase();
@@ -177,13 +178,7 @@ function VerifyForm() {
     <div className="w-full max-w-[440px] bg-white rounded-2xl p-7 sm:p-9 border border-ds-line shadow-xl shadow-black/5 flex flex-col items-center">
       {/* Brand Logo */}
       <Link href="/" className="flex flex-col items-center gap-2 group mb-5">
-        <div className="w-12 h-12 rounded-2xl bg-ds-accent flex items-center justify-center text-white shadow-md shadow-black/5 group-hover:scale-105 transition-transform duration-200">
-          <span className="material-symbols-outlined text-2xl">layers</span>
-        </div>
-        <div className="flex flex-col items-center text-center">
-          <span className="text-xl font-bold tracking-tight text-ds-ink">ARAM BTS</span>
-          <span className="text-xs text-ds-muted tracking-wider font-medium">Events Beyond Boundaries</span>
-        </div>
+        <AramLogo size="lg" priority />
       </Link>
 
       {/* Title & Instructions */}
@@ -327,7 +322,7 @@ export default function OrganizerVerifyPage() {
         <VerifyForm />
       </Suspense>
       <footer className="mt-8 text-center text-xs text-ds-muted">
-        © 2026 ARAM BTS. Events Beyond Boundaries.
+        © 2026 Aram Events. Events Beyond Boundaries.
       </footer>
     </div>
   );

@@ -55,7 +55,7 @@ export function PostEventSection() {
           Post-Event. Fully Automated.
         </h2>
         <p className="text-base text-ds-muted mt-2 font-normal">
-          The event doesn&apos;t end when the doors close. ARAM BTS automatically reconciles financials, delivers verifiable certificates, and archives audit logs.
+          The event doesn&apos;t end when the doors close. Aram Events automatically reconciles financials, delivers verifiable certificates, and archives audit logs.
         </p>
       </div>
 

@@ -579,7 +579,7 @@ export default function EventWorkspacePage() {
             <div className="pt-8 border-t border-ds-line flex flex-col sm:flex-row items-center justify-between gap-4 text-ds-muted text-[12px] font-jakarta">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-ds-accent"></span>
-                <span>ARAM BTS Event Infrastructure</span>
+                <span>Aram Events Event Infrastructure</span>
               </div>
               <div>
                 <span>Event ID: <span className="font-mono text-ds-ink">{event.id}</span></span>

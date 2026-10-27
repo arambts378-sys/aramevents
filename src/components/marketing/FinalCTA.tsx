@@ -62,7 +62,7 @@ export function FinalCTA() {
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
           }`}
         >
-          Create, manage and operate your next event with ARAM BTS. Join the world’s leading experiential directors and event teams.
+          Create, manage and operate your next event with Aram Events. Join the world’s leading experiential directors and event teams.
         </p>
 
         {/* Primary & Secondary Actions */}

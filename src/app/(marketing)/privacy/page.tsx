@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — Draft',
-  description: 'Draft Privacy Policy for ARAM Tickets, pending legal and product review.',
+  description: 'Draft Privacy Policy for Aram Events, pending legal and product review.',
   robots: { index: false, follow: false },
 };
 
@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         ))}
       </ul>
       <p className="mt-8 rounded-xl border border-ds-line bg-white p-4 text-sm leading-6 text-ds-muted">
-        This draft intentionally does not assert what personal data ARAM Tickets collects, how it
+        This draft intentionally does not assert what personal data Aram Events collects, how it
         is used, or which service providers receive it. Those details require product and legal
         review.
       </p>

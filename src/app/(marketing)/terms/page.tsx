@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Terms and Conditions — Draft',
-  description: 'Draft Terms and Conditions for ARAM Tickets, pending legal and product review.',
+  description: 'Draft Terms and Conditions for Aram Events, pending legal and product review.',
   robots: { index: false, follow: false },
 };
 
@@ -36,7 +36,7 @@ export default function TermsPage() {
         ))}
       </ul>
       <p className="mt-8 rounded-xl border border-ds-line bg-white p-4 text-sm leading-6 text-ds-muted">
-        Do not rely on this draft as the terms governing use of ARAM Tickets. Final operator
+        Do not rely on this draft as the terms governing use of Aram Events. Final operator
         details and product policies have not been supplied for publication.
       </p>
     </div>

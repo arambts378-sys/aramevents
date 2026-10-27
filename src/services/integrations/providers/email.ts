@@ -248,7 +248,7 @@ export const emailProvider = {
             <div style="padding: 30px; background-color: #ffffff;">
               <div style="border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
                 <div style="background-color: #4F46E5; padding: 20px; text-align: center; color: white;">
-                  <div style="font-size: 12px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px;">ARAM BTS</div>
+                  <div style="font-size: 12px; font-weight: bold; letter-spacing: 2px; opacity: 0.8; margin-bottom: 5px;">Aram Events</div>
                   <div style="font-size: 22px; font-weight: 900;">${safeEventName}</div>
                 </div>
 

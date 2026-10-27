@@ -1,5 +1,5 @@
 /**
- * ARAM BTS — AI Event Agent
+ * Aram Events — AI Event Agent
  * Mock AI adapter — simulates extraction + conversation with realistic delays.
  * Swap this for a real provider adapter (Gemini, GPT-4o, Claude) in a future phase.
  */

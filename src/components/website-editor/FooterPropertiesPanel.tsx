@@ -13,7 +13,7 @@ export default function FooterPropertiesPanel({ section, updateSection }: { sect
           <input 
             type="text" 
             value={content.logoText || ''} 
-            placeholder="ARAM BTS"
+            placeholder="Aram Events"
             onChange={(e) => updateSection({ logoText: e.target.value })}
             className="w-full border rounded px-2 py-1.5 bg-white"
           />

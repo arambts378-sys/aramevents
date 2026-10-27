@@ -111,7 +111,7 @@ export function TicketTemplate({ data, className = '' }: TicketTemplateProps) {
           {/* Subtle background pattern for branding */}
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }}></div>
           
-          <h4 className="text-sm font-bold tracking-widest uppercase mb-1 z-10" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>ARAM BTS</h4>
+          <h4 className="text-sm font-bold tracking-widest uppercase mb-1 z-10" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Aram Events</h4>
           <h2 className="text-2xl font-black z-10 leading-tight" style={{ color: '#ffffff' }}>{event?.name || 'Event Ticket'}</h2>
         </div>
 

@@ -75,7 +75,7 @@ export function EventEcosystem() {
             Different Events. One Operating System.
           </h2>
           <p className="text-base text-ds-muted mt-2 font-normal">
-            From developer hackathons to marathon timing and trade show floor maps, ARAM BTS eliminates siloed ticketing engines.
+            From developer hackathons to marathon timing and trade show floor maps, Aram Events eliminates siloed ticketing engines.
           </p>
         </div>
 

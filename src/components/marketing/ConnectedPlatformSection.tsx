@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useInView } from './useScrollReveal';
+import { AramLogo } from '@/components/brand/AramLogo';
 
 export function ConnectedPlatformSection() {
   const { ref, isInView } = useInView({ threshold: 0.15 });
@@ -115,7 +116,7 @@ export function ConnectedPlatformSection() {
               </div>
             </div>
 
-            {/* Central Hub Node: ARAM BTS Core */}
+            {/* Central Hub Node: Aram Events Core */}
             <div className="flex flex-col items-center justify-center my-6 md:my-0">
               <div className="relative w-64 h-64 rounded-full flex items-center justify-center p-3 bg-ds-accent-soft shadow-sm">
                 {/* Radiant Rings */}
@@ -128,15 +129,7 @@ export function ConnectedPlatformSection() {
 
                 {/* Center Core */}
                 <div className="w-48 h-48 rounded-full bg-ds-ink text-white flex flex-col items-center justify-center p-6 text-center shadow-2xl border border-white/20 animate-float-subtle">
-                  <div className="relative mb-2">
-                    <div className="w-10 h-10 rounded-xl bg-ds-accent flex items-center justify-center shadow-md shadow-black/5">
-                      <span className="material-symbols-outlined text-[20px] text-white">hub</span>
-                    </div>
-                    <div className="absolute -inset-1 rounded-xl bg-ds-accent/30 blur-xs -z-10" />
-                  </div>
-                  <span className="font-space text-[20px] font-bold tracking-tight text-white">
-                    ARAM BTS
-                  </span>
+                  <AramLogo size="sm" tone="light" className="mb-1" />
                   <span className="font-jakarta text-[10px] text-[#C4B5FD] uppercase tracking-wider mt-0.5 font-semibold">
                     Core Telemetry
                   </span>

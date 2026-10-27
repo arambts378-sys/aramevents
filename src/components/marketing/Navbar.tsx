@@ -2,11 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Instrument_Serif } from 'next/font/google';
-
-// Display face for the "events" half of the wordmark next to the Aram logo
-const wordmarkFont = Instrument_Serif({ weight: '400', style: 'italic', subsets: ['latin'] });
+import { AramLogo } from '@/components/brand/AramLogo';
 
 const navigationLinks = [
   { href: '/#features', label: 'Features' },
@@ -40,19 +36,7 @@ export function Navbar() {
           aria-label="Aram Events home"
           className="flex items-end gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
         >
-          <Image
-            src="/aram-logo.png"
-            alt="Aram"
-            width={1382}
-            height={418}
-            priority
-            className="h-7 w-auto"
-          />
-          <span
-            className={`${wordmarkFont.className} text-[30px] italic leading-[0.8] text-ds-ink`}
-          >
-            events
-          </span>
+          <AramLogo priority />
         </Link>
 
         {/* Center: Navigation Links */}

@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Learn about ARAM Tickets, event tools for websites, registration, ticket management, QR check-in and analytics.',
+    'Learn about Aram Events, event tools for websites, registration, ticket management, QR check-in and analytics.',
 };
 
 export default function AboutUsPage() {
@@ -16,7 +16,7 @@ export default function AboutUsPage() {
         Event work, brought together.
       </h1>
       <p className="mx-auto mt-5 max-w-2xl leading-7 text-ds-muted">
-        ARAM Tickets gives event teams a workspace for event websites, registration and ticket
+        Aram Events gives event teams a workspace for event websites, registration and ticket
         management, people and program details, QR check-in, and event analytics.
       </p>
       <div className="mt-8 flex justify-center">
