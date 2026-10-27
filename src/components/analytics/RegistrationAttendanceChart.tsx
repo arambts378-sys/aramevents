@@ -12,12 +12,12 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
 
   if (!trend || trend.length === 0) {
     return (
-      <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs flex flex-col items-center justify-center min-h-[300px] text-center">
-        <span className="material-symbols-outlined text-3xl text-[#77738A]/50 mb-2">
+      <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs flex flex-col items-center justify-center min-h-[300px] text-center">
+        <span className="material-symbols-outlined text-3xl text-ds-muted/50 mb-2">
           show_chart
         </span>
-        <p className="text-xs font-semibold text-[#17152B]">No trend data available</p>
-        <p className="text-[11px] text-[#77738A] mt-1">
+        <p className="text-xs font-semibold text-ds-ink">No trend data available</p>
+        <p className="text-[11px] text-ds-muted mt-1">
           Registration and check-in activity will appear here once data is recorded.
         </p>
       </div>
@@ -83,25 +83,25 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
   const chkColor = '#10B981';  // Emerald — high contrast against indigo
 
   return (
-    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col gap-4">
+    <div className="bg-white border border-ds-line rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col gap-4">
       {/* Header & Legend */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-[#17152B] tracking-tight">
+          <h2 className="text-base font-bold text-ds-ink tracking-tight">
             Registration & Attendance Trends
           </h2>
-          <p className="text-xs text-[#77738A] mt-0.5 font-normal">
+          <p className="text-xs text-ds-muted mt-0.5 font-normal">
             Track how registrations and validated check-ins trend over time.
           </p>
         </div>
 
         {/* Legend */}
         <div className="flex items-center gap-5 text-xs font-semibold">
-          <div className="flex items-center gap-1.5 text-[#17152B]">
+          <div className="flex items-center gap-1.5 text-ds-ink">
             <span className="w-3 h-1.5 rounded-full" style={{ background: regColor }} />
             <span>Registrations</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[#17152B]">
+          <div className="flex items-center gap-1.5 text-ds-ink">
             <span className="w-3 h-1.5 rounded-full" style={{ background: chkColor }} />
             <span>Check-ins</span>
           </div>
@@ -141,7 +141,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
                 x={padding.left - 10}
                 y={tick.y + 3}
                 textAnchor="end"
-                className="text-[10px] fill-[#77738A] font-mono font-medium"
+                className="text-[10px] fill-ds-muted font-mono font-medium"
               >
                 {tick.val}
               </text>
@@ -224,7 +224,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
                     x={x}
                     y={height - 12}
                     textAnchor="middle"
-                    className="text-[10px] fill-[#77738A] font-medium"
+                    className="text-[10px] fill-ds-muted font-medium"
                   >
                     {p.label}
                   </text>
@@ -249,7 +249,7 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
         {/* Floating Tooltip */}
         {activePoint && activeX !== null && (
           <div
-            className="absolute top-2 pointer-events-none bg-[#17152B] text-white text-xs px-3.5 py-2.5 rounded-xl shadow-lg border border-white/10 z-10 animate-in fade-in zoom-in-95 duration-100"
+            className="absolute top-2 pointer-events-none bg-ds-ink text-white text-xs px-3.5 py-2.5 rounded-xl shadow-lg border border-white/10 z-10 animate-in fade-in zoom-in-95 duration-100"
             style={{
               left: `${Math.min(
                 Math.max(activeX, 70),
@@ -258,17 +258,17 @@ export function RegistrationAttendanceChart({ trend }: RegistrationAttendanceCha
               transform: 'translateX(-50%)',
             }}
           >
-            <div className="font-bold border-b border-white/10 pb-1.5 mb-1.5 text-[11px] text-[#E6E2F0]">
+            <div className="font-bold border-b border-white/10 pb-1.5 mb-1.5 text-[11px] text-ds-line">
               {activePoint.label}
             </div>
             <div className="flex items-center justify-between gap-4 py-0.5">
-              <span className="text-[#A19EB0] flex items-center gap-1.5">
+              <span className="text-ds-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ background: regColor }} /> Registrations:
               </span>
               <span className="font-bold tabular-nums">{activePoint.registrations}</span>
             </div>
             <div className="flex items-center justify-between gap-4 py-0.5">
-              <span className="text-[#A19EB0] flex items-center gap-1.5">
+              <span className="text-ds-muted flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full" style={{ background: chkColor }} /> Check-ins:
               </span>
               <span className="font-bold tabular-nums">{activePoint.checkIns}</span>

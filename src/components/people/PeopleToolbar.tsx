@@ -38,7 +38,7 @@ export function PeopleToolbar({
     <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-1">
       {/* Search Input */}
       <div className="relative flex-1 min-w-[240px] max-w-full lg:max-w-md">
-        <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#77738A] text-[20px] pointer-events-none">
+        <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-ds-muted text-[20px] pointer-events-none">
           search
         </span>
         <input
@@ -47,13 +47,13 @@ export function PeopleToolbar({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search people..."
-          className="w-full pl-10 pr-9 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#77738A] focus:outline-none focus:border-[#7C5CFC] transition-colors shadow-xs"
+          className="w-full pl-10 pr-9 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors shadow-xs"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] hover:text-[#17152B] p-0.5"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted hover:text-ds-ink p-0.5"
             aria-label="Clear search"
           >
             <span className="material-symbols-outlined text-[16px]">close</span>
@@ -64,18 +64,18 @@ export function PeopleToolbar({
       {/* Filter Dropdowns */}
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
         {/* Event Filter */}
-        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-[#E6E2F0] rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[140px]">
-          <span className="material-symbols-outlined text-[#7C5CFC] text-base shrink-0">
+        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-ds-line rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[140px]">
+          <span className="material-symbols-outlined text-ds-accent text-base shrink-0">
             calendar_today
           </span>
-          <label htmlFor="filter-event" className="text-xs font-semibold text-[#77738A] shrink-0">
+          <label htmlFor="filter-event" className="text-xs font-semibold text-ds-muted shrink-0">
             Event:
           </label>
           <select
             id="filter-event"
             value={selectedEventId}
             onChange={(e) => onEventChange(e.target.value)}
-            className="bg-transparent text-xs font-semibold text-[#17152B] focus:outline-none cursor-pointer w-full"
+            className="bg-transparent text-xs font-semibold text-ds-ink focus:outline-none cursor-pointer w-full"
           >
             <option value="all">All Events ({events.length})</option>
             {events.map((ev) => (
@@ -87,18 +87,18 @@ export function PeopleToolbar({
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-[#E6E2F0] rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[130px]">
-          <span className="material-symbols-outlined text-[#7C5CFC] text-base shrink-0">
+        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-ds-line rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[130px]">
+          <span className="material-symbols-outlined text-ds-accent text-base shrink-0">
             verified
           </span>
-          <label htmlFor="filter-status" className="text-xs font-semibold text-[#77738A] shrink-0">
+          <label htmlFor="filter-status" className="text-xs font-semibold text-ds-muted shrink-0">
             Status:
           </label>
           <select
             id="filter-status"
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="bg-transparent text-xs font-semibold text-[#17152B] focus:outline-none cursor-pointer w-full"
+            className="bg-transparent text-xs font-semibold text-ds-ink focus:outline-none cursor-pointer w-full"
           >
             <option value="all">All Statuses</option>
             <option value="confirmed">Confirmed</option>
@@ -111,18 +111,18 @@ export function PeopleToolbar({
         </div>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-[#E6E2F0] rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[125px]">
-          <span className="material-symbols-outlined text-[#7C5CFC] text-base shrink-0">
+        <div className="flex items-center gap-1.5 bg-white px-3 py-2 border border-ds-line rounded-xl shadow-xs flex-1 sm:flex-initial min-w-[125px]">
+          <span className="material-symbols-outlined text-ds-accent text-base shrink-0">
             date_range
           </span>
-          <label htmlFor="filter-date" className="text-xs font-semibold text-[#77738A] shrink-0">
+          <label htmlFor="filter-date" className="text-xs font-semibold text-ds-muted shrink-0">
             Date:
           </label>
           <select
             id="filter-date"
             value={selectedDateRange}
             onChange={(e) => onDateRangeChange(e.target.value as 'all' | '7d' | '30d' | '90d')}
-            className="bg-transparent text-xs font-semibold text-[#17152B] focus:outline-none cursor-pointer w-full"
+            className="bg-transparent text-xs font-semibold text-ds-ink focus:outline-none cursor-pointer w-full"
           >
             <option value="all">All Time</option>
             <option value="7d">Last 7 Days</option>
@@ -136,7 +136,7 @@ export function PeopleToolbar({
           <button
             type="button"
             onClick={onResetFilters}
-            className="text-xs font-semibold text-[#7C5CFC] hover:text-[#5B3FE8] hover:bg-[#7C5CFC]/10 px-2.5 py-2 rounded-xl transition-colors whitespace-nowrap shrink-0"
+            className="text-xs font-semibold text-ds-accent hover:text-ds-accent-strong hover:bg-ds-accent/10 px-2.5 py-2 rounded-xl transition-colors whitespace-nowrap shrink-0"
           >
             Reset
           </button>

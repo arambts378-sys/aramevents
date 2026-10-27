@@ -99,8 +99,8 @@ export default function PeopleDirectoryPage() {
   };
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar */}
         <Sidebar
           currentUser={currentUser}
@@ -109,15 +109,15 @@ export default function PeopleDirectoryPage() {
         />
 
         {/* Right Main Content */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
           {/* Top Breadcrumb */}
           <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-1.5 text-xs text-[#77738A]">
-              <Link href="/app" className="hover:text-[#17152B] transition-colors">
+            <div className="flex items-center gap-1.5 text-xs text-ds-muted">
+              <Link href="/app" className="hover:text-ds-ink transition-colors">
                 Home
               </Link>
               <span>&gt;</span>
-              <span className="text-[#17152B] font-semibold">People</span>
+              <span className="text-ds-ink font-semibold">People</span>
             </div>
           </div>
 
@@ -161,15 +161,15 @@ export default function PeopleDirectoryPage() {
             )
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between text-xs text-[#77738A] px-1">
+              <div className="flex items-center justify-between text-xs text-ds-muted px-1">
                 <span>
-                  Showing <strong className="text-[#17152B]">{people.length}</strong> {people.length === 1 ? 'person' : 'people'}
+                  Showing <strong className="text-ds-ink">{people.length}</strong> {people.length === 1 ? 'person' : 'people'}
                 </span>
                 {hasActiveFilters && (
                   <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="text-[#7C5CFC] hover:underline font-medium"
+                    className="text-ds-accent hover:underline font-medium"
                   >
                     Clear all filters
                   </button>

@@ -51,19 +51,19 @@ export function RecentActivity({ events }: RecentActivityProps) {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <h2 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+        <h2 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
           RECENT ACTIVITY
         </h2>
-        <p className="text-[13px] text-[#77738A]">System and audit updates.</p>
+        <p className="text-[13px] text-ds-muted">System and audit updates.</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-4 shadow-xs divide-y divide-[#E6E2F0] flex flex-col justify-between">
+      <div className="bg-white rounded-xl border border-ds-line p-4 shadow-xs divide-y divide-ds-line flex flex-col justify-between">
         {activities.length === 0 ? (
           <div className="py-8 flex flex-col items-center justify-center text-center">
-            <span className="material-symbols-outlined text-[24px] text-[#77738A] mb-1.5">
+            <span className="material-symbols-outlined text-[24px] text-ds-muted mb-1.5">
               history
             </span>
-            <p className="text-[13px] text-[#77738A] italic">No recent activity yet.</p>
+            <p className="text-[13px] text-ds-muted italic">No recent activity yet.</p>
           </div>
         ) : (
           activities.map((item, idx) => {
@@ -88,7 +88,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
                   </span>
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-[13px] text-[#17152B] leading-tight font-medium font-jakarta">
+                  <span className="text-[13px] text-ds-ink leading-tight font-medium font-jakarta">
                     {item.title}
                   </span>
                   <Link
@@ -97,7 +97,7 @@ export function RecentActivity({ events }: RecentActivityProps) {
                   >
                     {item.eventName}
                   </Link>
-                  <span className="text-[11px] text-[#77738A] mt-0.5 font-jakarta">
+                  <span className="text-[11px] text-ds-muted mt-0.5 font-jakarta">
                     {item.time}
                   </span>
                 </div>

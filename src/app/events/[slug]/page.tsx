@@ -19,7 +19,7 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-4xl font-bold mb-4">Event Not Found</h1>
         <p className="text-gray-600 mb-8">The event you are looking for does not exist.</p>
-        <Link href="/app" className="px-6 py-3 bg-[#7A1F3D] text-white rounded-lg">Return to Dashboard</Link>
+        <Link href="/app" className="px-6 py-3 bg-ds-accent text-white rounded-lg">Return to Dashboard</Link>
       </div>
     );
   }

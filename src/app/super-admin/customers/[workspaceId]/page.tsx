@@ -42,8 +42,8 @@ function Pager({
   const nextEventPage = label === 'events' ? page + 1 : eventPage;
 
   return (
-    <nav aria-label={`${label} pagination`} className="mt-4 flex items-center justify-between gap-3 border-t border-[#E6E2F0] pt-3">
-      <span className="text-xs text-[#77738A]">Page {page} of {pages} · {total.toLocaleString()} total</span>
+    <nav aria-label={`${label} pagination`} className="mt-4 flex items-center justify-between gap-3 border-t border-ds-line pt-3">
+      <span className="text-xs text-ds-muted">Page {page} of {pages} · {total.toLocaleString()} total</span>
       <div className="flex gap-2">
         {[
           { text: 'Previous', disabled: page <= 1, memberPage: previousMemberPage, eventPage: previousEventPage },
@@ -54,7 +54,7 @@ function Pager({
             aria-disabled={control.disabled}
             tabIndex={control.disabled ? -1 : undefined}
             href={toPageHref(workspaceId, control.memberPage, control.eventPage)}
-            className={`rounded-lg border border-[#D8D3E3] px-3 py-1.5 text-xs font-semibold ${control.disabled ? 'pointer-events-none opacity-50' : 'hover:bg-[#F4F1FC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]'}`}
+            className={`rounded-lg border border-ds-line-strong px-3 py-1.5 text-xs font-semibold ${control.disabled ? 'pointer-events-none opacity-50' : 'hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent'}`}
           >
             {control.text}
           </Link>
@@ -78,10 +78,10 @@ export default async function SuperAdminCustomerDetailPage({
 
   if (!result.ok) {
     return (
-      <section className="rounded-2xl border border-[#E6E2F0] bg-white p-6" role="alert">
+      <section className="ds-card p-6" role="alert">
         <h1 className="font-space text-xl font-bold">Customer organization unavailable</h1>
-        <p className="mt-2 text-sm text-[#77738A]">{result.message}</p>
-        <Link href="/super-admin/customers" className="mt-4 inline-flex text-sm font-semibold text-[#5B3FE8] hover:underline">Back to customers</Link>
+        <p className="mt-2 text-sm text-ds-muted">{result.message}</p>
+        <Link href="/super-admin/customers" className="mt-4 inline-flex text-sm font-semibold text-ds-accent-strong hover:underline">Back to customers</Link>
       </section>
     );
   }
@@ -95,57 +95,57 @@ export default async function SuperAdminCustomerDetailPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/super-admin/customers" className="text-sm font-semibold text-[#5B3FE8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]">
+        <Link href="/super-admin/customers" className="text-sm font-semibold text-ds-accent-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent">
           ← Customer organizations
         </Link>
         <header className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#7C5CFC]">Customer 360</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-ds-accent">Customer 360</p>
             <h1 className="mt-1 break-words font-space text-2xl font-bold tracking-tight sm:text-3xl">{organization.name}</h1>
-            <p className="mt-2 break-all font-mono text-xs text-[#77738A]">{organization.id}</p>
+            <p className="mt-2 break-all font-mono text-xs text-ds-muted">{organization.id}</p>
           </div>
-          <span className="inline-flex w-fit shrink-0 rounded-full bg-[#F1EDFF] px-3 py-1.5 text-sm font-semibold text-[#4C35C7]">
+          <span className="inline-flex w-fit shrink-0 rounded-full bg-ds-accent-soft px-3 py-1.5 text-sm font-semibold text-ds-accent-strong">
             {organization.hasSubscription ? plan : `${plan} · default`}
           </span>
         </header>
         <Link
           href={`/super-admin/activity?workspace=${encodeURIComponent(organization.id)}`}
-          className="mt-4 inline-flex rounded-lg border border-[#D8D3E3] bg-white px-3 py-2 text-sm font-semibold text-[#5B3FE8] hover:bg-[#F4F1FC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]"
+          className="mt-4 inline-flex rounded-lg border border-ds-line-strong bg-white px-3 py-2 text-sm font-semibold text-ds-accent-strong hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
         >
           View workspace activity
         </Link>
       </div>
 
-      <section aria-labelledby="organization-overview" className="rounded-2xl border border-[#E6E2F0] bg-white p-5 sm:p-6">
+      <section aria-labelledby="organization-overview" className="ds-card p-5 sm:p-6">
         <h2 id="organization-overview" className="font-space text-lg font-bold">Organization overview</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Owner</dt><dd className="mt-1 break-words text-sm font-medium">{organization.ownerName || 'Owner profile unavailable'}</dd>{organization.ownerEmail && <dd className="mt-1 break-all text-xs text-[#77738A]">{organization.ownerEmail}</dd>}</div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Created</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.createdAt)}</dd></div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Members</dt><dd className="mt-1 text-sm font-medium tabular-nums">{organization.memberCount.toLocaleString()}</dd></div>
-          <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Events</dt><dd className="mt-1 text-sm font-medium tabular-nums">{organization.eventCount.toLocaleString()}</dd></div>
+          <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Owner</dt><dd className="mt-1 break-words text-sm font-medium">{organization.ownerName || 'Owner profile unavailable'}</dd>{organization.ownerEmail && <dd className="mt-1 break-all text-xs text-ds-muted">{organization.ownerEmail}</dd>}</div>
+          <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Created</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.createdAt)}</dd></div>
+          <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Members</dt><dd className="mt-1 text-sm font-medium tabular-nums">{organization.memberCount.toLocaleString()}</dd></div>
+          <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Events</dt><dd className="mt-1 text-sm font-medium tabular-nums">{organization.eventCount.toLocaleString()}</dd></div>
         </dl>
       </section>
 
-      <section aria-labelledby="team-members" className="rounded-2xl border border-[#E6E2F0] bg-white p-5 sm:p-6">
+      <section aria-labelledby="team-members" className="ds-card p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 id="team-members" className="font-space text-lg font-bold">Users and team</h2>
-            <p className="mt-1 text-sm text-[#77738A]">Workspace role and membership join date.</p>
+            <p className="mt-1 text-sm text-ds-muted">Workspace role and membership join date.</p>
           </div>
-          <span className="text-xs text-[#77738A]">No separate membership status is stored.</span>
+          <span className="text-xs text-ds-muted">No separate membership status is stored.</span>
         </div>
         {members.length === 0 ? (
-          <p className="mt-5 rounded-lg bg-[#F7F5FF] p-4 text-sm text-[#77738A]">No members are associated with this workspace.</p>
+          <p className="mt-5 rounded-lg bg-ds-canvas p-4 text-sm text-ds-muted">No members are associated with this workspace.</p>
         ) : (
-          <div className="mt-4 divide-y divide-[#E6E2F0]">
+          <div className="mt-4 divide-y divide-ds-line">
             {members.map((member) => (
               <article key={member.userId} className="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="break-words text-sm font-semibold">{member.name || 'Profile unavailable'}</p>
-                  {member.email && <p className="mt-0.5 break-all text-sm text-[#77738A]">{member.email}</p>}
+                  {member.email && <p className="mt-0.5 break-all text-sm text-ds-muted">{member.email}</p>}
                 </div>
-                <div className="flex shrink-0 flex-wrap gap-x-4 gap-y-1 text-xs text-[#686477]">
-                  <span className="rounded-full bg-[#F1EDFF] px-2.5 py-1 font-semibold text-[#4C35C7]">{member.role || 'Role unavailable'}</span>
+                <div className="flex shrink-0 flex-wrap gap-x-4 gap-y-1 text-xs text-ds-muted">
+                  <span className="rounded-full bg-ds-accent-soft px-2.5 py-1 font-semibold text-ds-accent-strong">{member.role || 'Role unavailable'}</span>
                   <span className="self-center">Joined {formatDate(member.joinedAt)}</span>
                 </div>
               </article>
@@ -155,27 +155,27 @@ export default async function SuperAdminCustomerDetailPage({
         <Pager label="members" page={result.data.memberPage} total={result.data.membersTotal} workspaceId={workspaceId} memberPage={result.data.memberPage} eventPage={result.data.eventPage} />
       </section>
 
-      <section aria-labelledby="customer-events" className="rounded-2xl border border-[#E6E2F0] bg-white p-5 sm:p-6">
+      <section aria-labelledby="customer-events" className="ds-card p-5 sm:p-6">
         <div>
           <h2 id="customer-events" className="font-space text-lg font-bold">Events</h2>
-          <p className="mt-1 text-sm text-[#77738A]">Events associated with this workspace.</p>
+          <p className="mt-1 text-sm text-ds-muted">Events associated with this workspace.</p>
         </div>
         {events.length === 0 ? (
-          <p className="mt-5 rounded-lg bg-[#F7F5FF] p-4 text-sm text-[#77738A]">No events are associated with this workspace.</p>
+          <p className="mt-5 rounded-lg bg-ds-canvas p-4 text-sm text-ds-muted">No events are associated with this workspace.</p>
         ) : (
-          <div className="mt-4 divide-y divide-[#E6E2F0]">
+          <div className="mt-4 divide-y divide-ds-line">
             {events.map((event) => (
               <article key={event.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <Link href={`/app/events/${event.id}`} className="break-words text-sm font-semibold text-[#5B3FE8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]">
+                  <Link href={`/app/events/${event.id}`} className="break-words text-sm font-semibold text-ds-accent-strong hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent">
                     {event.name}
                   </Link>
-                  <p className="mt-1 text-xs text-[#77738A]">Event ID: <span className="font-mono">{event.id}</span></p>
+                  <p className="mt-1 text-xs text-ds-muted">Event ID: <span className="font-mono">{event.id}</span></p>
                 </div>
-                <dl className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-[#686477]">
-                  <div><dt className="inline text-[#77738A]">Date: </dt><dd className="inline">{formatDate(event.startDate)}</dd></div>
-                  <div><dt className="inline text-[#77738A]">Status: </dt><dd className="inline">{event.status}</dd></div>
-                  <div><dt className="inline text-[#77738A]">Created: </dt><dd className="inline">{formatDate(event.createdAt)}</dd></div>
+                <dl className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-ds-muted">
+                  <div><dt className="inline text-ds-muted">Date: </dt><dd className="inline">{formatDate(event.startDate)}</dd></div>
+                  <div><dt className="inline text-ds-muted">Status: </dt><dd className="inline">{event.status}</dd></div>
+                  <div><dt className="inline text-ds-muted">Created: </dt><dd className="inline">{formatDate(event.createdAt)}</dd></div>
                 </dl>
               </article>
             ))}
@@ -184,30 +184,30 @@ export default async function SuperAdminCustomerDetailPage({
         <Pager label="events" page={result.data.eventPage} total={result.data.eventsTotal} workspaceId={workspaceId} memberPage={result.data.memberPage} eventPage={result.data.eventPage} />
       </section>
 
-      <section aria-labelledby="customer-subscription" className="rounded-2xl border border-[#E6E2F0] bg-white p-5 sm:p-6">
+      <section aria-labelledby="customer-subscription" className="ds-card p-5 sm:p-6">
         <h2 id="customer-subscription" className="font-space text-lg font-bold">Subscription</h2>
         {!organization.hasSubscription ? (
-          <p className="mt-3 rounded-lg bg-[#F7F5FF] p-4 text-sm leading-relaxed text-[#686477]">
+          <p className="mt-3 rounded-lg bg-ds-canvas p-4 text-sm leading-relaxed text-ds-muted">
             No subscription row is stored. The existing plan service resolves this workspace to the default Free plan; this is not a persisted subscription.
           </p>
         ) : (
           <>
             <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Stored plan</dt><dd className="mt-1 text-sm font-medium">{plan}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Status</dt><dd className="mt-1 text-sm font-medium">{organization.subscriptionStatus || 'Unavailable'}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Billing interval</dt><dd className="mt-1 text-sm font-medium">{organization.billingInterval || 'Not set'}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Renewal / period end</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.currentPeriodEnd)}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Period start</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.currentPeriodStart)}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Trial ends</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.trialEndsAt)}</dd></div>
-              <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#77738A]">Cancel at period end</dt><dd className="mt-1 text-sm font-medium">{organization.cancelAtPeriodEnd === null ? 'Unavailable' : organization.cancelAtPeriodEnd ? 'Yes' : 'No'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Stored plan</dt><dd className="mt-1 text-sm font-medium">{plan}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Status</dt><dd className="mt-1 text-sm font-medium">{organization.subscriptionStatus || 'Unavailable'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Billing interval</dt><dd className="mt-1 text-sm font-medium">{organization.billingInterval || 'Not set'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Renewal / period end</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.currentPeriodEnd)}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Period start</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.currentPeriodStart)}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Trial ends</dt><dd className="mt-1 text-sm font-medium">{formatDate(organization.trialEndsAt)}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase tracking-wide text-ds-muted">Cancel at period end</dt><dd className="mt-1 text-sm font-medium">{organization.cancelAtPeriodEnd === null ? 'Unavailable' : organization.cancelAtPeriodEnd ? 'Yes' : 'No'}</dd></div>
             </dl>
             {overrides.length > 0 && (
-              <div className="mt-5 border-t border-[#E6E2F0] pt-4">
+              <div className="mt-5 border-t border-ds-line pt-4">
                 <h3 className="text-sm font-semibold">Stored entitlement overrides</h3>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {overrides.map(([key, value]) => (
-                    <div key={key} className="rounded-lg bg-[#F7F5FF] p-3">
-                      <dt className="text-xs text-[#77738A]">{key}</dt>
+                    <div key={key} className="rounded-lg bg-ds-canvas p-3">
+                      <dt className="text-xs text-ds-muted">{key}</dt>
                       <dd className="mt-1 break-words text-sm font-medium">{typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ? String(value) : JSON.stringify(value)}</dd>
                     </div>
                   ))}
@@ -218,9 +218,9 @@ export default async function SuperAdminCustomerDetailPage({
         )}
       </section>
 
-      <section aria-labelledby="support-context" className="rounded-2xl border border-[#E6E2F0] bg-white p-5 sm:p-6">
+      <section aria-labelledby="support-context" className="ds-card p-5 sm:p-6">
         <h2 id="support-context" className="font-space text-lg font-bold">Support context</h2>
-        <p className="mt-2 text-sm text-[#77738A]">No support history is available in this phase.</p>
+        <p className="mt-2 text-sm text-ds-muted">No support history is available in this phase.</p>
       </section>
     </div>
   );

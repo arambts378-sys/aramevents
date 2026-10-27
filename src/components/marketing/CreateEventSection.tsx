@@ -9,23 +9,23 @@ export function CreateEventSection() {
   return (
     <section
       ref={ref}
-      className="py-24 bg-[#F6F1FF] border-b border-[#C9C4D8]/30 select-none"
+      className="py-24 bg-ds-accent-soft border-b border-ds-line-strong/30 select-none"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <div className="max-w-3xl mb-16">
           <div
-            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#C9C4D8]/40 mb-4 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-ds-line-strong/40 mb-4 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <span className="font-jakarta text-[11px] font-semibold text-[#5F3ADD] uppercase tracking-wider">
+            <span className="font-jakarta text-[11px] font-semibold text-ds-accent uppercase tracking-wider">
               Streamlined Genesis
             </span>
           </div>
 
           <h2
-            className={`font-space text-3xl sm:text-4xl lg:text-[40px] text-[#1B192F] tracking-tight mb-4 font-bold transition-all duration-700 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`font-space text-3xl sm:text-4xl lg:text-[40px] text-ds-ink tracking-tight mb-4 font-bold transition-all duration-700 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
@@ -33,7 +33,7 @@ export function CreateEventSection() {
           </h2>
 
           <p
-            className={`font-jakarta text-[15px] sm:text-[16px] text-[#484555] leading-relaxed transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`font-jakarta text-[15px] sm:text-[16px] text-ds-body leading-relaxed transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
@@ -45,22 +45,22 @@ export function CreateEventSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 font-jakarta">
           {/* 01 PLAN */}
           <div
-            className={`bg-white p-6 rounded-xl border border-[#C9C4D8]/30 flex items-start gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 ${
+            className={`bg-white p-6 rounded-xl border border-ds-line-strong/30 flex items-start gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
             style={{ transitionDelay: '150ms' }}
           >
-            <div className="w-10 h-10 rounded-lg bg-[#EAE5FF] text-[#5F3ADD] flex items-center justify-center font-bold font-space text-[20px] shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-ds-accent-soft text-ds-accent flex items-center justify-center font-bold font-space text-[20px] shrink-0">
               01
             </div>
             <div>
-              <div className="text-[11px] font-semibold text-[#797587] uppercase tracking-wider mb-1">
+              <div className="text-[11px] font-semibold text-ds-muted uppercase tracking-wider mb-1">
                 STAGE ONE
               </div>
-              <h3 className="font-space text-[18px] text-[#1B192F] mb-1.5 font-bold">
+              <h3 className="font-space text-[18px] text-ds-ink mb-1.5 font-bold">
                 PLAN
               </h3>
-              <p className="text-[12px] sm:text-[13px] text-[#484555] leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] text-ds-body leading-relaxed">
                 Configure scale parameters, spatial requirements, multi-track rundowns, and VIP tier logic in minutes.
               </p>
             </div>
@@ -68,22 +68,22 @@ export function CreateEventSection() {
 
           {/* 02 BUILD */}
           <div
-            className={`bg-white p-6 rounded-xl border border-[#C9C4D8]/30 flex items-start gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 ${
+            className={`bg-white p-6 rounded-xl border border-ds-line-strong/30 flex items-start gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
             style={{ transitionDelay: '250ms' }}
           >
-            <div className="w-10 h-10 rounded-lg bg-[#EAE5FF] text-[#5F3ADD] flex items-center justify-center font-bold font-space text-[20px] shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-ds-accent-soft text-ds-accent flex items-center justify-center font-bold font-space text-[20px] shrink-0">
               02
             </div>
             <div>
-              <div className="text-[11px] font-semibold text-[#797587] uppercase tracking-wider mb-1">
+              <div className="text-[11px] font-semibold text-ds-muted uppercase tracking-wider mb-1">
                 STAGE TWO
               </div>
-              <h3 className="font-space text-[18px] text-[#1B192F] mb-1.5 font-bold">
+              <h3 className="font-space text-[18px] text-ds-ink mb-1.5 font-bold">
                 BUILD
               </h3>
-              <p className="text-[12px] sm:text-[13px] text-[#484555] leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] text-ds-body leading-relaxed">
                 Synthesize ticketing tiers, pass styles, interactive agenda modules, and speaker bio collaterals effortlessly.
               </p>
             </div>
@@ -91,22 +91,22 @@ export function CreateEventSection() {
 
           {/* 03 PUBLISH */}
           <div
-            className={`bg-white p-6 rounded-xl border border-[#C9C4D8]/30 flex items-start gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 ${
+            className={`bg-white p-6 rounded-xl border border-ds-line-strong/30 flex items-start gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 ${
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
             }`}
             style={{ transitionDelay: '350ms' }}
           >
-            <div className="w-10 h-10 rounded-lg bg-[#EAE5FF] text-[#5F3ADD] flex items-center justify-center font-bold font-space text-[20px] shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-ds-accent-soft text-ds-accent flex items-center justify-center font-bold font-space text-[20px] shrink-0">
               03
             </div>
             <div>
-              <div className="text-[11px] font-semibold text-[#797587] uppercase tracking-wider mb-1">
+              <div className="text-[11px] font-semibold text-ds-muted uppercase tracking-wider mb-1">
                 STAGE THREE
               </div>
-              <h3 className="font-space text-[18px] text-[#1B192F] mb-1.5 font-bold">
+              <h3 className="font-space text-[18px] text-ds-ink mb-1.5 font-bold">
                 PUBLISH
               </h3>
-              <p className="text-[12px] sm:text-[13px] text-[#484555] leading-relaxed">
+              <p className="text-[12px] sm:text-[13px] text-ds-body leading-relaxed">
                 Deploy with CDN velocity to global audiences. Sync instant registration data straight to credential printers.
               </p>
             </div>
@@ -117,7 +117,7 @@ export function CreateEventSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Dominant Cinematic Photograph (7 Cols) */}
           <div
-            className={`lg:col-span-7 relative rounded-2xl overflow-hidden shadow-lg border border-[#C9C4D8]/40 min-h-[440px] group transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={`lg:col-span-7 relative rounded-2xl overflow-hidden shadow-lg border border-ds-line-strong/40 min-h-[440px] group transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98]'
             }`}
             style={{ transitionDelay: '300ms' }}
@@ -128,10 +128,10 @@ export function CreateEventSection() {
                 backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDySdWutLYbDD_qLT-LGGc7zd53nZ-nb83NWb7yar_ejUekbaB1nVFfrpjc5Rqv6pXtwVmls-lELw716uG59MSTXYNIujQZugU9V8pBXYEtUGeTJ_4x4YiBqU7OykXlDex4E8LXC-T0fQt-XLhMlbgVjKUpt2a2ZHf-eorNoqGtDun6N1AET5yfvMjYOEBtGjDbx6fOoJMwrx8W25mJYoRMLyM3yhfghocwS_7kOPey_pzbHqDJCrqvMw')`,
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1B192F]/90 via-[#1B192F]/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ds-ink/90 via-ds-ink/20 to-transparent pointer-events-none" />
 
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-10">
-              <span className="inline-block px-3 py-1 rounded-full bg-[#5F3ADD]/80 backdrop-blur-sm text-[11px] font-jakarta font-semibold uppercase tracking-wider mb-2">
+              <span className="inline-block px-3 py-1 rounded-full bg-ds-accent/80 backdrop-blur-sm text-[11px] font-jakarta font-semibold uppercase tracking-wider mb-2">
                 Director's Suite
               </span>
               <h3 className="font-space text-2xl sm:text-[26px] font-bold mb-2 text-white">
@@ -147,12 +147,12 @@ export function CreateEventSection() {
           <div className="lg:col-span-5 flex flex-col gap-5 font-jakarta">
             {/* Fragment 1: Badge Credential Craft */}
             <div
-              className={`bg-white p-5 rounded-xl border border-[#C9C4D8]/30 flex items-center gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 hover:-translate-y-0.5 ${
+              className={`bg-white p-5 rounded-xl border border-ds-line-strong/30 flex items-center gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 hover:-translate-y-0.5 ${
                 isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
               }`}
               style={{ transitionDelay: '400ms' }}
             >
-              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-[#C9C4D8]/40">
+              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-ds-line-strong/40">
                 <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -161,13 +161,13 @@ export function CreateEventSection() {
                 />
               </div>
               <div>
-                <span className="text-[10px] font-semibold text-[#5F3ADD] uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-ds-accent uppercase tracking-wider">
                   Credentialing Engine
                 </span>
-                <h4 className="font-space text-[16px] text-[#1B192F] font-bold">
+                <h4 className="font-space text-[16px] text-ds-ink font-bold">
                   Bespoke Pass Architecture
                 </h4>
-                <p className="text-[12px] text-[#484555] mt-1">
+                <p className="text-[12px] text-ds-body mt-1">
                   Cryptographic NFC encoding with instant wallet provisioning.
                 </p>
               </div>
@@ -175,12 +175,12 @@ export function CreateEventSection() {
 
             {/* Fragment 2: Venue Acoustic & Spatial Planning */}
             <div
-              className={`bg-white p-5 rounded-xl border border-[#C9C4D8]/30 flex items-center gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 hover:-translate-y-0.5 ${
+              className={`bg-white p-5 rounded-xl border border-ds-line-strong/30 flex items-center gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 hover:-translate-y-0.5 ${
                 isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
               }`}
               style={{ transitionDelay: '500ms' }}
             >
-              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-[#C9C4D8]/40">
+              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-ds-line-strong/40">
                 <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -189,13 +189,13 @@ export function CreateEventSection() {
                 />
               </div>
               <div>
-                <span className="text-[10px] font-semibold text-[#5F3ADD] uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-ds-accent uppercase tracking-wider">
                   Spatial CAD Intelligence
                 </span>
-                <h4 className="font-space text-[16px] text-[#1B192F] font-bold">
+                <h4 className="font-space text-[16px] text-ds-ink font-bold">
                   Dynamic Venue Footprints
                 </h4>
-                <p className="text-[12px] text-[#484555] mt-1">
+                <p className="text-[12px] text-ds-body mt-1">
                   Real-time zone capacity limits and automated fire-code checks.
                 </p>
               </div>
@@ -203,12 +203,12 @@ export function CreateEventSection() {
 
             {/* Fragment 3: Speaker Schedule Coordination */}
             <div
-              className={`bg-white p-5 rounded-xl border border-[#C9C4D8]/30 flex items-center gap-4 shadow-sm hover:border-[#5F3ADD]/50 transition-all duration-300 hover:-translate-y-0.5 ${
+              className={`bg-white p-5 rounded-xl border border-ds-line-strong/30 flex items-center gap-4 shadow-sm hover:border-ds-accent/50 transition-all duration-300 hover:-translate-y-0.5 ${
                 isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
               }`}
               style={{ transitionDelay: '600ms' }}
             >
-              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-[#C9C4D8]/40">
+              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative border border-ds-line-strong/40">
                 <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
@@ -217,13 +217,13 @@ export function CreateEventSection() {
                 />
               </div>
               <div>
-                <span className="text-[10px] font-semibold text-[#5F3ADD] uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-ds-accent uppercase tracking-wider">
                   Talent Sync
                 </span>
-                <h4 className="font-space text-[16px] text-[#1B192F] font-bold">
+                <h4 className="font-space text-[16px] text-ds-ink font-bold">
                   Speaker Readiness Flow
                 </h4>
-                <p className="text-[12px] text-[#484555] mt-1">
+                <p className="text-[12px] text-ds-body mt-1">
                   Automatic SMS teleprompter callouts and green-room routing.
                 </p>
               </div>

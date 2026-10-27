@@ -41,12 +41,12 @@ function formatTime(isoString?: string | null): string {
 export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
   if (eventHistory.length === 0) {
     return (
-      <div className="bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs">
-        <div className="w-12 h-12 rounded-full bg-[#FAF9FF] text-[#77738A] mx-auto flex items-center justify-center mb-3">
+      <div className="bg-white border border-ds-line rounded-2xl p-8 text-center shadow-xs">
+        <div className="w-12 h-12 rounded-full bg-ds-subtle text-ds-muted mx-auto flex items-center justify-center mb-3">
           <span className="material-symbols-outlined text-[24px]">event_busy</span>
         </div>
-        <h3 className="text-sm font-bold text-[#17152B]">No Event Participation</h3>
-        <p className="text-xs text-[#77738A] mt-1 max-w-sm mx-auto">
+        <h3 className="text-sm font-bold text-ds-ink">No Event Participation</h3>
+        <p className="text-xs text-ds-muted mt-1 max-w-sm mx-auto">
           This person is not currently linked to any events or registrations in this workspace.
         </p>
       </div>
@@ -54,22 +54,22 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
   }
 
   return (
-    <div className="bg-white border border-[#E6E2F0] rounded-2xl shadow-xs overflow-hidden">
-      <div className="px-5 py-4 border-b border-[#E6E2F0] flex items-center justify-between bg-[#FAF9FF]">
+    <div className="bg-white border border-ds-line rounded-2xl shadow-xs overflow-hidden">
+      <div className="px-5 py-4 border-b border-ds-line flex items-center justify-between bg-ds-subtle">
         <div>
-          <h2 className="text-sm font-bold text-[#17152B] tracking-tight">
+          <h2 className="text-sm font-bold text-ds-ink tracking-tight">
             Event History & Participation
           </h2>
-          <p className="text-xs text-[#77738A] mt-0.5">
+          <p className="text-xs text-ds-muted mt-0.5">
             Real event registrations and checkpoint attendance records.
           </p>
         </div>
-        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#7C5CFC]/10 text-[#7C5CFC] border border-[#7C5CFC]/20">
+        <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-ds-accent/10 text-ds-accent border border-ds-accent/20">
           {eventHistory.length} {eventHistory.length === 1 ? 'Event' : 'Events'}
         </span>
       </div>
 
-      <div className="divide-y divide-[#E6E2F0]">
+      <div className="divide-y divide-ds-line">
         {eventHistory.map((item) => (
           <div key={item.eventId} className="p-5 flex flex-col gap-4">
             {/* Top Event Row */}
@@ -78,18 +78,18 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/app/events/${item.eventId}`}
-                    className="font-bold text-[#17152B] hover:text-[#7C5CFC] transition-colors text-sm sm:text-base flex items-center gap-1.5 group"
+                    className="font-bold text-ds-ink hover:text-ds-accent transition-colors text-sm sm:text-base flex items-center gap-1.5 group"
                   >
                     <span>{item.eventName}</span>
-                    <span className="material-symbols-outlined text-[16px] text-[#77738A] group-hover:text-[#7C5CFC] transition-colors">
+                    <span className="material-symbols-outlined text-[16px] text-ds-muted group-hover:text-ds-accent transition-colors">
                       open_in_new
                     </span>
                   </Link>
-                  <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-md bg-[#FAF9FF] text-[#77738A] border border-[#E6E2F0]">
+                  <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-md bg-ds-subtle text-ds-muted border border-ds-line">
                     {item.personType}
                   </span>
                 </div>
-                <div className="text-xs text-[#77738A] mt-0.5 flex items-center gap-2">
+                <div className="text-xs text-ds-muted mt-0.5 flex items-center gap-2">
                   <span>Event Date: {formatDate(item.eventStartDate)}</span>
                   {item.registeredAt && (
                     <>
@@ -108,8 +108,8 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
                     Attended ({item.checkInCount} {item.checkInCount === 1 ? 'scan' : 'scans'})
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-50 text-[#77738A] border border-[#E6E2F0]">
-                    <span className="w-2 h-2 rounded-full bg-[#A19DAE]"></span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-50 text-ds-muted border border-ds-line">
+                    <span className="w-2 h-2 rounded-full bg-ds-muted"></span>
                     Not Attended
                   </span>
                 )}
@@ -117,18 +117,18 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
             </div>
 
             {/* Registration Details Sub-Card */}
-            <div className="bg-[#FAF9FF] border border-[#E6E2F0]/80 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="bg-ds-subtle border border-ds-line/80 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-4">
                 <div>
-                  <span className="text-[11px] font-medium text-[#77738A] block">
+                  <span className="text-[11px] font-medium text-ds-muted block">
                     Registration No:
                   </span>
-                  <span className="font-mono font-bold text-[#17152B]">
+                  <span className="font-mono font-bold text-ds-ink">
                     {item.registrationNumber || 'Not Registered'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[11px] font-medium text-[#77738A] block">
+                  <span className="text-[11px] font-medium text-ds-muted block">
                     Ticket Status:
                   </span>
                   <span
@@ -137,7 +137,7 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
                         ? 'text-emerald-700'
                         : item.registrationStatus?.toLowerCase() === 'pending'
                         ? 'text-amber-700'
-                        : 'text-[#77738A]'
+                        : 'text-ds-muted'
                     }`}
                   >
                     {item.registrationStatus || item.personStatus}
@@ -147,10 +147,10 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
 
               {item.firstCheckInAt && (
                 <div className="text-right">
-                  <span className="text-[11px] font-medium text-[#77738A] block">
+                  <span className="text-[11px] font-medium text-ds-muted block">
                     First Check-In:
                   </span>
-                  <span className="font-semibold text-[#17152B]">
+                  <span className="font-semibold text-ds-ink">
                     {formatDate(item.firstCheckInAt)} {formatTime(item.firstCheckInAt)}
                   </span>
                 </div>
@@ -159,8 +159,8 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
 
             {/* Check-in Scans Log (if scans exist) */}
             {item.checkIns.length > 0 && (
-              <div className="pl-2 border-l-2 border-[#7C5CFC]/30 flex flex-col gap-1.5 text-xs">
-                <span className="text-[11px] font-bold uppercase text-[#77738A] tracking-wider">
+              <div className="pl-2 border-l-2 border-ds-accent/30 flex flex-col gap-1.5 text-xs">
+                <span className="text-[11px] font-bold uppercase text-ds-muted tracking-wider">
                   Check-in Logs:
                 </span>
                 <div className="flex flex-col gap-1">
@@ -177,14 +177,14 @@ export function PersonEventHistory({ eventHistory }: PersonEventHistoryProps) {
                         >
                           {scan.result === 'allowed' ? 'check_circle' : 'cancel'}
                         </span>
-                        <span className="font-medium text-[#17152B]">
+                        <span className="font-medium text-ds-ink">
                           {scan.zoneName || 'General Checkpoint'}
                         </span>
-                        <span className="text-[#77738A]">
+                        <span className="text-ds-muted">
                           ({scan.result === 'allowed' ? 'Allowed' : scan.reason || 'Denied'})
                         </span>
                       </div>
-                      <span className="text-[#77738A] font-mono text-[11px]">
+                      <span className="text-ds-muted font-mono text-[11px]">
                         {formatTime(scan.scannedAt)}
                       </span>
                     </div>

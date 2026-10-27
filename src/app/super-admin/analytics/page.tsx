@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/ui';
 import React from 'react';
 import { getPlatformAnalytics, getPlatformOverview } from '@/services/superAdminPortal.server';
 
@@ -45,18 +46,11 @@ export default async function SuperAdminAnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-[#7C5CFC]">
-          Platform Intelligence
-        </p>
-        <h1 className="mt-1 font-space text-2xl sm:text-3xl font-bold tracking-tight text-[#17152B]">
-          Platform Analytics & Growth
-        </h1>
-        <p className="mt-1 text-sm text-[#77738A]">
-          Real-time aggregated indicators across workspace adoption, event publication, and attendee volume.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Platform Intelligence"
+        title="Platform Analytics & Growth"
+        description="Real-time aggregated indicators across workspace adoption, event publication, and attendee volume."
+      />
 
       {/* Top Level Summary Cards */}
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -66,7 +60,7 @@ export default async function SuperAdminAnalyticsPage() {
             val: summary.totalWorkspaces,
             sub: `${summary.suspendedWorkspaces} suspended`,
             icon: 'corporate_fare',
-            color: 'text-[#7C5CFC]',
+            color: 'text-ds-accent',
           },
           {
             label: 'Total Events Hosted',
@@ -92,18 +86,18 @@ export default async function SuperAdminAnalyticsPage() {
         ].map((item) => (
           <div
             key={item.label}
-            className="bg-white rounded-2xl border border-[#E6E2F0] p-4 sm:p-5 shadow-2xs"
+            className="ds-card p-4 sm:p-5"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#77738A]">{item.label}</span>
+              <span className="text-xs font-semibold text-ds-muted">{item.label}</span>
               <span className={`material-symbols-outlined text-[20px] ${item.color}`}>
                 {item.icon}
               </span>
             </div>
-            <p className="font-space text-2xl font-bold text-[#17152B] mt-2 tabular-nums">
+            <p className="font-space text-2xl font-bold text-ds-ink mt-2 tabular-nums">
               {item.val.toLocaleString()}
             </p>
-            <p className="text-[11px] text-[#77738A] mt-0.5">{item.sub}</p>
+            <p className="text-[11px] text-ds-muted mt-0.5">{item.sub}</p>
           </div>
         ))}
       </section>
@@ -111,17 +105,17 @@ export default async function SuperAdminAnalyticsPage() {
       {/* Growth Trends Charts (Workspaces & Events) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Workspace Growth */}
-        <div className="bg-white rounded-2xl border border-[#E6E2F0] p-5 shadow-2xs flex flex-col justify-between">
+        <div className="ds-card p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6E2F0]">
-              <h2 className="font-space text-base font-bold text-[#17152B]">
+            <div className="flex items-center justify-between pb-3 border-b border-ds-line">
+              <h2 className="font-space text-base font-bold text-ds-ink">
                 Workspace Registrations (Last 12 Months)
               </h2>
-              <span className="text-xs font-semibold text-[#7C5CFC]">Tenant Growth</span>
+              <span className="text-xs font-semibold text-ds-accent">Tenant Growth</span>
             </div>
 
             {analytics.workspacesGrowth.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#77738A]">
+              <div className="py-12 text-center text-xs text-ds-muted">
                 No historical workspace growth data available yet.
               </div>
             ) : (
@@ -130,15 +124,15 @@ export default async function SuperAdminAnalyticsPage() {
                   const heightPercent = Math.max(12, Math.round((item.count / maxWorkspacesCount) * 100));
                   return (
                     <div key={item.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                      <span className="text-[10px] font-bold text-[#7C5CFC] opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px] font-bold text-ds-accent opacity-0 group-hover:opacity-100 transition-opacity">
                         {item.count}
                       </span>
                       <div
                         style={{ height: `${heightPercent}%` }}
-                        className="w-full rounded-t-lg bg-gradient-to-t from-[#7C5CFC] to-[#6366F1] hover:brightness-110 transition-all cursor-pointer"
+                        className="w-full rounded-t-lg bg-ds-accent hover:brightness-110 transition-all cursor-pointer"
                         title={`${item.month}: ${item.count} workspaces`}
                       />
-                      <span className="text-[10px] text-[#77738A] font-mono whitespace-nowrap">
+                      <span className="text-[10px] text-ds-muted font-mono whitespace-nowrap">
                         {item.month.slice(5)}
                       </span>
                     </div>
@@ -147,23 +141,23 @@ export default async function SuperAdminAnalyticsPage() {
               </div>
             )}
           </div>
-          <p className="mt-4 text-[11px] text-[#77738A] border-t border-[#F0EDF8] pt-2">
+          <p className="mt-4 text-[11px] text-ds-muted border-t border-ds-line pt-2">
             Displays new workspace creation events aggregated monthly from PostgreSQL.
           </p>
         </div>
 
         {/* Events Growth */}
-        <div className="bg-white rounded-2xl border border-[#E6E2F0] p-5 shadow-2xs flex flex-col justify-between">
+        <div className="ds-card p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#E6E2F0]">
-              <h2 className="font-space text-base font-bold text-[#17152B]">
+            <div className="flex items-center justify-between pb-3 border-b border-ds-line">
+              <h2 className="font-space text-base font-bold text-ds-ink">
                 Events Created (Last 12 Months)
               </h2>
               <span className="text-xs font-semibold text-[#0284C7]">Activity Volume</span>
             </div>
 
             {analytics.eventsGrowth.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[#77738A]">
+              <div className="py-12 text-center text-xs text-ds-muted">
                 No historical event creation data available yet.
               </div>
             ) : (
@@ -180,7 +174,7 @@ export default async function SuperAdminAnalyticsPage() {
                         className="w-full rounded-t-lg bg-gradient-to-t from-[#0284C7] to-[#38BDF8] hover:brightness-110 transition-all cursor-pointer"
                         title={`${item.month}: ${item.count} events`}
                       />
-                      <span className="text-[10px] text-[#77738A] font-mono whitespace-nowrap">
+                      <span className="text-[10px] text-ds-muted font-mono whitespace-nowrap">
                         {item.month.slice(5)}
                       </span>
                     </div>
@@ -189,7 +183,7 @@ export default async function SuperAdminAnalyticsPage() {
               </div>
             )}
           </div>
-          <p className="mt-4 text-[11px] text-[#77738A] border-t border-[#F0EDF8] pt-2">
+          <p className="mt-4 text-[11px] text-ds-muted border-t border-ds-line pt-2">
             Tracks total events scheduled across all workspaces by month.
           </p>
         </div>
@@ -198,27 +192,27 @@ export default async function SuperAdminAnalyticsPage() {
       {/* Distribution Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Events By Status */}
-        <div className="bg-white rounded-2xl border border-[#E6E2F0] p-5 shadow-2xs">
-          <h2 className="font-space text-sm font-bold text-[#17152B] pb-3 border-b border-[#E6E2F0]">
+        <div className="ds-card p-5">
+          <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
             Lifecycle Status Distribution
           </h2>
           <div className="mt-4 space-y-3">
             {[
               { label: 'Published', count: summary.publishedEvents, color: 'bg-[#10B981]' },
-              { label: 'Draft', count: summary.draftEvents, color: 'bg-[#7C5CFC]' },
-              { label: 'Archived', count: summary.archivedEvents, color: 'bg-[#6B7280]' },
+              { label: 'Draft', count: summary.draftEvents, color: 'bg-ds-accent' },
+              { label: 'Archived', count: summary.archivedEvents, color: 'bg-ds-muted' },
             ].map((st) => {
               const total = Math.max(1, summary.totalEvents);
               const pct = Math.round((st.count / total) * 100);
               return (
                 <div key={st.label}>
                   <div className="flex justify-between text-xs font-semibold mb-1">
-                    <span className="text-[#17152B]">{st.label}</span>
-                    <span className="text-[#77738A]">
+                    <span className="text-ds-ink">{st.label}</span>
+                    <span className="text-ds-muted">
                       {st.count.toLocaleString()} ({pct}%)
                     </span>
                   </div>
-                  <div className="w-full bg-[#F0EDF8] rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-ds-line rounded-full h-2 overflow-hidden">
                     <div
                       style={{ width: `${pct}%` }}
                       className={`h-full rounded-full ${st.color}`}
@@ -231,13 +225,13 @@ export default async function SuperAdminAnalyticsPage() {
         </div>
 
         {/* Plan Distribution */}
-        <div className="bg-white rounded-2xl border border-[#E6E2F0] p-5 shadow-2xs">
-          <h2 className="font-space text-sm font-bold text-[#17152B] pb-3 border-b border-[#E6E2F0]">
+        <div className="ds-card p-5">
+          <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
             Subscription Tier Distribution
           </h2>
           <div className="mt-4 space-y-3">
             {analytics.planDistribution.length === 0 ? (
-              <p className="text-xs text-[#77738A] py-4 text-center">
+              <p className="text-xs text-ds-muted py-4 text-center">
                 All workspaces currently on default Free tier.
               </p>
             ) : (
@@ -247,15 +241,15 @@ export default async function SuperAdminAnalyticsPage() {
                 return (
                   <div key={p.plan}>
                     <div className="flex justify-between text-xs font-semibold mb-1">
-                      <span className="text-[#17152B] uppercase">{p.plan}</span>
-                      <span className="text-[#77738A]">
+                      <span className="text-ds-ink uppercase">{p.plan}</span>
+                      <span className="text-ds-muted">
                         {p.count.toLocaleString()} ({pct}%)
                       </span>
                     </div>
-                    <div className="w-full bg-[#F0EDF8] rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-ds-line rounded-full h-2 overflow-hidden">
                       <div
                         style={{ width: `${pct}%` }}
-                        className="h-full rounded-full bg-gradient-to-r from-[#7C5CFC] to-[#6366F1]"
+                        className="h-full rounded-full bg-ds-accent"
                       />
                     </div>
                   </div>
@@ -266,35 +260,35 @@ export default async function SuperAdminAnalyticsPage() {
         </div>
 
         {/* Operational Security Integrity */}
-        <div className="bg-white rounded-2xl border border-[#E6E2F0] p-5 shadow-2xs flex flex-col justify-between">
+        <div className="ds-card p-5 flex flex-col justify-between">
           <div>
-            <h2 className="font-space text-sm font-bold text-[#17152B] pb-3 border-b border-[#E6E2F0]">
+            <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
               Operational Diagnostics
             </h2>
             <div className="mt-4 space-y-2.5 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-[#77738A]">Suspended Workspaces:</span>
-                <span className="font-bold text-[#17152B] tabular-nums">
+                <span className="text-ds-muted">Suspended Workspaces:</span>
+                <span className="font-bold text-ds-ink tabular-nums">
                   {summary.suspendedWorkspaces}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#77738A]">Moderated Events:</span>
-                <span className="font-bold text-[#17152B] tabular-nums">
+                <span className="text-ds-muted">Moderated Events:</span>
+                <span className="font-bold text-ds-ink tabular-nums">
                   {summary.moderatedEvents}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#77738A]">Row Level Security:</span>
+                <span className="text-ds-muted">Row Level Security:</span>
                 <span className="text-[#10B981] font-bold">Enforced (Active)</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#77738A]">Audit Logs:</span>
+                <span className="text-ds-muted">Audit Logs:</span>
                 <span className="text-[#10B981] font-bold">Append-Only</span>
               </div>
             </div>
           </div>
-          <div className="mt-4 p-2.5 rounded-xl bg-[#F6F1FF] text-[11px] text-[#7C5CFC] font-medium">
+          <div className="mt-4 p-2.5 rounded-xl bg-ds-accent-soft text-[11px] text-ds-accent font-medium">
             Cross-tenant boundaries verified. No direct write operations exposed.
           </div>
         </div>

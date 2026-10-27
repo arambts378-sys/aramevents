@@ -71,7 +71,7 @@ export function CreateEventPreview() {
   const activeTemplate = eventTemplates.find((t) => t.id === activeTab) || eventTemplates[0];
 
   return (
-    <section className="py-20 bg-[#F7F5FF] border-t border-[#EDE9FE]">
+    <section className="py-20 bg-ds-canvas border-t border-ds-line">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left: Dynamic Event Visual with Type Pill Selector */}
@@ -83,8 +83,8 @@ export function CreateEventPreview() {
                   onClick={() => setActiveTab(t.id)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === t.id
-                      ? 'bg-[#7C5CFC] text-white shadow-sm'
-                      : 'bg-white text-[#77738A] hover:bg-[#EDE9FE] border border-[#EDE9FE]'
+                      ? 'bg-ds-accent text-white shadow-sm'
+                      : 'bg-white text-ds-muted hover:bg-ds-subtle border border-ds-line'
                   }`}
                 >
                   {t.label}
@@ -92,17 +92,17 @@ export function CreateEventPreview() {
               ))}
             </div>
 
-            <div className="relative rounded-2xl overflow-hidden shadow-lg border border-[#EDE9FE] h-96 group">
+            <div className="relative rounded-2xl overflow-hidden shadow-lg border border-ds-line h-96 group">
               <img
                 src={activeTemplate.image}
                 alt={activeTemplate.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#17152B]/80 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-white/95 backdrop-blur-md border border-[#EDE9FE] flex items-center justify-between shadow-md">
+              <div className="absolute inset-0 bg-gradient-to-t from-ds-ink/80 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-white border border-ds-line flex items-center justify-between shadow-md">
                 <div>
-                  <div className="text-[10px] font-bold text-[#7C5CFC] uppercase tracking-wider">EVENT TEMPLATE PREVIEW</div>
-                  <div className="text-base font-bold text-[#27243A]">{activeTemplate.title}</div>
+                  <div className="text-[10px] font-bold text-ds-accent uppercase tracking-wider">EVENT TEMPLATE PREVIEW</div>
+                  <div className="text-base font-bold text-ds-body">{activeTemplate.title}</div>
                 </div>
                 <span className="text-xs bg-[#22C55E]/15 text-[#22C55E] font-bold px-2.5 py-1 rounded-md">
                   Preset Active
@@ -114,37 +114,37 @@ export function CreateEventPreview() {
           {/* Right: Creation Configuration Modal UI */}
           <div className="lg:col-span-6 flex flex-col gap-6">
             <div>
-              <span className="text-xs font-bold text-[#7C5CFC] uppercase tracking-wider">01 / CREATE</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#27243A] mt-1 tracking-tight">
+              <span className="text-xs font-bold text-ds-accent uppercase tracking-wider">01 / CREATE</span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-ds-body mt-1 tracking-tight">
                 Start With an Event.
               </h2>
-              <p className="text-base text-[#77738A] mt-2 font-normal">
+              <p className="text-base text-ds-muted mt-2 font-normal">
                 Choose the event type, configure the experience, and launch in minutes. Adapt tickets, capacities, and staff roles on the fly.
               </p>
             </div>
 
             {/* Realistic SaaS Creation Modal */}
-            <div className="bg-white p-6 rounded-2xl border border-[#EDE9FE] shadow-xl shadow-[#7C5CFC]/5 flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#EDE9FE]">
+            <div className="bg-white p-6 rounded-2xl border border-ds-line shadow-xl shadow-black/5 flex flex-col gap-4">
+              <div className="flex items-center justify-between pb-3 border-b border-ds-line">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#7C5CFC] text-xl">add_box</span>
-                  <span className="text-sm font-bold text-[#27243A]">Create New Experience</span>
+                  <span className="material-symbols-outlined text-ds-accent text-xl">add_box</span>
+                  <span className="text-sm font-bold text-ds-body">Create New Experience</span>
                 </div>
-                <span className="text-xs text-[#77738A]">Step 1 of 3</span>
+                <span className="text-xs text-ds-muted">Step 1 of 3</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Event Type</label>
-                  <div className="w-full p-2.5 rounded-xl border border-[#EDE9FE] bg-[#F7F5FF] flex items-center justify-between text-[#27243A] text-xs font-semibold">
+                  <label className="text-xs font-semibold text-ds-muted block mb-1.5">Event Type</label>
+                  <div className="w-full p-2.5 rounded-xl border border-ds-line bg-ds-canvas flex items-center justify-between text-ds-body text-xs font-semibold">
                     <span>{activeTemplate.label}</span>
-                    <span className="material-symbols-outlined text-sm text-[#77738A]">expand_more</span>
+                    <span className="material-symbols-outlined text-sm text-ds-muted">expand_more</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Target Capacity</label>
+                  <label className="text-xs font-semibold text-ds-muted block mb-1.5">Target Capacity</label>
                   <input
-                    className="w-full p-2.5 rounded-xl border border-[#EDE9FE] bg-[#F7F5FF] text-[#27243A] text-xs font-semibold outline-none"
+                    className="w-full p-2.5 rounded-xl border border-ds-line bg-ds-canvas text-ds-body text-xs font-semibold outline-none"
                     readOnly
                     type="text"
                     value={activeTemplate.capacity}
@@ -153,9 +153,9 @@ export function CreateEventPreview() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Event Name</label>
+                <label className="text-xs font-semibold text-ds-muted block mb-1.5">Event Name</label>
                 <input
-                  className="w-full p-2.5 rounded-xl border border-[#EDE9FE] bg-[#F7F5FF] text-[#27243A] text-xs font-bold outline-none"
+                  className="w-full p-2.5 rounded-xl border border-ds-line bg-ds-canvas text-ds-body text-xs font-bold outline-none"
                   readOnly
                   type="text"
                   value={activeTemplate.name}
@@ -164,33 +164,33 @@ export function CreateEventPreview() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Date & Time</label>
-                  <div className="w-full p-2.5 rounded-xl border border-[#EDE9FE] bg-[#F7F5FF] flex items-center justify-between text-[#27243A] text-xs font-semibold">
+                  <label className="text-xs font-semibold text-ds-muted block mb-1.5">Date & Time</label>
+                  <div className="w-full p-2.5 rounded-xl border border-ds-line bg-ds-canvas flex items-center justify-between text-ds-body text-xs font-semibold">
                     <span>{activeTemplate.date}</span>
-                    <span className="material-symbols-outlined text-sm text-[#77738A]">calendar_today</span>
+                    <span className="material-symbols-outlined text-sm text-ds-muted">calendar_today</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Venue / Location</label>
-                  <div className="w-full p-2.5 rounded-xl border border-[#EDE9FE] bg-[#F7F5FF] flex items-center justify-between text-[#27243A] text-xs font-semibold">
+                  <label className="text-xs font-semibold text-ds-muted block mb-1.5">Venue / Location</label>
+                  <div className="w-full p-2.5 rounded-xl border border-ds-line bg-ds-canvas flex items-center justify-between text-ds-body text-xs font-semibold">
                     <span className="truncate">{activeTemplate.location}</span>
-                    <span className="material-symbols-outlined text-sm text-[#77738A]">location_on</span>
+                    <span className="material-symbols-outlined text-sm text-ds-muted">location_on</span>
                   </div>
                 </div>
               </div>
 
               {/* Access Tiers Setup Preview */}
               <div>
-                <label className="text-xs font-semibold text-[#77738A] block mb-1.5">Configured Access Tiers</label>
+                <label className="text-xs font-semibold text-ds-muted block mb-1.5">Configured Access Tiers</label>
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F7F5FF] rounded-lg text-xs font-semibold text-[#27243A] border border-[#EDE9FE]">
-                    <span className="w-2 h-2 rounded-full bg-[#7C5CFC]" /> VIP All-Access ($499)
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ds-canvas rounded-lg text-xs font-semibold text-ds-body border border-ds-line">
+                    <span className="w-2 h-2 rounded-full bg-ds-accent" /> VIP All-Access ($499)
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F7F5FF] rounded-lg text-xs font-semibold text-[#27243A] border border-[#EDE9FE]">
-                    <span className="w-2 h-2 rounded-full bg-[#5B3FE8]" /> General Delegate ($199)
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ds-canvas rounded-lg text-xs font-semibold text-ds-body border border-ds-line">
+                    <span className="w-2 h-2 rounded-full bg-ds-accent-strong" /> General Delegate ($199)
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#F7F5FF] rounded-lg text-xs font-semibold text-[#27243A] border border-[#EDE9FE]">
-                    <span className="w-2 h-2 rounded-full bg-[#77738A]" /> Workshop Pass ($89)
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-ds-canvas rounded-lg text-xs font-semibold text-ds-body border border-ds-line">
+                    <span className="w-2 h-2 rounded-full bg-ds-muted" /> Workshop Pass ($89)
                   </span>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function CreateEventPreview() {
               <div className="pt-2">
                 <Link
                   href="/app/events/new"
-                  className="w-full py-3 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
+                  className="w-full py-3 bg-ds-accent hover:bg-ds-accent-strong text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
                 >
                   <span>Create Event & Configure Tracks</span>
                   <span className="material-symbols-outlined text-sm">arrow_forward</span>

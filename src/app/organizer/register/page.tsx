@@ -17,9 +17,9 @@ import {
 } from '@/lib/validation/auth';
 
 const INPUT_BASE =
-  'w-full px-3.5 py-2.5 bg-[#F7F5FF] border rounded-xl text-xs font-semibold text-[#17152B] placeholder-[#77738A]/60 focus:outline-none focus:ring-1 transition-colors';
-const INPUT_OK = 'border-[#E6E2F0] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]';
-const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]';
+  'w-full px-4 py-2.5 bg-white border rounded-xl text-xs font-semibold text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
+const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 focus:bg-white';
+const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-2 focus:ring-ds-danger/20';
 
 function inputClass(hasError: boolean, extra = '') {
   return `${INPUT_BASE} ${hasError ? INPUT_BAD : INPUT_OK} ${extra}`.trim();
@@ -28,7 +28,7 @@ function inputClass(hasError: boolean, extra = '') {
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-[11px] font-semibold text-[#DC2626] flex items-start gap-1">
+    <p id={id} role="alert" className="text-[11px] font-semibold text-ds-danger flex items-start gap-1">
       <span className="material-symbols-outlined text-sm shrink-0 leading-none mt-px">error</span>
       <span>{message}</span>
     </p>
@@ -177,27 +177,34 @@ export default function OrganizerRegisterPage() {
   const phoneCheck = phoneNumber.trim() ? normalizeIndianMobile(phoneNumber) : null;
 
   return (
-    <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-10 px-4 selection:bg-[#7C5CFC]/20 selection:text-[#7C5CFC]">
+    <div className="relative min-h-screen bg-ds-subtle flex flex-col justify-between items-center py-10 px-4 selection:bg-ds-accent/20 selection:text-ds-accent overflow-hidden">
+      <div className="absolute inset-0 hairline-grid opacity-30 pointer-events-none -z-0" />
+
       {/* Top Spacer */}
       <div />
 
       {/* Main Authentication Card */}
-      <div className="w-full max-w-[440px] bg-white rounded-2xl p-7 sm:p-9 border border-[#E6E2F0] shadow-xl shadow-[#7C5CFC]/5 flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-[460px] bg-white rounded-3xl p-7 sm:p-9 border border-ds-line shadow-sm flex flex-col items-center">
         {/* Brand Logo & Header */}
-        <Link href="/" className="flex flex-col items-center gap-2 group mb-5">
-          <div className="w-12 h-12 rounded-2xl bg-[#7C5CFC] flex items-center justify-center text-white shadow-md shadow-[#7C5CFC]/25 group-hover:scale-105 transition-transform duration-200">
-            <span className="material-symbols-outlined text-2xl">layers</span>
+        <Link href="/" className="flex flex-col items-center gap-2.5 group mb-5">
+          <div className="relative">
+            <div className="w-13 h-13 rounded-2xl bg-ds-accent flex items-center justify-center text-white shadow-lg shadow-black/5 group-hover:scale-105 transition-all duration-300">
+              <span className="material-symbols-outlined text-[28px]">deployed_code</span>
+            </div>
+            <div className="absolute -inset-1 rounded-2xl bg-ds-accent/25 blur-xs -z-10 group-hover:bg-ds-accent/45 transition-all duration-300" />
           </div>
           <div className="flex flex-col items-center text-center">
-            <span className="text-xl font-bold tracking-tight text-[#17152B]">ARAM BTS</span>
-            <span className="text-xs text-[#77738A] tracking-wider font-medium">Events Beyond Boundaries</span>
+            <span className="text-xl font-bold tracking-tight text-ds-ink">
+              ARAM <span className="bg-ds-accent bg-clip-text text-transparent">BTS</span>
+            </span>
+            <span className="text-[11px] text-ds-muted tracking-wider uppercase font-semibold mt-0.5">Events Beyond Boundaries</span>
           </div>
         </Link>
 
         {/* Heading & Subtitle */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold text-[#17152B] tracking-tight">Create your organizer account</h1>
-          <p className="text-xs text-[#77738A] mt-1.5 font-normal">
+          <h1 className="text-2xl font-bold text-ds-ink tracking-tight">Create your organizer account</h1>
+          <p className="text-xs text-ds-muted mt-1.5 font-normal">
             Start managing your events with ARAM BTS.
           </p>
         </div>
@@ -208,7 +215,7 @@ export default function OrganizerRegisterPage() {
             <div
               role="alert"
               aria-live="polite"
-              className="bg-[#DC2626]/10 border border-[#DC2626]/30 text-[#DC2626] rounded-xl p-3 text-xs font-semibold flex items-start gap-2"
+              className="bg-ds-danger/10 border border-ds-danger/30 text-ds-danger rounded-xl p-3 text-xs font-semibold flex items-start gap-2"
             >
               <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
               <span>{error}</span>
@@ -217,8 +224,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Full Name */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="fullName" className="text-xs font-semibold text-[#17152B]">
-              Full Name <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="fullName" className="text-xs font-semibold text-ds-ink">
+              Full Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
               id="fullName"
@@ -244,8 +251,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Organization Name */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="organizationName" className="text-xs font-semibold text-[#17152B]">
-              Organization Name <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="organizationName" className="text-xs font-semibold text-ds-ink">
+              Organization Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
               id="organizationName"
@@ -271,8 +278,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Work Email */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-[#17152B]">
-              Work Email <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="email" className="text-xs font-semibold text-ds-ink">
+              Work Email <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
               id="email"
@@ -301,8 +308,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Mobile Number */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="phoneNumber" className="text-xs font-semibold text-[#17152B]">
-              Mobile Number <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="phoneNumber" className="text-xs font-semibold text-ds-ink">
+              Mobile Number <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
               id="phoneNumber"
@@ -326,7 +333,7 @@ export default function OrganizerRegisterPage() {
             />
             <FieldError id="phoneNumber-error" message={errors.phoneNumber} />
             {!errors.phoneNumber && (
-              <p id="phoneNumber-hint" className="text-[11px] text-[#77738A] flex items-center gap-1">
+              <p id="phoneNumber-hint" className="text-[11px] text-ds-muted flex items-center gap-1">
                 {phoneCheck?.valid ? (
                   <>
                     <span className="material-symbols-outlined text-sm text-[#16A34A] leading-none">check_circle</span>
@@ -346,8 +353,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Password */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-xs font-semibold text-[#17152B]">
-              Password <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="password" className="text-xs font-semibold text-ds-ink">
+              Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -373,7 +380,7 @@ export default function OrganizerRegisterPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 text-[#77738A] hover:text-[#17152B] focus:outline-none transition-colors"
+                className="absolute right-3 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
               >
                 <span className="material-symbols-outlined text-lg">
                   {showPassword ? 'visibility_off' : 'visibility'}
@@ -386,7 +393,7 @@ export default function OrganizerRegisterPage() {
               className={`text-[11px] flex items-center gap-1 ${
                 password.length >= PASSWORD_MIN_LENGTH && password.trim().length > 0
                   ? 'text-[#16A34A]'
-                  : 'text-[#77738A]'
+                  : 'text-ds-muted'
               }`}
             >
               <span className="material-symbols-outlined text-sm leading-none">
@@ -400,8 +407,8 @@ export default function OrganizerRegisterPage() {
 
           {/* Confirm Password */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="confirmPassword" className="text-xs font-semibold text-[#17152B]">
-              Confirm Password <span className="text-[#DC2626]" aria-hidden="true">*</span>
+            <label htmlFor="confirmPassword" className="text-xs font-semibold text-ds-ink">
+              Confirm Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
               <input
@@ -433,7 +440,7 @@ export default function OrganizerRegisterPage() {
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
-                className="absolute right-3 text-[#77738A] hover:text-[#17152B] focus:outline-none transition-colors"
+                className="absolute right-3 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
               >
                 <span className="material-symbols-outlined text-lg">
                   {showConfirmPassword ? 'visibility_off' : 'visibility'}
@@ -459,7 +466,7 @@ export default function OrganizerRegisterPage() {
             type="submit"
             disabled={loading || confirmMismatch}
             aria-busy={loading}
-            className="w-full h-11 mt-3 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-[#7C5CFC]/20 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-12 mt-3 bg-ds-accent text-white font-bold text-xs rounded-xl transition-all shadow-sm shadow-sm hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
           >
             {loading ? (
               <>
@@ -467,26 +474,33 @@ export default function OrganizerRegisterPage() {
                 <span>Creating Account...</span>
               </>
             ) : (
-              <span>Create Organizer Account</span>
+              <span className="flex items-center gap-2">
+                <span>Create Organizer Account</span>
+                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </span>
             )}
           </button>
         </form>
 
         {/* Existing account link */}
-        <div className="mt-5 text-center text-xs text-[#77738A]">
+        <div className="mt-5 text-center text-xs text-ds-muted">
           Already have an account?{' '}
           <Link
             href="/login"
-            className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline"
+            className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
           >
             Sign in
           </Link>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 text-center text-xs text-[#77738A]">
-        © 2026 ARAM BTS. Events Beyond Boundaries.
+      {/* Minimal Footer with Security Trust */}
+      <footer className="mt-8 text-center text-xs text-ds-muted flex flex-col items-center gap-2">
+        <div className="flex items-center gap-2 text-[11px] font-medium text-ds-muted/80 bg-white px-3 py-1 rounded-full border border-ds-line/60 shadow-2xs">
+          <span className="material-symbols-outlined text-[14px] text-[#10B981]">verified_user</span>
+          <span>Bank-grade 256-bit SSL • Real-time zero-trust auth</span>
+        </div>
+        <span>&copy; {new Date().getFullYear()} ARAM BTS. Events Beyond Boundaries.</span>
       </footer>
     </div>
   );

@@ -31,19 +31,19 @@ const ACTION_DESCRIPTIONS: Record<
     title: 'Suspend Event',
     desc: 'Immediately withdraws the event from public discovery and ticket purchases. Attendee tickets and check-in history are strictly preserved.',
     buttonText: 'Suspend Event',
-    color: 'bg-[#BA1A1A] hover:bg-[#93000A]',
+    color: 'bg-ds-danger hover:bg-[#93000A]',
   },
   unpublish: {
     title: 'Unpublish Event to Draft',
     desc: 'Reverts the event website and registration to draft mode. Organizers can review and make required adjustments.',
     buttonText: 'Unpublish Event',
-    color: 'bg-[#7C5CFC] hover:bg-[#6366F1]',
+    color: 'bg-ds-accent hover:bg-[#6366F1]',
   },
   archive: {
     title: 'Archive Event',
     desc: 'Moves the event to archived state, concluding public registration while maintaining audit history.',
     buttonText: 'Archive Event',
-    color: 'bg-[#4B5563] hover:bg-[#374151]',
+    color: 'bg-ds-body hover:bg-ds-body',
   },
   restore: {
     title: 'Restore Event to Normal',
@@ -103,33 +103,33 @@ export function EventModerationModal({
       aria-modal="true"
       aria-labelledby="moderation-title"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-[#E6E2F0]">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-ds-line">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-[22px]">policy</span>
             </div>
             <div>
-              <h2 id="moderation-title" className="font-space text-lg font-bold text-[#17152B]">
+              <h2 id="moderation-title" className="font-space text-lg font-bold text-ds-ink">
                 {config.title}
               </h2>
-              <p className="text-xs text-[#77738A]">{event.name}</p>
+              <p className="text-xs text-ds-muted">{event.name}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#77738A] hover:text-[#17152B] p-1"
+            className="text-ds-muted hover:text-ds-ink p-1"
             aria-label="Close modal"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
 
-        <div className="mt-4 p-3.5 rounded-xl bg-[#FAF8FF] border border-[#E6E2F0] text-xs leading-relaxed text-[#5A566B]">
-          <p className="font-semibold text-[#17152B] mb-1">Moderation Impact:</p>
+        <div className="mt-4 p-3.5 rounded-xl bg-ds-subtle border border-ds-line text-xs leading-relaxed text-ds-muted">
+          <p className="font-semibold text-ds-ink mb-1">Moderation Impact:</p>
           <p>{config.desc}</p>
-          <p className="mt-1 text-[11px] text-[#77738A]">
+          <p className="mt-1 text-[11px] text-ds-muted">
             Current state: <strong>{event.status}</strong> (Moderation: <strong>{event.moderationStatus}</strong>)
           </p>
         </div>
@@ -142,8 +142,8 @@ export function EventModerationModal({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label htmlFor="mod-reason" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1">
-              Justification <span className="text-[#BA1A1A]">*</span>
+            <label htmlFor="mod-reason" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1">
+              Justification <span className="text-ds-danger">*</span>
             </label>
             <textarea
               id="mod-reason"
@@ -152,7 +152,7 @@ export function EventModerationModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Provide a specific reason for this moderation action (mandatory for audit)..."
-              className="w-full rounded-xl border border-[#D8D3E3] p-3 text-sm text-[#17152B] outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input py-2.5 h-auto"
             />
           </div>
 
@@ -161,7 +161,7 @@ export function EventModerationModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#5A566B] hover:bg-[#F6F1FF] border border-[#E6E2F0]"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-ds-muted hover:bg-ds-subtle border border-ds-line"
             >
               Cancel
             </button>

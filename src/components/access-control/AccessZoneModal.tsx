@@ -97,14 +97,14 @@ export function AccessZoneModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-xl rounded-2xl md:rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto border border-[#E6E2F0]">
+      <div className="bg-white w-full max-w-xl rounded-2xl md:rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto border border-ds-line">
         {/* Header */}
-        <div className="flex items-center justify-between pb-5 border-b border-[#E6E2F0]">
+        <div className="flex items-center justify-between pb-5 border-b border-ds-line">
           <div>
-            <h2 className="font-space text-[22px] font-bold text-[#17152B]">
+            <h2 className="font-space text-[22px] font-bold text-ds-ink">
               {isEdit ? 'Edit Access Zone' : 'Create Access Zone'}
             </h2>
-            <p className="font-jakarta text-[13px] text-[#77738A] mt-0.5">
+            <p className="font-jakarta text-[13px] text-ds-muted mt-0.5">
               {isEdit
                 ? 'Update checkpoint details, credentials, and entitlement policies.'
                 : 'Configure a new entry gate, checkpoint, or entitlement validation zone.'}
@@ -113,7 +113,7 @@ export function AccessZoneModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-[#F6F1FF] text-[#77738A] hover:text-[#17152B] flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg hover:bg-ds-subtle text-ds-muted hover:text-ds-ink flex items-center justify-center transition-colors"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
@@ -131,13 +131,13 @@ export function AccessZoneModal({
           {/* Zone Name & Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block font-jakarta text-[13px] font-semibold text-[#17152B] mb-1.5">
+              <label className="block font-jakarta text-[13px] font-semibold text-ds-ink mb-1.5">
                 Zone Name *
               </label>
               <input
                 type="text"
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[#17152B] font-jakarta text-[14px] placeholder-[#77738A]/50 focus:outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20 transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-ds-ink font-jakarta text-[14px] placeholder-ds-muted/50 focus:outline-none focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 transition-all"
                 placeholder="e.g. Main Gate (West)"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -145,11 +145,11 @@ export function AccessZoneModal({
             </div>
 
             <div>
-              <label className="block font-jakarta text-[13px] font-semibold text-[#17152B] mb-1.5">
+              <label className="block font-jakarta text-[13px] font-semibold text-ds-ink mb-1.5">
                 Zone Type *
               </label>
               <select
-                className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[#17152B] font-jakarta text-[14px] focus:outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20 transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-ds-ink font-jakarta text-[14px] focus:outline-none focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 transition-all"
                 value={formData.zone_type}
                 onChange={(e) => setFormData({ ...formData, zone_type: e.target.value })}
               >
@@ -167,12 +167,12 @@ export function AccessZoneModal({
 
           {/* Description */}
           <div>
-            <label className="block font-jakarta text-[13px] font-semibold text-[#17152B] mb-1.5">
+            <label className="block font-jakarta text-[13px] font-semibold text-ds-ink mb-1.5">
               Description (Optional)
             </label>
             <input
               type="text"
-              className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[#17152B] font-jakarta text-[14px] placeholder-[#77738A]/50 focus:outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20 transition-all"
+              className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-ds-ink font-jakarta text-[14px] placeholder-ds-muted/50 focus:outline-none focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 transition-all"
               placeholder="e.g. Primary attendee access via Concourse A"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -181,12 +181,12 @@ export function AccessZoneModal({
 
           {/* Location */}
           <div>
-            <label className="block font-jakarta text-[13px] font-semibold text-[#17152B] mb-1.5">
+            <label className="block font-jakarta text-[13px] font-semibold text-ds-ink mb-1.5">
               Physical Location (Optional)
             </label>
             <input
               type="text"
-              className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[#17152B] font-jakarta text-[14px] placeholder-[#77738A]/50 focus:outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20 transition-all"
+              className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-ds-ink font-jakarta text-[14px] placeholder-ds-muted/50 focus:outline-none focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 transition-all"
               placeholder="e.g. Building 2, Ground Floor"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
@@ -194,19 +194,19 @@ export function AccessZoneModal({
           </div>
 
           {/* Checkboxes: QR Required & Allow Re-entry */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#F6F1FF]/60 rounded-xl border border-[#E6E2F0]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-ds-accent-soft/60 rounded-xl border border-ds-line">
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded text-[#7C5CFC] focus:ring-[#7C5CFC] border-[#E6E2F0]"
+                className="w-4 h-4 rounded text-ds-accent focus:ring-ds-accent border-ds-line"
                 checked={formData.requires_qr}
                 onChange={(e) => setFormData({ ...formData, requires_qr: e.target.checked })}
               />
               <div>
-                <span className="font-jakarta text-[13px] font-semibold text-[#17152B] block">
+                <span className="font-jakarta text-[13px] font-semibold text-ds-ink block">
                   QR Required
                 </span>
-                <span className="text-[11px] text-[#77738A] block">
+                <span className="text-[11px] text-ds-muted block">
                   Attendees must present a QR pass
                 </span>
               </div>
@@ -215,15 +215,15 @@ export function AccessZoneModal({
             <label className="flex items-center gap-3 cursor-pointer select-none">
               <input
                 type="checkbox"
-                className="w-4 h-4 rounded text-[#7C5CFC] focus:ring-[#7C5CFC] border-[#E6E2F0]"
+                className="w-4 h-4 rounded text-ds-accent focus:ring-ds-accent border-ds-line"
                 checked={formData.allow_reentry}
                 onChange={(e) => setFormData({ ...formData, allow_reentry: e.target.checked })}
               />
               <div>
-                <span className="font-jakarta text-[13px] font-semibold text-[#17152B] block">
+                <span className="font-jakarta text-[13px] font-semibold text-ds-ink block">
                   Allow Re-entry
                 </span>
-                <span className="text-[11px] text-[#77738A] block">
+                <span className="text-[11px] text-ds-muted block">
                   Attendees can scan multiple times
                 </span>
               </div>
@@ -232,32 +232,32 @@ export function AccessZoneModal({
 
           {/* Conditional: Food Court Allocation */}
           {formData.zone_type === 'Food Court' && (
-            <div className="p-4 bg-[#F6F1FF] rounded-xl border border-[#E6E2F0] space-y-3">
-              <div className="flex items-center gap-2 text-[#7C5CFC] font-semibold text-[13px] font-jakarta">
+            <div className="p-4 bg-ds-accent-soft rounded-xl border border-ds-line space-y-3">
+              <div className="flex items-center gap-2 text-ds-accent font-semibold text-[13px] font-jakarta">
                 <span className="material-symbols-outlined text-[18px]">restaurant</span>
                 <span>Food Court Entitlement Limit</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#17152B] mb-1">
+                  <label className="block text-[12px] font-semibold text-ds-ink mb-1">
                     Allocation Limit (Number)
                   </label>
                   <input
                     type="number"
                     min="1"
-                    className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-lg text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                    className="w-full px-3 py-2 bg-white border border-ds-line rounded-lg text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     placeholder="e.g. 1"
                     value={formData.entitlement_limit}
                     onChange={(e) => setFormData({ ...formData, entitlement_limit: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#17152B] mb-1">
+                  <label className="block text-[12px] font-semibold text-ds-ink mb-1">
                     Allocation Unit
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-lg text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                    className="w-full px-3 py-2 bg-white border border-ds-line rounded-lg text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     placeholder="e.g. Meals"
                     value={formData.entitlement_unit}
                     onChange={(e) => setFormData({ ...formData, entitlement_unit: e.target.value })}
@@ -269,18 +269,18 @@ export function AccessZoneModal({
 
           {/* Conditional: Walkathon Checkpoint */}
           {formData.zone_type === 'Walkathon Checkpoint' && (
-            <div className="p-4 bg-[#F6F1FF] rounded-xl border border-[#E6E2F0] space-y-3">
-              <div className="flex items-center gap-2 text-[#7C5CFC] font-semibold text-[13px] font-jakarta">
+            <div className="p-4 bg-ds-accent-soft rounded-xl border border-ds-line space-y-3">
+              <div className="flex items-center gap-2 text-ds-accent font-semibold text-[13px] font-jakarta">
                 <span className="material-symbols-outlined text-[18px]">directions_run</span>
                 <span>Walkathon Course Settings</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#17152B] mb-1">
+                  <label className="block text-[12px] font-semibold text-ds-ink mb-1">
                     Checkpoint Type
                   </label>
                   <select
-                    className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-lg text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                    className="w-full px-3 py-2 bg-white border border-ds-line rounded-lg text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     value={formData.checkpoint_type}
                     onChange={(e) => setFormData({ ...formData, checkpoint_type: e.target.value })}
                   >
@@ -290,27 +290,27 @@ export function AccessZoneModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#17152B] mb-1">
+                  <label className="block text-[12px] font-semibold text-ds-ink mb-1">
                     Distance (KM)
                   </label>
                   <input
                     type="number"
                     min="0"
                     step="0.1"
-                    className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-lg text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                    className="w-full px-3 py-2 bg-white border border-ds-line rounded-lg text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     placeholder="e.g. 5"
                     value={formData.distance_km}
                     onChange={(e) => setFormData({ ...formData, distance_km: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#17152B] mb-1">
+                  <label className="block text-[12px] font-semibold text-ds-ink mb-1">
                     Sequence #
                   </label>
                   <input
                     type="number"
                     min="1"
-                    className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-lg text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                    className="w-full px-3 py-2 bg-white border border-ds-line rounded-lg text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     placeholder="e.g. 1"
                     value={formData.sequence}
                     onChange={(e) => setFormData({ ...formData, sequence: e.target.value })}
@@ -321,19 +321,19 @@ export function AccessZoneModal({
           )}
 
           {/* Modal Footer Actions */}
-          <div className="pt-4 border-t border-[#E6E2F0] flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-ds-line flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 rounded-xl border border-[#E6E2F0] hover:bg-[#F6F1FF] text-[#17152B] font-jakarta text-[13px] font-semibold transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl border border-ds-line hover:bg-ds-subtle text-ds-ink font-jakarta text-[13px] font-semibold transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting || !formData.name.trim()}
-              className="px-6 py-2.5 rounded-xl bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-jakarta text-[13px] font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2 active:scale-[0.98]"
+              className="px-6 py-2.5 rounded-xl bg-ds-accent hover:bg-ds-accent-strong text-white font-jakarta text-[13px] font-semibold transition-all shadow-xs disabled:opacity-50 flex items-center gap-2 active:scale-[0.98]"
             >
               {submitting && (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

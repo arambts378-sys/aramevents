@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export function GiftingCatalogueSection() {
   return (
-    <section className="py-20 bg-[#FDF8FF] border-t border-[#EDE9FE]" id="gifting">
+    <section className="py-20 bg-ds-subtle border-t border-ds-line" id="gifting">
       <div className="max-w-4xl mx-auto px-6 lg:px-8 flex flex-col items-start gap-6">
         {/* Header Label */}
         <span className="text-xs sm:text-sm font-bold text-[#8B2886] uppercase tracking-widest">
@@ -13,12 +13,12 @@ export function GiftingCatalogueSection() {
         </span>
 
         {/* Headline */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#2D124D] tracking-tight leading-[1.18]">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#2D124D] tracking-tight leading-[1.18]">
           Thoughtful Gifts for Meaningful Business Relationships
         </h2>
 
         {/* Description Paragraphs */}
-        <div className="flex flex-col gap-4 text-sm sm:text-base text-[#554E63] leading-relaxed font-normal">
+        <div className="flex flex-col gap-4 text-sm sm:text-base text-ds-body leading-relaxed font-normal">
           <p>
             Explore our curated corporate gifting catalogue featuring handcrafted, sustainable, and culturally inspired products from Kottravai. From employee appreciation and festive gifting to client relationships and bulk corporate orders, our collection offers thoughtful gifting options for every occasion.
           </p>

@@ -63,13 +63,13 @@ export function WorkspaceSuspensionModal({
       aria-modal="true"
       aria-labelledby="suspension-title"
     >
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-[#E6E2F0]">
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-ds-line">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                 willSuspend
-                  ? 'bg-[#FFDAD6] text-[#BA1A1A]'
+                  ? 'bg-[#FFDAD6] text-ds-danger'
                   : 'bg-[#DCFCE7] text-[#15803D]'
               }`}
             >
@@ -78,24 +78,24 @@ export function WorkspaceSuspensionModal({
               </span>
             </div>
             <div>
-              <h2 id="suspension-title" className="font-space text-lg font-bold text-[#17152B]">
+              <h2 id="suspension-title" className="font-space text-lg font-bold text-ds-ink">
                 {willSuspend ? 'Suspend Workspace' : 'Reactivate Workspace'}
               </h2>
-              <p className="text-xs text-[#77738A]">{workspace.name}</p>
+              <p className="text-xs text-ds-muted">{workspace.name}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#77738A] hover:text-[#17152B] p-1"
+            className="text-ds-muted hover:text-ds-ink p-1"
             aria-label="Close modal"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
 
-        <div className="mt-4 p-3.5 rounded-xl bg-[#FAF8FF] border border-[#E6E2F0] text-xs leading-relaxed text-[#5A566B]">
-          <p className="font-semibold text-[#17152B] mb-1">
+        <div className="mt-4 p-3.5 rounded-xl bg-ds-subtle border border-ds-line text-xs leading-relaxed text-ds-muted">
+          <p className="font-semibold text-ds-ink mb-1">
             {willSuspend ? 'Workspace Suspension Protocol:' : 'Reactivation Notice:'}
           </p>
           {willSuspend ? (
@@ -120,8 +120,8 @@ export function WorkspaceSuspensionModal({
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label htmlFor="reason" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1">
-              Administrative Reason <span className="text-[#BA1A1A]">*</span>
+            <label htmlFor="reason" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1">
+              Administrative Reason <span className="text-ds-danger">*</span>
             </label>
             <textarea
               id="reason"
@@ -134,7 +134,7 @@ export function WorkspaceSuspensionModal({
                   ? 'Specify reason for suspension (e.g. Terms violation, payment default, investigation)...'
                   : 'Specify reason for reactivation (e.g. Compliance verified, dispute resolved)...'
               }
-              className="w-full rounded-xl border border-[#D8D3E3] p-3 text-sm text-[#17152B] outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input py-2.5 h-auto"
             />
           </div>
 
@@ -143,7 +143,7 @@ export function WorkspaceSuspensionModal({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#5A566B] hover:bg-[#F6F1FF] border border-[#E6E2F0]"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-ds-muted hover:bg-ds-subtle border border-ds-line"
             >
               Cancel
             </button>
@@ -152,7 +152,7 @@ export function WorkspaceSuspensionModal({
               disabled={loading}
               className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-1.5 ${
                 willSuspend
-                  ? 'bg-[#BA1A1A] hover:bg-[#93000A]'
+                  ? 'bg-ds-danger hover:bg-[#93000A]'
                   : 'bg-[#15803D] hover:bg-[#166534]'
               } disabled:opacity-50`}
             >

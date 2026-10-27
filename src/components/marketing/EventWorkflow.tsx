@@ -51,11 +51,11 @@ export function EventWorkflow() {
   return (
     <section className="py-24 max-w-7xl mx-auto px-6 lg:px-8 bg-white" id="workflow">
       <div className="text-center max-w-2xl mx-auto mb-16">
-        <span className="text-xs font-bold text-[#7C5CFC] uppercase tracking-wider">End-to-End Orchestration</span>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-[#27243A] mt-1 tracking-tight">
+        <span className="text-xs font-bold text-ds-accent uppercase tracking-wider">End-to-End Orchestration</span>
+        <h2 className="text-3xl sm:text-4xl font-bold text-ds-body mt-1 tracking-tight">
           From Idea to Event Day.
         </h2>
-        <p className="text-base text-[#77738A] mt-2 font-normal">
+        <p className="text-base text-ds-muted mt-2 font-normal">
           A unified lifecycle pipeline designed to eliminate fragmented point tools across your entire organization.
         </p>
       </div>
@@ -63,22 +63,22 @@ export function EventWorkflow() {
       {/* Pipeline Step Grid with Interconnecting Rail */}
       <div className="relative">
         {/* Hidden connection line on desktop */}
-        <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-[#EDE9FE] -translate-y-8 z-0" />
+        <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-ds-accent-soft -translate-y-8 z-0" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 relative z-10">
           {workflowSteps.map((item) => (
             <div
               key={item.step}
-              className="bg-[#F7F5FF] p-5 rounded-2xl border border-[#EDE9FE] shadow-sm flex flex-col h-full hover:border-[#7C5CFC]/50 transition-all group"
+              className="bg-ds-canvas p-5 rounded-2xl border border-ds-line shadow-sm flex flex-col h-full hover:border-ds-accent/50 transition-all group"
             >
-              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[#7C5CFC] font-bold text-base mb-4 border border-[#EDE9FE] shadow-xs group-hover:bg-[#7C5CFC] group-hover:text-white transition-colors">
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-ds-accent font-bold text-base mb-4 border border-ds-line shadow-xs group-hover:bg-ds-accent group-hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-xl">{item.icon}</span>
               </div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-mono font-bold text-[#7C5CFC]">{item.step}</span>
-                <span className="text-xs font-bold text-[#7C5CFC]">{item.tag}</span>
+                <span className="text-xs font-mono font-bold text-ds-accent">{item.step}</span>
+                <span className="text-xs font-bold text-ds-accent">{item.tag}</span>
               </div>
-              <h4 className="text-lg font-bold text-[#27243A]">{item.title}</h4>
-              <p className="text-xs text-[#77738A] mt-2 leading-relaxed font-normal">{item.description}</p>
+              <h4 className="text-lg font-bold text-ds-body">{item.title}</h4>
+              <p className="text-xs text-ds-muted mt-2 leading-relaxed font-normal">{item.description}</p>
             </div>
           ))}
         </div>

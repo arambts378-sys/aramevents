@@ -339,8 +339,8 @@ export default function CreateEventPage() {
   };
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -349,13 +349,13 @@ export default function CreateEventPage() {
         />
 
         {/* Right Main Workspace */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
           {/* Top Breadcrumb & Back Navigation */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#E6E2F0]">
+          <div className="flex items-center justify-between pb-4 border-b border-ds-line">
             <div className="flex items-center gap-3">
               <Link
                 href="/app/events"
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#77738A] hover:text-[#17152B] transition-colors group"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-ds-muted hover:text-ds-ink transition-colors group"
               >
                 <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform">
                   arrow_back
@@ -368,19 +368,19 @@ export default function CreateEventPage() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#17152B] bg-white border border-[#E6E2F0] rounded-lg shadow-xs"
+                className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-ds-ink bg-white border border-ds-line rounded-lg shadow-xs"
                 aria-label="Open navigation menu"
               >
                 <span className="material-symbols-outlined text-[16px]">menu</span>
                 <span>Menu</span>
               </button>
 
-              <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-[#77738A] font-jakarta">
-                <Link href="/app/events" className="hover:text-[#17152B] transition-colors">
+              <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-ds-muted font-jakarta">
+                <Link href="/app/events" className="hover:text-ds-ink transition-colors">
                   Events
                 </Link>
                 <span>&gt;</span>
-                <span className="text-[#17152B] font-semibold">Create Event</span>
+                <span className="text-ds-ink font-semibold">Create Event</span>
               </div>
             </div>
           </div>
@@ -389,14 +389,14 @@ export default function CreateEventPage() {
           <div className="w-full max-w-[800px] mx-auto">
             {/* Step Indicator & Page Header */}
             <div className="mb-8">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F6F1FF] border border-[#E6E2F0] text-[11px] font-mono font-medium text-[#7C5CFC] mb-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#7C5CFC]"></span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-ds-accent-soft border border-ds-line text-[11px] font-mono font-medium text-ds-accent mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-ds-accent"></span>
                 <span>STEP 1 OF 1 · BASIC INFORMATION</span>
               </div>
-              <h1 className="text-[32px] md:text-[36px] font-bold tracking-tight text-[#17152B] leading-tight font-space">
+              <h1 className="text-[32px] md:text-[36px] font-bold tracking-tight text-ds-ink leading-tight font-space">
                 Create your event
               </h1>
-              <p className="text-[14px] text-[#77738A] mt-1 font-jakarta">
+              <p className="text-[14px] text-ds-muted mt-1 font-jakarta">
                 Start with the basics. You can add more details later.
               </p>
             </div>
@@ -423,12 +423,12 @@ export default function CreateEventPage() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* SECTION 1: EVENT BASICS */}
-              <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-5">
+              <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-5">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block">
                     EVENT BASICS
                   </span>
-                  <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                  <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                     Give your event a name and choose how it will be organized.
                   </p>
                 </div>
@@ -437,9 +437,9 @@ export default function CreateEventPage() {
                 <div className="space-y-1.5">
                   <label
                     htmlFor="name"
-                    className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
+                    className="block text-[13px] font-semibold text-ds-ink font-jakarta"
                   >
-                    Event name <span className="text-[#DC2626]">*</span>
+                    Event name <span className="text-ds-danger">*</span>
                   </label>
                   <input
                     type="text"
@@ -452,8 +452,8 @@ export default function CreateEventPage() {
                     className={`w-full px-4 py-2.5 bg-white border ${
                       fieldErrors.name
                         ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                        : 'border-[#E6E2F0]'
-                    } rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs disabled:opacity-60`}
+                        : 'border-ds-line'
+                    } rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs disabled:opacity-60`}
                   />
                   {fieldErrors.name && (
                     <p className="text-red-600 text-[12px] font-medium font-jakarta mt-1">
@@ -468,9 +468,9 @@ export default function CreateEventPage() {
                   <div className="space-y-1.5">
                     <label
                       htmlFor="type"
-                      className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
+                      className="block text-[13px] font-semibold text-ds-ink font-jakarta"
                     >
-                      Event type <span className="text-[#DC2626]">*</span>
+                      Event type <span className="text-ds-danger">*</span>
                     </label>
                     <div className="relative">
                       <select
@@ -482,10 +482,10 @@ export default function CreateEventPage() {
                         className={`w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border ${
                           fieldErrors.type
                             ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                            : 'border-[#E6E2F0]'
-                        } rounded-xl text-[14px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60`}
+                            : 'border-ds-line'
+                        } rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60`}
                       >
-                        <option value="" disabled className="text-[#77738A]">
+                        <option value="" disabled className="text-ds-muted">
                           Select event type
                         </option>
                         <option value="Conference">Conference</option>
@@ -499,7 +499,7 @@ export default function CreateEventPage() {
                         <option value="Other">Other</option>
                       </select>
                       <span
-                        className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]"
+                        className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]"
                         data-icon="expand_more"
                       >
                         expand_more
@@ -516,9 +516,9 @@ export default function CreateEventPage() {
                   <div className="space-y-1.5">
                     <label
                       htmlFor="format"
-                      className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
+                      className="block text-[13px] font-semibold text-ds-ink font-jakarta"
                     >
-                      Event format <span className="text-[#DC2626]">*</span>
+                      Event format <span className="text-ds-danger">*</span>
                     </label>
                     <div className="relative">
                       <select
@@ -530,10 +530,10 @@ export default function CreateEventPage() {
                         className={`w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border ${
                           fieldErrors.format
                             ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                            : 'border-[#E6E2F0]'
-                        } rounded-xl text-[14px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60`}
+                            : 'border-ds-line'
+                        } rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60`}
                       >
-                        <option value="" disabled className="text-[#77738A]">
+                        <option value="" disabled className="text-ds-muted">
                           Select event format
                         </option>
                         <option value="In-person">In-person</option>
@@ -541,7 +541,7 @@ export default function CreateEventPage() {
                         <option value="Hybrid">Hybrid</option>
                       </select>
                       <span
-                        className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]"
+                        className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]"
                         data-icon="expand_more"
                       >
                         expand_more
@@ -557,12 +557,12 @@ export default function CreateEventPage() {
               </div>
 
               {/* SECTION 2: DATE & TIME */}
-              <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-5">
+              <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-5">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block">
                     DATE & TIME
                   </span>
-                  <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                  <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                     Set when your event starts and ends.
                   </p>
                 </div>
@@ -570,8 +570,8 @@ export default function CreateEventPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* SCHEDULE START */}
                   <div className="space-y-1.5">
-                    <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
-                      Schedule Start <span className="text-[#DC2626]">*</span>
+                    <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
+                      Schedule Start <span className="text-ds-danger">*</span>
                     </label>
                     <div className="grid grid-cols-1 min-[380px]:grid-cols-7 gap-2">
                       <div className="min-[380px]:col-span-4">
@@ -586,8 +586,8 @@ export default function CreateEventPage() {
                           className={`w-full px-3 py-2 bg-white border ${
                             fieldErrors.startDate
                               ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                              : 'border-[#E6E2F0]'
-                          } rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors shadow-xs font-jakarta disabled:opacity-60`}
+                              : 'border-ds-line'
+                          } rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors shadow-xs font-jakarta disabled:opacity-60`}
                         />
                         {fieldErrors.startDate && (
                           <p className="text-red-600 text-[11px] font-medium font-jakarta mt-1">
@@ -607,8 +607,8 @@ export default function CreateEventPage() {
                           className={`w-full px-3 py-2 bg-white border ${
                             fieldErrors.startTime
                               ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                              : 'border-[#E6E2F0]'
-                          } rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors shadow-xs font-jakarta disabled:opacity-60`}
+                              : 'border-ds-line'
+                          } rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors shadow-xs font-jakarta disabled:opacity-60`}
                         />
                         {fieldErrors.startTime && (
                           <p className="text-red-600 text-[11px] font-medium font-jakarta mt-1">
@@ -621,8 +621,8 @@ export default function CreateEventPage() {
 
                   {/* SCHEDULE CONCLUSION */}
                   <div className="space-y-1.5">
-                    <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
-                      Schedule Conclusion <span className="text-[#DC2626]">*</span>
+                    <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
+                      Schedule Conclusion <span className="text-ds-danger">*</span>
                     </label>
                     <div className="grid grid-cols-1 min-[380px]:grid-cols-7 gap-2">
                       <div className="min-[380px]:col-span-4">
@@ -637,8 +637,8 @@ export default function CreateEventPage() {
                           className={`w-full px-3 py-2 bg-white border ${
                             fieldErrors.endDate
                               ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                              : 'border-[#E6E2F0]'
-                          } rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors shadow-xs font-jakarta disabled:opacity-60`}
+                              : 'border-ds-line'
+                          } rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors shadow-xs font-jakarta disabled:opacity-60`}
                         />
                         {fieldErrors.endDate && (
                           <p className="text-red-600 text-[11px] font-medium font-jakarta mt-1">
@@ -658,8 +658,8 @@ export default function CreateEventPage() {
                           className={`w-full px-3 py-2 bg-white border ${
                             fieldErrors.endTime
                               ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                              : 'border-[#E6E2F0]'
-                          } rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors shadow-xs font-jakarta disabled:opacity-60`}
+                              : 'border-ds-line'
+                          } rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors shadow-xs font-jakarta disabled:opacity-60`}
                         />
                         {fieldErrors.endTime && (
                           <p className="text-red-600 text-[11px] font-medium font-jakarta mt-1">
@@ -675,9 +675,9 @@ export default function CreateEventPage() {
                 <div className="space-y-1.5 pt-1">
                   <label
                     htmlFor="timezone"
-                    className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
+                    className="block text-[13px] font-semibold text-ds-ink font-jakarta"
                   >
-                    Timezone <span className="text-[#DC2626]">*</span>
+                    Timezone <span className="text-ds-danger">*</span>
                   </label>
                   <div className="relative">
                     <select
@@ -686,9 +686,9 @@ export default function CreateEventPage() {
                       value={formData.timezone}
                       onChange={handleChange}
                       disabled={isSubmitting}
-                      className="w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60"
+                      className="w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs cursor-pointer disabled:opacity-60"
                     >
-                      <option value="" disabled className="text-[#77738A]">
+                      <option value="" disabled className="text-ds-muted">
                         Select time zone
                       </option>
                       <option value="Asia/Kolkata">
@@ -714,7 +714,7 @@ export default function CreateEventPage() {
                       </option>
                     </select>
                     <span
-                      className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]"
+                      className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]"
                       data-icon="expand_more"
                     >
                       expand_more
@@ -724,12 +724,12 @@ export default function CreateEventPage() {
               </div>
 
               {/* SECTION 3: LOCATION */}
-              <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-4">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block">
                     LOCATION
                   </span>
-                  <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                  <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                     Where will your event take place?
                   </p>
                 </div>
@@ -738,13 +738,13 @@ export default function CreateEventPage() {
                   <div className="space-y-1.5">
                     <label
                       htmlFor="location"
-                      className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
+                      className="block text-[13px] font-semibold text-ds-ink font-jakarta"
                     >
-                      Venue or Physical Address <span className="text-[#DC2626]">*</span>
+                      Venue or Physical Address <span className="text-ds-danger">*</span>
                     </label>
                     <div className="relative">
                       <span
-                        className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-[#77738A] pointer-events-none"
+                        className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-ds-muted pointer-events-none"
                         data-icon="location_on"
                       >
                         location_on
@@ -760,8 +760,8 @@ export default function CreateEventPage() {
                         className={`w-full pl-10 pr-4 py-2.5 bg-white border ${
                           fieldErrors.location
                             ? 'border-red-400 ring-1 ring-red-400 bg-red-50/20'
-                            : 'border-[#E6E2F0]'
-                        } rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs disabled:opacity-60`}
+                            : 'border-ds-line'
+                        } rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs disabled:opacity-60`}
                       />
                     </div>
                     {fieldErrors.location && (
@@ -771,21 +771,21 @@ export default function CreateEventPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl bg-[#F6F1FF] border border-[#E6E2F0] flex items-center justify-between">
+                  <div className="p-4 rounded-xl bg-ds-accent-soft border border-ds-line flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white border border-[#E6E2F0] flex items-center justify-center text-[#7C5CFC]">
+                      <div className="w-8 h-8 rounded-lg bg-white border border-ds-line flex items-center justify-center text-ds-accent">
                         <span className="material-symbols-outlined text-[18px]">videocam</span>
                       </div>
                       <div>
-                        <p className="text-[13px] font-semibold text-[#17152B]">
+                        <p className="text-[13px] font-semibold text-ds-ink">
                           Online Event
                         </p>
-                        <p className="text-[12px] text-[#77738A]">
+                        <p className="text-[12px] text-ds-muted">
                           No physical venue needed. You can add meeting links or stream URLs later in the workspace.
                         </p>
                       </div>
                     </div>
-                    <span className="text-[11px] font-mono font-medium text-[#7C5CFC] bg-white border border-[#E6E2F0] px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[11px] font-mono font-medium text-ds-accent bg-white border border-ds-line px-2 py-0.5 rounded-full shrink-0">
                       Virtual
                     </span>
                   </div>
@@ -794,12 +794,12 @@ export default function CreateEventPage() {
 
               {/* WALKATHON SPECIFIC CONFIGURATION */}
               {formData.type === 'Walkathon' && (
-                <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-4">
+                <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-4">
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block">
                       WALKATHON CONFIGURATION
                     </span>
-                    <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                    <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                       Configure the distances available for this walkathon.
                     </p>
                   </div>
@@ -808,7 +808,7 @@ export default function CreateEventPage() {
                     {walkathonDistances.map((distance, index) => (
                       <div
                         key={index}
-                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl border border-[#E6E2F0] bg-[#F6F1FF]/40"
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl border border-ds-line bg-ds-accent-soft/40"
                       >
                         <div className="flex items-center gap-2">
                           <input
@@ -822,11 +822,11 @@ export default function CreateEventPage() {
                               )
                             }
                             id={`dist-active-${index}`}
-                            className="w-4 h-4 text-[#7C5CFC] border-[#E6E2F0] rounded focus:ring-[#7C5CFC]"
+                            className="w-4 h-4 text-ds-accent border-ds-line rounded focus:ring-ds-accent"
                           />
                           <label
                             htmlFor={`dist-active-${index}`}
-                            className="text-xs font-semibold text-[#17152B]"
+                            className="text-xs font-semibold text-ds-ink"
                           >
                             Active
                           </label>
@@ -834,7 +834,7 @@ export default function CreateEventPage() {
 
                         <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
-                            <label className="block text-[11px] font-semibold text-[#77738A] mb-1">
+                            <label className="block text-[11px] font-semibold text-ds-muted mb-1">
                               Distance (KM)
                             </label>
                             <input
@@ -848,12 +848,12 @@ export default function CreateEventPage() {
                                 )
                               }
                               disabled={!distance.is_active || isSubmitting}
-                              className="w-full px-3 py-1.5 bg-white border border-[#E6E2F0] rounded-lg text-sm text-[#17152B] disabled:opacity-50"
+                              className="w-full px-3 py-1.5 bg-white border border-ds-line rounded-lg text-sm text-ds-ink disabled:opacity-50"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[11px] font-semibold text-[#77738A] mb-1">
+                            <label className="block text-[11px] font-semibold text-ds-muted mb-1">
                               Name
                             </label>
                             <input
@@ -867,12 +867,12 @@ export default function CreateEventPage() {
                                 )
                               }
                               disabled={!distance.is_active || isSubmitting}
-                              className="w-full px-3 py-1.5 bg-white border border-[#E6E2F0] rounded-lg text-sm text-[#17152B] disabled:opacity-50"
+                              className="w-full px-3 py-1.5 bg-white border border-ds-line rounded-lg text-sm text-ds-ink disabled:opacity-50"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[11px] font-semibold text-[#77738A] mb-1">
+                            <label className="block text-[11px] font-semibold text-ds-muted mb-1">
                               Capacity (Optional)
                             </label>
                             <input
@@ -887,7 +887,7 @@ export default function CreateEventPage() {
                                 )
                               }
                               disabled={!distance.is_active || isSubmitting}
-                              className="w-full px-3 py-1.5 bg-white border border-[#E6E2F0] rounded-lg text-sm text-[#17152B] disabled:opacity-50"
+                              className="w-full px-3 py-1.5 bg-white border border-ds-line rounded-lg text-sm text-ds-ink disabled:opacity-50"
                             />
                           </div>
                         </div>
@@ -898,17 +898,17 @@ export default function CreateEventPage() {
               )}
 
               {/* SECTION 4: DESCRIPTION */}
-              <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block">
                       DESCRIPTION
                     </span>
-                    <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                    <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                       Brief overview of what attendees can expect.
                     </p>
                   </div>
-                  <span className="text-[11px] font-medium text-[#77738A] bg-[#F6F1FF] border border-[#E6E2F0] px-2 py-0.5 rounded-full font-jakarta">
+                  <span className="text-[11px] font-medium text-ds-muted bg-ds-accent-soft border border-ds-line px-2 py-0.5 rounded-full font-jakarta">
                     Optional
                   </span>
                 </div>
@@ -921,17 +921,17 @@ export default function CreateEventPage() {
                   rows={3}
                   disabled={isSubmitting}
                   placeholder="Tell attendees what this event is about"
-                  className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs resize-y disabled:opacity-60"
+                  className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-colors font-jakarta shadow-xs resize-y disabled:opacity-60"
                 />
               </div>
 
               {/* SECTION 5: EVENT FLYER */}
-              <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 sm:p-7 shadow-xs space-y-4">
+              <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-4">
                 <div>
-                  <h3 className="text-[16px] font-bold text-[#17152B] font-space">
+                  <h3 className="text-[16px] font-bold text-ds-ink font-space">
                     Have an event flyer?
                   </h3>
-                  <p className="text-[13px] text-[#77738A] mt-0.5 font-jakarta">
+                  <p className="text-[13px] text-ds-muted mt-0.5 font-jakarta">
                     Turn your flyer into the starting point for your event website.
                   </p>
                 </div>
@@ -939,7 +939,7 @@ export default function CreateEventPage() {
                 {!fileName ? (
                   <div
                     onClick={() => !isSubmitting && fileInputRef.current?.click()}
-                    className="border border-dashed border-[#E6E2F0] hover:border-[#7C5CFC] bg-[#F6F1FF]/30 hover:bg-[#F6F1FF]/70 rounded-xl p-6 text-center transition-all cursor-pointer group"
+                    className="border border-dashed border-ds-line hover:border-ds-accent bg-ds-accent-soft/30 hover:bg-ds-subtle/70 rounded-xl p-6 text-center transition-all cursor-pointer group"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -949,14 +949,14 @@ export default function CreateEventPage() {
                     }}
                     aria-label="Upload event flyer"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-white group-hover:bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto mb-2.5 transition-colors border border-[#E6E2F0] shadow-xs">
+                    <div className="w-11 h-11 rounded-xl bg-white group-hover:bg-ds-subtle text-ds-accent flex items-center justify-center mx-auto mb-2.5 transition-colors border border-ds-line shadow-xs">
                       <span className="material-symbols-outlined text-[22px]">upload_file</span>
                     </div>
-                    <div className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg bg-white border border-[#E6E2F0] text-[13px] font-semibold text-[#17152B] group-hover:text-[#7C5CFC] group-hover:border-[#7C5CFC] transition-all shadow-xs mb-1 font-jakarta">
+                    <div className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-lg bg-white border border-ds-line text-[13px] font-semibold text-ds-ink group-hover:text-ds-accent group-hover:border-ds-accent transition-all shadow-xs mb-1 font-jakarta">
                       Upload Event Flyer
                     </div>
-                    <p className="text-[12px] text-[#77738A] font-jakarta">
-                      JPG, PNG or PDF · <span className="font-mono text-[#77738A]">Optional</span>
+                    <p className="text-[12px] text-ds-muted font-jakarta">
+                      JPG, PNG or PDF · <span className="font-mono text-ds-muted">Optional</span>
                     </p>
                     <input
                       type="file"
@@ -968,14 +968,14 @@ export default function CreateEventPage() {
                     />
                   </div>
                 ) : (
-                  <div className="bg-white border border-[#E6E2F0] rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                  <div className="bg-white border border-ds-line rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-[#F6F1FF] border border-[#E6E2F0] flex items-center justify-center text-[#7C5CFC] shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-ds-accent-soft border border-ds-line flex items-center justify-center text-ds-accent shrink-0">
                         <span className="material-symbols-outlined text-[20px]">description</span>
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-[13px] text-[#17152B] truncate max-w-[200px] sm:max-w-[280px]">
+                          <span className="font-semibold text-[13px] text-ds-ink truncate max-w-[200px] sm:max-w-[280px]">
                             {fileName}
                           </span>
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold font-mono">
@@ -983,18 +983,18 @@ export default function CreateEventPage() {
                             Flyer uploaded
                           </span>
                         </div>
-                        <p className="text-[12px] text-[#77738A] mt-0.5 font-jakarta">
+                        <p className="text-[12px] text-ds-muted mt-0.5 font-jakarta">
                           ARAM BTS will use this flyer when preparing your event website.
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E6E2F0]">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-ds-line">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isSubmitting}
-                        className="text-[12px] font-semibold text-[#7C5CFC] hover:underline px-2 py-1 cursor-pointer disabled:opacity-50"
+                        className="text-[12px] font-semibold text-ds-accent hover:underline px-2 py-1 cursor-pointer disabled:opacity-50"
                       >
                         Replace
                       </button>
@@ -1006,12 +1006,12 @@ export default function CreateEventPage() {
                         className="hidden"
                         disabled={isSubmitting}
                       />
-                      <span className="text-[#E6E2F0]">•</span>
+                      <span className="text-ds-line">•</span>
                       <button
                         type="button"
                         onClick={handleRemoveFile}
                         disabled={isSubmitting}
-                        className="text-[12px] font-semibold text-[#DC2626] hover:underline px-2 py-1 cursor-pointer disabled:opacity-50"
+                        className="text-[12px] font-semibold text-ds-danger hover:underline px-2 py-1 cursor-pointer disabled:opacity-50"
                       >
                         Remove
                       </button>
@@ -1043,7 +1043,7 @@ export default function CreateEventPage() {
               <div className="pt-4 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
                 <Link
                   href="/app/events"
-                  className="w-full sm:w-auto h-[44px] px-5 border border-[#E6E2F0] bg-white hover:bg-[#F6F1FF] text-[#17152B] text-[14px] font-semibold rounded-lg transition-colors shadow-xs flex items-center justify-center font-jakarta"
+                  className="w-full sm:w-auto h-[44px] px-5 border border-ds-line bg-white hover:bg-ds-subtle text-ds-ink text-[14px] font-semibold rounded-lg transition-colors shadow-xs flex items-center justify-center font-jakarta"
                 >
                   Cancel
                 </Link>
@@ -1051,7 +1051,7 @@ export default function CreateEventPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto h-[44px] px-6 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[14px] font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60 cursor-pointer font-jakarta"
+                  className="w-full sm:w-auto h-[44px] px-6 bg-ds-accent hover:bg-ds-accent-strong text-white text-[14px] font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-60 cursor-pointer font-jakarta"
                 >
                   {isSubmitting ? (
                     <>

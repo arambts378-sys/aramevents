@@ -36,16 +36,16 @@ export function DeleteZoneModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl md:rounded-3xl p-6 sm:p-8 shadow-2xl border border-[#E6E2F0]">
+      <div className="bg-white w-full max-w-md rounded-2xl md:rounded-3xl p-6 sm:p-8 shadow-2xl border border-ds-line">
         <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4 border border-rose-200">
           <span className="material-symbols-outlined text-[24px]">delete_forever</span>
         </div>
 
-        <h3 className="font-space text-[20px] font-bold text-[#17152B]">
+        <h3 className="font-space text-[20px] font-bold text-ds-ink">
           Delete Access Zone
         </h3>
-        <p className="font-jakarta text-[13px] text-[#77738A] mt-2 leading-relaxed">
-          Are you sure you want to delete <strong className="text-[#17152B]">{zone.name}</strong>?
+        <p className="font-jakarta text-[13px] text-ds-muted mt-2 leading-relaxed">
+          Are you sure you want to delete <strong className="text-ds-ink">{zone.name}</strong>?
           This will permanently remove this checkpoint and its volunteer assignments.
         </p>
 
@@ -60,7 +60,7 @@ export function DeleteZoneModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="px-4 py-2.5 rounded-xl border border-[#E6E2F0] hover:bg-[#F6F1FF] text-[#17152B] font-jakarta text-[13px] font-semibold transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl border border-ds-line hover:bg-ds-subtle text-ds-ink font-jakarta text-[13px] font-semibold transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

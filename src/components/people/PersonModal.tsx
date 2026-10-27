@@ -178,19 +178,19 @@ export function PersonModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150"
     >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-[#E6E2F0] overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-ds-line overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E6E2F0] bg-[#FAF9FF]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-ds-line bg-ds-subtle">
           <div>
             <h2
               id="person-modal-title"
-              className="text-lg font-bold text-[#17152B] tracking-tight"
+              className="text-lg font-bold text-ds-ink tracking-tight"
             >
               {isEditing ? 'Edit Person' : 'Add Person'}
             </h2>
-            <p className="text-xs text-[#77738A] mt-0.5">
+            <p className="text-xs text-ds-muted mt-0.5">
               {isEditing
                 ? 'Update contact and organizational details.'
                 : 'Add a person to your directory or event.'}
@@ -200,7 +200,7 @@ export function PersonModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="text-[#77738A] hover:text-[#17152B] p-1 rounded-lg hover:bg-zinc-100 transition-colors"
+            className="text-ds-muted hover:text-ds-ink p-1 rounded-lg hover:bg-zinc-100 transition-colors"
             aria-label="Close modal"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -219,11 +219,11 @@ export function PersonModal({
           {/* If legacy onSave is present, show Person Type radio toggle */}
           {onSave && (
             <div>
-              <label className="block text-xs font-bold text-[#17152B] mb-1.5">
-                Person Type <span className="text-[#DC2626]">*</span>
+              <label className="block text-xs font-bold text-ds-ink mb-1.5">
+                Person Type <span className="text-ds-danger">*</span>
               </label>
               <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-xs font-medium text-[#17152B] cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-medium text-ds-ink cursor-pointer">
                   <input
                     type="radio"
                     name="person_type"
@@ -231,11 +231,11 @@ export function PersonModal({
                     checked={personType === 'attendee'}
                     onChange={(e) => setPersonType(e.target.value as EventPersonType)}
                     disabled={isEditing}
-                    className="accent-[#7C5CFC]"
+                    className="accent-[#6D50F5]"
                   />
                   <span>Attendee</span>
                 </label>
-                <label className="flex items-center gap-2 text-xs font-medium text-[#17152B] cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-medium text-ds-ink cursor-pointer">
                   <input
                     type="radio"
                     name="person_type"
@@ -243,7 +243,7 @@ export function PersonModal({
                     checked={personType === 'staff'}
                     onChange={(e) => setPersonType(e.target.value as EventPersonType)}
                     disabled={isEditing}
-                    className="accent-[#7C5CFC]"
+                    className="accent-[#6D50F5]"
                   />
                   <span>Staff</span>
                 </label>
@@ -256,9 +256,9 @@ export function PersonModal({
             <div>
               <label
                 htmlFor="person-first-name"
-                className="block text-xs font-bold text-[#17152B] mb-1.5"
+                className="block text-xs font-bold text-ds-ink mb-1.5"
               >
-                First Name <span className="text-[#DC2626]">*</span>
+                First Name <span className="text-ds-danger">*</span>
               </label>
               <input
                 type="text"
@@ -268,13 +268,13 @@ export function PersonModal({
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="e.g. Santhosh"
                 disabled={loading}
-                className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+                className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
             </div>
             <div>
               <label
                 htmlFor="person-last-name"
-                className="block text-xs font-bold text-[#17152B] mb-1.5"
+                className="block text-xs font-bold text-ds-ink mb-1.5"
               >
                 Last Name
               </label>
@@ -285,7 +285,7 @@ export function PersonModal({
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="e.g. S"
                 disabled={loading}
-                className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+                className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
             </div>
           </div>
@@ -294,9 +294,9 @@ export function PersonModal({
           <div>
             <label
               htmlFor="person-email"
-              className="block text-xs font-bold text-[#17152B] mb-1.5"
+              className="block text-xs font-bold text-ds-ink mb-1.5"
             >
-              Email Address <span className="text-[#DC2626]">*</span>
+              Email Address <span className="text-ds-danger">*</span>
             </label>
             <input
               type="email"
@@ -306,7 +306,7 @@ export function PersonModal({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. name@domain.com"
               disabled={loading}
-              className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+              className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
             />
           </div>
 
@@ -314,7 +314,7 @@ export function PersonModal({
           <div>
             <label
               htmlFor="person-phone"
-              className="block text-xs font-bold text-[#17152B] mb-1.5"
+              className="block text-xs font-bold text-ds-ink mb-1.5"
             >
               Phone Number
             </label>
@@ -325,7 +325,7 @@ export function PersonModal({
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. +91 98765 43210"
               disabled={loading}
-              className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+              className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
             />
           </div>
 
@@ -334,7 +334,7 @@ export function PersonModal({
             <div>
               <label
                 htmlFor="person-org"
-                className="block text-xs font-bold text-[#17152B] mb-1.5"
+                className="block text-xs font-bold text-ds-ink mb-1.5"
               >
                 Organization
               </label>
@@ -345,13 +345,13 @@ export function PersonModal({
                 onChange={(e) => setOrganization(e.target.value)}
                 placeholder="e.g. Aram Academy"
                 disabled={loading}
-                className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+                className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
             </div>
             <div>
               <label
                 htmlFor="person-title"
-                className="block text-xs font-bold text-[#17152B] mb-1.5"
+                className="block text-xs font-bold text-ds-ink mb-1.5"
               >
                 Job Title
               </label>
@@ -362,18 +362,18 @@ export function PersonModal({
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Director"
                 disabled={loading}
-                className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-xs sm:text-sm text-[#17152B] placeholder-[#A19DAE] focus:outline-none focus:border-[#7C5CFC] transition-colors"
+                className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
             </div>
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-2.5 pt-4 mt-2 border-t border-[#E6E2F0]">
+          <div className="flex items-center justify-end gap-2.5 pt-4 mt-2 border-t border-ds-line">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 border border-[#E6E2F0] rounded-xl text-xs font-semibold text-[#77738A] hover:text-[#17152B] hover:bg-zinc-50 transition-colors"
+              className="px-4 py-2 border border-ds-line rounded-xl text-xs font-semibold text-ds-muted hover:text-ds-ink hover:bg-zinc-50 transition-colors"
             >
               Cancel
             </button>
@@ -381,7 +381,7 @@ export function PersonModal({
               type="submit"
               disabled={loading}
               id="btn-save-person"
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-ds-accent hover:bg-ds-accent-strong text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-all cursor-pointer"
             >
               {loading ? (
                 <>

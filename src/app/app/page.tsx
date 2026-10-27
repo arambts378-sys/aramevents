@@ -73,9 +73,10 @@ export default function DashboardPage() {
   }, [events, activeWorkspace, isHydrated]);
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
-        {/* Left Persistent Sidebar (230px) */}
+    <div className="h-full bg-ds-subtle text-ds-ink antialiased min-h-screen w-full relative overflow-x-clip">
+
+      <div className="min-h-screen flex flex-row w-full relative z-10">
+        {/* Left Persistent Sidebar */}
         <Sidebar
           currentUser={currentUser}
           mobileOpen={mobileMenuOpen}
@@ -83,7 +84,7 @@ export default function DashboardPage() {
         />
 
         {/* Right Main Workspace */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 sm:gap-8 overflow-y-auto w-full">
           {/* Workspace Header */}
           <WorkspaceHeader
             currentUser={currentUser}
@@ -96,7 +97,7 @@ export default function DashboardPage() {
               className="p-4 rounded-2xl bg-[#FEF2F2] border border-[#FCA5A5]/60 text-[#991B1B] flex items-start gap-3 shadow-xs animate-in fade-in"
               role="alert"
             >
-              <span className="material-symbols-outlined text-[22px] text-[#DC2626] shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-[22px] text-ds-danger shrink-0 mt-0.5">
                 pause_circle
               </span>
               <div className="flex-1 text-xs">

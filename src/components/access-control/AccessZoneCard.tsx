@@ -79,20 +79,20 @@ export function AccessZoneCard({
   }
 
   return (
-    <div className="border border-[#E6E2F0] rounded-xl p-5 hover:border-[#7C5CFC]/40 bg-white hover:bg-[#F6F1FF]/20 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+    <div className="border border-ds-line rounded-xl p-5 hover:border-ds-accent/40 bg-white hover:bg-ds-subtle/20 transition-all flex flex-col xl:flex-row xl:items-center justify-between gap-4">
       {/* Left side: Icon + Zone info */}
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-[#E5DEFF]/60 flex items-center justify-center text-[#7C5CFC] flex-shrink-0 mt-0.5">
+        <div className="w-10 h-10 rounded-xl bg-ds-accent-soft/60 flex items-center justify-center text-ds-accent flex-shrink-0 mt-0.5">
           <span className="material-symbols-outlined text-[22px]">{icon}</span>
         </div>
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h3 className="font-space text-[17px] text-[#17152B] font-bold leading-tight">
+            <h3 className="font-space text-[17px] text-ds-ink font-bold leading-tight">
               {zone.name}
             </h3>
 
             {/* Zone Type Badge */}
-            <span className="px-2 py-0.5 rounded-md bg-[#F6F1FF] text-[#7C5CFC] text-[11px] font-mono uppercase font-bold tracking-wider">
+            <span className="px-2 py-0.5 rounded-md bg-ds-accent-soft text-ds-accent text-[11px] font-mono uppercase font-bold tracking-wider">
               {zone.zone_type}
             </span>
 
@@ -112,23 +112,23 @@ export function AccessZoneCard({
 
           {/* Description */}
           {zone.description && (
-            <p className="font-jakarta text-[13px] text-[#77738A] mt-1 line-clamp-2">
+            <p className="font-jakarta text-[13px] text-ds-muted mt-1 line-clamp-2">
               {zone.description}
             </p>
           )}
 
           {/* Metadata badges row */}
-          <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-[#77738A] font-jakarta text-[12px]">
+          <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-2 text-ds-muted font-jakarta text-[12px]">
             <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#7C5CFC]">passkey</span>
-              <span className="text-[#17152B] font-medium">{entitlementText}</span>
+              <span className="material-symbols-outlined text-[15px] text-ds-accent">passkey</span>
+              <span className="text-ds-ink font-medium">{entitlementText}</span>
             </div>
 
-            <span className="text-[#E6E2F0]">•</span>
+            <span className="text-ds-line">•</span>
 
             <div className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[15px] text-[#7C5CFC]">devices</span>
-              <span className="text-[#17152B] font-medium">
+              <span className="material-symbols-outlined text-[15px] text-ds-accent">devices</span>
+              <span className="text-ds-ink font-medium">
                 {assignedScannersCount > 0
                   ? `${assignedScannersCount} Scanner${assignedScannersCount === 1 ? '' : 's'} Assigned`
                   : 'No Scanners Assigned'}
@@ -137,10 +137,10 @@ export function AccessZoneCard({
 
             {zone.location && (
               <>
-                <span className="text-[#E6E2F0]">•</span>
+                <span className="text-ds-line">•</span>
                 <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[15px] text-[#7C5CFC]">location_on</span>
-                  <span className="text-[#17152B] font-medium">{zone.location}</span>
+                  <span className="material-symbols-outlined text-[15px] text-ds-accent">location_on</span>
+                  <span className="text-ds-ink font-medium">{zone.location}</span>
                 </div>
               </>
             )}
@@ -149,13 +149,13 @@ export function AccessZoneCard({
       </div>
 
       {/* Right side: Scans count & Actions */}
-      <div className="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-[#E6E2F0]/60 shrink-0">
+      <div className="flex flex-wrap items-center justify-between xl:justify-end gap-6 pt-3 xl:pt-0 border-t xl:border-t-0 border-ds-line/60 shrink-0">
         {/* Today's Scans Metric */}
         <div className="flex flex-col xl:items-end">
-          <span className="font-mono text-[11px] text-[#77738A] uppercase font-bold tracking-wider">
+          <span className="font-mono text-[11px] text-ds-muted uppercase font-bold tracking-wider">
             TODAY&apos;S SCANS
           </span>
-          <span className="font-space text-[18px] font-bold text-[#17152B]">
+          <span className="font-space text-[18px] font-bold text-ds-ink">
             {todayScansCount.toLocaleString()} {todayScansCount === 1 ? 'scan' : 'scans'}
           </span>
         </div>
@@ -166,7 +166,7 @@ export function AccessZoneCard({
             <button
               type="button"
               onClick={() => onToggleActive(zone.id, zone.is_active)}
-              className="px-3 py-1.5 rounded-lg border border-[#E6E2F0] hover:bg-slate-50 text-[#77738A] hover:text-[#17152B] font-jakarta text-[12px] font-semibold transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-ds-line hover:bg-slate-50 text-ds-muted hover:text-ds-ink font-jakarta text-[12px] font-semibold transition-colors"
             >
               Deactivate
             </button>
@@ -174,7 +174,7 @@ export function AccessZoneCard({
             <button
               type="button"
               onClick={() => onToggleActive(zone.id, zone.is_active)}
-              className="px-3.5 py-1.5 rounded-lg bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-jakarta text-[12px] font-semibold transition-colors shadow-xs"
+              className="px-3.5 py-1.5 rounded-lg bg-ds-accent hover:bg-ds-accent-strong text-white font-jakarta text-[12px] font-semibold transition-colors shadow-xs"
             >
               Activate
             </button>
@@ -183,14 +183,14 @@ export function AccessZoneCard({
           <button
             type="button"
             onClick={() => onEdit(zone)}
-            className="px-3 py-1.5 rounded-lg border border-[#E6E2F0] hover:bg-[#F6F1FF] text-[#17152B] font-jakarta text-[12px] font-semibold transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-ds-line hover:bg-ds-subtle text-ds-ink font-jakarta text-[12px] font-semibold transition-colors"
           >
             Edit
           </button>
 
           <Link
             href={`/app/events/${eventId}/operations/volunteers`}
-            className="px-3 py-1.5 rounded-lg bg-[#F6F1FF] hover:bg-[#E5DEFF] text-[#7C5CFC] font-jakarta text-[12px] font-semibold transition-colors whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg bg-ds-accent-soft hover:bg-ds-subtle text-ds-accent font-jakarta text-[12px] font-semibold transition-colors whitespace-nowrap"
           >
             Configure Scanners
           </Link>
@@ -198,7 +198,7 @@ export function AccessZoneCard({
           <button
             type="button"
             onClick={() => onDelete(zone)}
-            className="w-8 h-8 rounded-lg border border-[#E6E2F0] hover:bg-rose-50 text-[#77738A] hover:text-rose-600 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-lg border border-ds-line hover:bg-rose-50 text-ds-muted hover:text-rose-600 flex items-center justify-center transition-colors"
             title="Delete zone"
             aria-label={`Delete ${zone.name}`}
           >

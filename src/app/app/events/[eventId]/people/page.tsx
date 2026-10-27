@@ -148,7 +148,7 @@ export default function PeoplePage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1200px] mx-auto w-full p-8 flex flex-col gap-8">
+      <main className="flex-1 max-w-[1760px] mx-auto w-full p-8 flex flex-col gap-8">
         
         {/* Top Actions & Metrics */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -313,7 +313,7 @@ export default function PeoplePage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase
-                          ${p.person_type === 'staff' ? 'bg-[#4A1024]/10 text-[#4A1024]' : 'bg-surface-container-highest text-on-surface-variant'}
+                          ${p.person_type === 'staff' ? 'bg-ds-accent-strong/10 text-ds-accent-strong' : 'bg-surface-container-highest text-on-surface-variant'}
                         `}>
                           {p.person_type}
                         </span>

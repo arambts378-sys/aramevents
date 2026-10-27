@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function MarketingHomepage() {
   return (
-    <div className="min-h-screen bg-[#F7F5FF] font-sans antialiased text-[#17152B] selection:bg-[#7C5CFC] selection:text-white">
+    <div className="min-h-screen bg-ds-canvas font-sans antialiased text-ds-ink selection:bg-ds-accent selection:text-white">
       <Hero />
       <ConnectedPlatformSection />
       <CreateEventSection />

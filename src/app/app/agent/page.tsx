@@ -20,6 +20,11 @@ import type {
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
+type UiMessage = ChatMessage & {
+  /** Flyer attached to a user message, rendered as a thumbnail card */
+  attachment?: { name: string; url: string };
+};
+
 function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -28,58 +33,163 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function assistantMsg(content: string, extra?: Partial<ChatMessage>): ChatMessage {
+function assistantMsg(content: string, extra?: Partial<UiMessage>): UiMessage {
   return { id: uid(), role: 'assistant', content, timestamp: new Date(), ...extra };
 }
 
-function userMsg(content: string): ChatMessage {
-  return { id: uid(), role: 'user', content, timestamp: new Date() };
+function userMsg(content: string, extra?: Partial<UiMessage>): UiMessage {
+  return { id: uid(), role: 'user', content, timestamp: new Date(), ...extra };
 }
 
-const INITIAL_MSG: ChatMessage = assistantMsg(
-  "👋 Hi! I'm your **AI Event Agent** for ARAM BTS.\n\nI can help you create an event in minutes — just upload your event flyer and I'll extract all the details automatically, or describe your event in a few words and we'll build it together.\n\n**To get started:**\n- 📎 Upload a flyer image using the attachment button below\n- 💬 Or type a description like *\"Tech conference in Hyderabad, Dec 2026\"*",
-);
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+const SUGGESTIONS = [
+  { icon: 'upload_file', label: 'Upload an event flyer', prompt: null },
+  { icon: 'mic', label: 'Tech conference', prompt: 'Tech conference in Hyderabad, Dec 2026, around 500 attendees' },
+  { icon: 'directions_walk', label: 'Charity walkathon', prompt: 'Charity walkathon in Bengaluru next March, free registration' },
+  { icon: 'school', label: 'Workshop', prompt: 'Two-day design workshop for 40 people with paid tickets' },
+] as const;
+
+/* Minimal markdown: paragraphs, "- " bullet lists, **bold** and *italic* */
+function renderInline(text: string, keyPrefix: string) {
+  return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={`${keyPrefix}-${i}`} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.length > 2 && part.startsWith('*') && part.endsWith('*')) {
+      return <em key={`${keyPrefix}-${i}`}>{part.slice(1, -1)}</em>;
+    }
+    return <React.Fragment key={`${keyPrefix}-${i}`}>{part}</React.Fragment>;
+  });
+}
+
+function renderMarkdown(text: string) {
+  const blocks: React.ReactNode[] = [];
+  let list: string[] = [];
+
+  const flushList = () => {
+    if (list.length === 0) return;
+    const items = list;
+    blocks.push(
+      <ul key={`ul-${blocks.length}`} className="list-disc pl-5 space-y-1 marker:text-ds-muted">
+        {items.map((item, i) => <li key={i}>{renderInline(item, `li-${blocks.length}-${i}`)}</li>)}
+      </ul>,
+    );
+    list = [];
+  };
+
+  text.split('\n').forEach((line) => {
+    const bullet = line.match(/^\s*[-•]\s+(.*)$/);
+    if (bullet) {
+      list.push(bullet[1]);
+      return;
+    }
+    flushList();
+    if (line.trim()) {
+      blocks.push(<p key={`p-${blocks.length}`}>{renderInline(line, `p-${blocks.length}`)}</p>);
+    }
+  });
+  flushList();
+  return blocks;
+}
 
 /* ─────────────────────────── sub-components ──────────────────── */
 
-function TypingIndicator() {
+function AgentMark({ className = '' }: { className?: string }) {
   return (
-    <div className="flex items-end gap-2.5 justify-start">
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center shrink-0 shadow-sm">
-        <span className="material-symbols-outlined text-white text-[16px]">smart_toy</span>
-      </div>
-      <div className="bg-white border border-[#E6E2F0] rounded-2xl rounded-bl-sm px-4 py-3 shadow-xs">
-        <div className="flex gap-1 items-center h-5">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="w-2 h-2 rounded-full bg-[#7C5CFC]/40 animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s` }}
-            />
-          ))}
-        </div>
-      </div>
+    <span
+      aria-hidden="true"
+      className={`material-symbols-outlined text-ds-accent ${className}`}
+      style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
+    >
+      auto_awesome
+    </span>
+  );
+}
+
+function ThinkingIndicator() {
+  return (
+    <div className="flex items-center gap-3">
+      <AgentMark className="text-[22px] animate-pulse" />
+      <span className="text-[14px] text-ds-muted">Thinking…</span>
     </div>
   );
 }
 
-function renderMarkdown(text: string) {
-  // Minimal markdown: bold, newlines
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
-    }
-    return part.split('\n').map((line, j) => (
-      <React.Fragment key={`${i}-${j}`}>
-        {j > 0 && <br />}
-        {line}
-      </React.Fragment>
-    ));
-  });
+/* Extraction review field (top-level so its edit state survives parent re-renders) */
+function ExtractionRow({
+  label,
+  field,
+  value,
+  uncertain,
+  onEdit,
+}: {
+  label: string;
+  field: keyof ExtractedEventDetails;
+  value?: string;
+  uncertain?: boolean;
+  onEdit: (field: keyof ExtractedEventDetails, value: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value ?? '');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.focus();
+  }, [editing]);
+
+  const save = () => {
+    onEdit(field, val);
+    setEditing(false);
+  };
+
+  return (
+    <div
+      className={`flex items-center gap-3 px-4 py-2 border-b border-ds-line last:border-0 ${uncertain ? 'bg-[#FFFBEB]' : ''}`}
+    >
+      <span className="text-[13px] text-ds-muted w-28 shrink-0">{label}</span>
+      {editing ? (
+        <div className="flex gap-2 flex-1 min-w-0">
+          <input
+            ref={inputRef}
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') save();
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            className="ds-input min-h-8 flex-1"
+          />
+          <button type="button" onClick={save} className="ds-btn ds-btn-secondary ds-btn-sm">
+            Save
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="flex-1 min-w-0 text-left text-[14px] text-ds-ink group flex items-center gap-1.5 min-h-8"
+        >
+          <span className="truncate">{val || <span className="text-ds-muted">Not detected</span>}</span>
+          {uncertain && (
+            <span className="material-symbols-outlined text-[15px] text-[#D97706]" title="AI is unsure about this field">
+              error
+            </span>
+          )}
+          <span className="material-symbols-outlined text-[15px] text-ds-muted opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">
+            edit
+          </span>
+        </button>
+      )}
+    </div>
+  );
 }
 
-/* Extraction Review Card */
 function ExtractionCard({
   details,
   onEdit,
@@ -90,124 +200,52 @@ function ExtractionCard({
   onConfirm: () => void;
 }) {
   const conf = Math.round(details.confidence * 100);
-  const confColor =
-    conf >= 80 ? 'text-[#10B981]' : conf >= 60 ? 'text-[#F59E0B]' : 'text-[#F43F5E]';
+  const confClass =
+    conf >= 80
+      ? 'bg-ds-success-soft text-ds-success'
+      : conf >= 60
+        ? 'bg-ds-warning-soft text-ds-warning'
+        : 'bg-ds-danger-soft text-ds-danger';
+  const isUncertain = (field: string) => details.uncertainFields?.includes(field);
 
-  const Row = ({
-    label,
-    field,
-    value,
-    uncertain,
-  }: {
-    label: string;
-    field: keyof ExtractedEventDetails;
-    value?: string;
-    uncertain?: boolean;
-  }) => {
-    const [editing, setEditing] = useState(false);
-    const [val, setVal] = useState(value ?? '');
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      if (editing) inputRef.current?.focus();
-    }, [editing]);
-
-    return (
-      <div
-        className={`flex items-start gap-2 py-2 border-b border-[#F0EDF8] last:border-0 ${uncertain ? 'bg-[#FFFBEB] rounded-lg px-2 -mx-2' : ''}`}
-      >
-        <span className="text-[11px] font-semibold text-[#77738A] uppercase tracking-wide w-28 shrink-0 pt-0.5">
-          {label}
-        </span>
-        {editing ? (
-          <div className="flex gap-1.5 flex-1">
-            <input
-              ref={inputRef}
-              value={val}
-              onChange={(e) => setVal(e.target.value)}
-              className="flex-1 border border-[#7C5CFC]/40 rounded-md px-2 py-0.5 text-[13px] text-[#17152B] focus:outline-none focus:ring-1 focus:ring-[#7C5CFC]"
-            />
-            <button
-              type="button"
-              onClick={() => { onEdit(field, val); setEditing(false); }}
-              className="text-[#7C5CFC] text-[12px] font-semibold hover:underline"
-            >
-              Save
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="flex-1 text-left text-[13px] text-[#17152B] font-medium group flex items-center gap-1"
-          >
-            <span>{val || <span className="text-[#77738A] italic">Not detected</span>}</span>
-            {uncertain && (
-              <span className="material-symbols-outlined text-[14px] text-[#F59E0B]" title="AI uncertain about this field">
-                warning
-              </span>
-            )}
-            <span className="material-symbols-outlined text-[14px] text-[#7C5CFC] opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0">
-              edit
-            </span>
-          </button>
-        )}
-      </div>
-    );
-  };
+  const rows: { label: string; field: keyof ExtractedEventDetails; value?: string }[] = [
+    { label: 'Event name', field: 'name', value: details.name },
+    { label: 'Category', field: 'category', value: details.category },
+    { label: 'Date', field: 'date', value: details.date },
+    { label: 'End date', field: 'endDate', value: details.endDate },
+    { label: 'Start time', field: 'startTime', value: details.startTime },
+    { label: 'End time', field: 'endTime', value: details.endTime },
+    { label: 'Timezone', field: 'timezone', value: details.timezone },
+    { label: 'Venue', field: 'venue', value: details.venue },
+    { label: 'City', field: 'city', value: details.city },
+    { label: 'Capacity', field: 'capacity', value: details.capacity?.toString() },
+    { label: 'Contact email', field: 'contactEmail', value: details.contactEmail },
+  ];
 
   return (
-    <div className="bg-white border border-[#E6E2F0] rounded-2xl shadow-sm overflow-hidden max-w-full">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#7C5CFC]/8 to-[#6366F1]/8 border-b border-[#E6E2F0] px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-[15px]">auto_awesome</span>
-          </div>
-          <span className="text-[13px] font-bold text-[#17152B]">Extracted Event Details</span>
-        </div>
-        <span className={`text-[12px] font-bold ${confColor}`}>{conf}% confidence</span>
+    <div className="ds-card overflow-hidden">
+      <div className="px-4 py-3 border-b border-ds-line flex items-center justify-between gap-3">
+        <span className="text-[14px] font-medium text-ds-ink">Extracted event details</span>
+        <span className={`text-[12px] font-medium rounded-md px-2 py-0.5 ${confClass}`}>{conf}% confidence</span>
       </div>
 
-      {/* Fields */}
-      <div className="px-4 py-3 flex flex-col">
-        <Row label="Event Name" field="name" value={details.name} />
-        <Row label="Category" field="category" value={details.category} />
-        <Row label="Date" field="date" value={details.date} />
-        <Row label="End Date" field="endDate" value={details.endDate} />
-        <Row label="Start Time" field="startTime" value={details.startTime} />
-        <Row
-          label="End Time"
-          field="endTime"
-          value={details.endTime}
-          uncertain={details.uncertainFields?.includes('endTime')}
-        />
-        <Row label="Timezone" field="timezone" value={details.timezone} />
-        <Row label="Venue" field="venue" value={details.venue} />
-        <Row label="City" field="city" value={details.city} />
-        <Row label="Capacity" field="capacity" value={details.capacity?.toString()} />
-        <Row label="Contact Email" field="contactEmail" value={details.contactEmail} />
+      <div className="flex flex-col">
+        {rows.map((row) => (
+          <ExtractionRow key={row.field} {...row} uncertain={isUncertain(row.field)} onEdit={onEdit} />
+        ))}
       </div>
 
-      {/* Ticket Types */}
       {details.ticketTypes && details.ticketTypes.length > 0 && (
-        <div className="border-t border-[#E6E2F0] px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#77738A] mb-2">
-            Ticket Types
-          </p>
+        <div className="border-t border-ds-line px-4 py-3">
+          <p className="text-[13px] text-ds-muted mb-2">Ticket types</p>
           <div className="flex flex-col gap-1.5">
             {details.ticketTypes.map((t, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between bg-[#F7F5FF] rounded-lg px-3 py-2"
-              >
-                <div>
-                  <span className="text-[13px] font-semibold text-[#17152B]">{t.name}</span>
-                  {t.description && (
-                    <p className="text-[11px] text-[#77738A] mt-0.5">{t.description}</p>
-                  )}
+              <div key={i} className="flex items-center justify-between rounded-lg bg-ds-subtle px-3 py-2">
+                <div className="min-w-0">
+                  <span className="text-[14px] font-medium text-ds-ink">{t.name}</span>
+                  {t.description && <p className="text-[12px] text-ds-muted mt-0.5">{t.description}</p>}
                 </div>
-                <span className="text-[13px] font-bold text-[#7C5CFC]">
+                <span className="text-[14px] font-medium text-ds-ink shrink-0">
                   {t.currency} {t.price.toLocaleString()}
                 </span>
               </div>
@@ -216,128 +254,92 @@ function ExtractionCard({
         </div>
       )}
 
-      {/* Uncertain warning */}
       {details.uncertainFields && details.uncertainFields.length > 0 && (
-        <div className="border-t border-[#F0EDF8] bg-[#FFFBEB] px-4 py-2.5 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#F59E0B] text-[16px]">warning</span>
-          <p className="text-[12px] text-[#92400E]">
-            AI is uncertain about: <strong>{details.uncertainFields.join(', ')}</strong>. Click any field to edit.
-          </p>
+        <div className="border-t border-ds-line bg-[#FFFBEB] px-4 py-2.5 text-[13px] text-[#92400E]">
+          Double-check <strong className="font-medium">{details.uncertainFields.join(', ')}</strong>. Click any field to edit it.
         </div>
       )}
 
-      {/* Actions */}
-      <div className="border-t border-[#E6E2F0] px-4 py-3 flex items-center justify-between gap-3">
-        <p className="text-[12px] text-[#77738A]">Review carefully before creating the event.</p>
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="flex items-center gap-1.5 bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white text-[13px] font-bold px-4 py-2 rounded-xl hover:shadow-md hover:scale-[1.02] transition-all"
-        >
-          <span className="material-symbols-outlined text-[16px]">check_circle</span>
-          Create Event
+      <div className="border-t border-ds-line px-4 py-3 flex items-center justify-between gap-3">
+        <p className="text-[13px] text-ds-muted">Review before creating the event.</p>
+        <button type="button" onClick={onConfirm} className="ds-btn ds-btn-primary ds-btn-sm">
+          Create event
         </button>
       </div>
     </div>
   );
 }
 
-/* Message Bubble */
-function MessageBubble({
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        navigator.clipboard?.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }).catch(() => {});
+      }}
+      className="w-7 h-7 flex items-center justify-center rounded-md text-ds-muted hover:text-ds-ink hover:bg-ds-ink/[0.05] transition-colors"
+      aria-label={copied ? 'Copied' : 'Copy message'}
+      title={copied ? 'Copied' : 'Copy'}
+    >
+      <span className="material-symbols-outlined text-[16px]">{copied ? 'check' : 'content_copy'}</span>
+    </button>
+  );
+}
+
+function Message({
   message,
   onEdit,
   onConfirm,
 }: {
-  message: ChatMessage;
-  onEdit?: (field: keyof ExtractedEventDetails, value: string) => void;
-  onConfirm?: () => void;
+  message: UiMessage;
+  onEdit: (field: keyof ExtractedEventDetails, value: string) => void;
+  onConfirm: () => void;
 }) {
-  const isUser = message.role === 'user';
-
-  return (
-    <div className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center shrink-0 shadow-sm">
-          <span className="material-symbols-outlined text-white text-[16px]">smart_toy</span>
-        </div>
-      )}
-
-      <div className={`flex flex-col gap-1.5 max-w-[78%] ${isUser ? 'items-end' : 'items-start'}`}>
-        <div
-          className={`rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-xs ${
-            isUser
-              ? 'bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] text-white rounded-br-sm'
-              : 'bg-white border border-[#E6E2F0] text-[#17152B] rounded-bl-sm'
-          }`}
-        >
-          {renderMarkdown(message.content)}
-        </div>
-
-        {/* Extraction card */}
-        {message.extraction && onEdit && onConfirm && (
-          <div className="w-full mt-1">
-            <ExtractionCard
-              details={message.extraction}
-              onEdit={onEdit}
-              onConfirm={onConfirm}
+  if (message.role === 'user') {
+    return (
+      <div className="flex flex-col items-end gap-2" title={formatTime(message.timestamp)}>
+        {message.attachment ? (
+          <div className="flex items-center gap-3 rounded-xl border border-ds-line bg-white p-2 pr-4 shadow-ds-card max-w-[85%]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={message.attachment.url}
+              alt="Uploaded event flyer"
+              className="w-12 h-12 rounded-lg object-cover border border-ds-line"
             />
+            <div className="min-w-0">
+              <p className="text-[13px] font-medium text-ds-ink truncate">{message.attachment.name}</p>
+              <p className="text-[12px] text-ds-muted">Event flyer</p>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-[85%] rounded-2xl bg-ds-ink/[0.05] px-4 py-2.5 text-[15px] leading-relaxed text-ds-ink whitespace-pre-wrap break-words">
+            {message.content}
           </div>
         )}
-
-        <span className="text-[10px] text-[#77738A]">{formatTime(message.timestamp)}</span>
       </div>
-
-      {isUser && (
-        <div className="w-8 h-8 rounded-full bg-[#7C5CFC]/10 border border-[#7C5CFC]/20 flex items-center justify-center shrink-0 text-[#7C5CFC] font-bold text-[12px]">
-          U
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* Flyer Dropzone */
-function FlyerDropzone({ onFile }: { onFile: (file: File) => void }) {
-  const [dragging, setDragging] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handle = (file: File) => {
-    if (file.type.startsWith('image/')) onFile(file);
-  };
+    );
+  }
 
   return (
-    <div
-      className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center gap-3 cursor-pointer transition-all ${
-        dragging
-          ? 'border-[#7C5CFC] bg-[#F6F1FF]'
-          : 'border-[#D9D4F0] bg-[#F7F5FF] hover:border-[#7C5CFC]/50 hover:bg-[#F6F1FF]/60'
-      }`}
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
-      onClick={() => inputRef.current?.click()}
-      role="button"
-      tabIndex={0}
-      aria-label="Upload event flyer"
-      onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
-    >
-      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7C5CFC]/15 to-[#6366F1]/15 flex items-center justify-center">
-        <span className="material-symbols-outlined text-[#7C5CFC] text-[24px]">upload_file</span>
+    <div className="group flex gap-3.5" title={formatTime(message.timestamp)}>
+      <AgentMark className="text-[22px] mt-0.5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <div className="text-[15px] leading-7 text-ds-ink space-y-3 break-words">
+          {renderMarkdown(message.content)}
+        </div>
+        {message.extraction && (
+          <div className="mt-4">
+            <ExtractionCard details={message.extraction} onEdit={onEdit} onConfirm={onConfirm} />
+          </div>
+        )}
+        <div className="mt-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          <CopyButton text={message.content} />
+        </div>
       </div>
-      <div className="text-center">
-        <p className="text-[14px] font-semibold text-[#17152B]">Drop your event flyer here</p>
-        <p className="text-[12px] text-[#77738A] mt-0.5">PNG, JPG, or PDF — up to 10 MB</p>
-      </div>
-      <span className="text-[12px] font-semibold text-[#7C5CFC] border border-[#7C5CFC]/30 rounded-lg px-3 py-1 bg-white hover:bg-[#F6F1FF] transition-colors">
-        Browse Files
-      </span>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*,application/pdf"
-        className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) handle(f); }}
-      />
     </div>
   );
 }
@@ -348,24 +350,36 @@ export default function AgentPage() {
   const { currentUser } = useAppContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MSG]);
+  const [messages, setMessages] = useState<UiMessage[]>([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [stage, setStage] = useState<ConversationStage>('idle');
   const [extractedDetails, setExtractedDetails] = useState<ExtractedEventDetails | null>(null);
-  const [flyerPreview, setFlyerPreview] = useState<string | null>(null);
+  const [flyerPreview, setFlyerPreview] = useState<{ name: string; url: string } | null>(null);
   const [flyerDataUri, setFlyerDataUri] = useState<string | null>(null);
-  const [showDropzone, setShowDropzone] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [, startTransition] = useTransition();
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const firstName = currentUser?.name?.trim().split(/\s+/)[0];
+  const isEmpty = messages.length === 0 && !isTyping;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const push = useCallback((msg: ChatMessage) => {
+  // Grow the composer with its content, up to a cap
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
+  }, [input]);
+
+  const push = useCallback((msg: UiMessage) => {
     startTransition(() => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -379,19 +393,20 @@ export default function AgentPage() {
   }), [messages, extractedDetails, flyerDataUri, stage]);
 
   /* Handle flyer upload */
-  const handleFlyerFile = useCallback(async (file: File) => {
-    setShowDropzone(false);
+  const handleFlyerFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      push(assistantMsg('I can only read image flyers right now. Please upload a PNG or JPG.'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async (e) => {
       const dataUri = e.target?.result as string;
       setFlyerDataUri(dataUri);
-      setFlyerPreview(dataUri);
+      setFlyerPreview({ name: file.name, url: dataUri });
 
-      push(userMsg(`📎 Uploaded flyer: ${file.name}`));
+      push(userMsg(`Uploaded flyer: ${file.name}`, { attachment: { name: file.name, url: dataUri } }));
       setIsTyping(true);
       setStage('extracting');
-
-      push(assistantMsg('📸 Flyer received! Analyzing the image and extracting event details — this usually takes a few seconds…'));
 
       try {
         const ctx = buildCtx();
@@ -399,14 +414,17 @@ export default function AgentPage() {
         setExtractedDetails(result);
         setStage('reviewing_extraction');
 
+        const fieldCount = Object.keys(result).filter(
+          (k) => result[k as keyof typeof result] && k !== 'confidence' && k !== 'uncertainFields',
+        ).length;
         push(
           assistantMsg(
-            `✅ Done! I extracted **${Object.keys(result).filter((k) => result[k as keyof typeof result] && k !== 'confidence' && k !== 'uncertainFields').length} fields** from your flyer with **${Math.round(result.confidence * 100)}% confidence**.\n\nReview the details below — click any field to edit it — then hit **Create Event** when you're ready.`,
+            `I pulled **${fieldCount} fields** from your flyer with **${Math.round(result.confidence * 100)}% confidence**.\n\nReview the details below. Click any field to edit it, then choose **Create event** when you're ready.`,
             { extraction: result },
           ),
         );
       } catch {
-        push(assistantMsg('❌ Sorry, I had trouble reading that flyer. Please try uploading a clearer image, or type the event details manually.'));
+        push(assistantMsg("I couldn't read that flyer. Try a clearer image, or describe the event in a message instead."));
         setStage('idle');
       } finally {
         setIsTyping(false);
@@ -443,7 +461,6 @@ export default function AgentPage() {
       if (!prev) return prev;
       return { ...prev, [field]: value };
     });
-    // Update last extraction card
     setMessages((prev) =>
       prev.map((m) =>
         m.extraction ? { ...m, extraction: { ...m.extraction, [field]: value } } : m,
@@ -456,7 +473,7 @@ export default function AgentPage() {
     setStage('done');
     push(
       assistantMsg(
-        '🎉 Your event has been prepared! In a live workspace this would create the event in your ARAM BTS database.\n\n**(This is a mock — no database record was created.)** When the real AI provider is integrated, this button will trigger the full event creation workflow.\n\nWant to start another event or refine this one?',
+        "Your event is ready to create. In a live workspace this would add it to your ARAM BTS events.\n\n**This is mock mode, so no record was created.** Once a real AI provider is connected, this button will run the full event creation workflow.\n\nWant to start another event or refine this one?",
       ),
     );
     setExtractedDetails(null);
@@ -464,163 +481,228 @@ export default function AgentPage() {
     setFlyerDataUri(null);
   }, [push]);
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setInput('');
+    setIsTyping(false);
+    setStage('idle');
+    setExtractedDetails(null);
+    setFlyerPreview(null);
+    setFlyerDataUri(null);
+    textareaRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
   };
 
+  const composer = (
+    <div className="w-full">
+      <div className="rounded-[20px] border border-ds-line-strong bg-white shadow-[0_2px_10px_rgba(17,17,19,0.05)] transition-shadow focus-within:shadow-[0_4px_18px_rgba(17,17,19,0.08)]">
+        {flyerPreview && (
+          <div className="px-3 pt-3">
+            <div className="inline-flex max-w-full items-center gap-2.5 rounded-xl border border-ds-line bg-ds-subtle p-1.5 pr-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={flyerPreview.url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              <div className="min-w-0">
+                <p className="text-[12px] font-medium text-ds-ink truncate max-w-[180px]">{flyerPreview.name}</p>
+                <p className="text-[11px] text-ds-muted">{stage === 'extracting' ? 'Analyzing…' : 'Analyzed'}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setFlyerPreview(null); setFlyerDataUri(null); }}
+                className="ml-1 w-6 h-6 flex items-center justify-center rounded-md text-ds-muted hover:text-ds-ink hover:bg-ds-ink/[0.05]"
+                aria-label="Remove flyer"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        <textarea
+          ref={textareaRef}
+          id="agent-chat-input"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={isEmpty ? 'Describe your event, or upload a flyer…' : 'Reply to AI Event Agent…'}
+          rows={1}
+          className="block w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[15px] leading-relaxed text-ds-ink placeholder:text-ds-muted focus:outline-none"
+          style={{ scrollbarWidth: 'thin' }}
+          aria-label="Message AI Event Agent"
+          autoFocus
+        />
+
+        <div className="flex items-center justify-between gap-2 px-2.5 pb-2.5 pt-1">
+          <button
+            type="button"
+            id="agent-attach-flyer"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload event flyer"
+            aria-label="Upload event flyer"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-ds-line text-ds-body hover:bg-ds-subtle hover:text-ds-ink transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+          </button>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline text-[12px] text-ds-muted">Event Agent · Mock</span>
+            <button
+              type="button"
+              id="agent-send-message"
+              onClick={handleSend}
+              disabled={!input.trim() || isTyping}
+              aria-label="Send message"
+              className="w-8 h-8 rounded-lg bg-ds-accent text-white flex items-center justify-center hover:bg-ds-accent-strong transition-colors disabled:bg-ds-accent/35 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFlyerFile(f);
+          e.target.value = '';
+        }}
+      />
+    </div>
+  );
+
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full">
         <Sidebar
           currentUser={currentUser}
           mobileOpen={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
         />
 
-        {/* Main area */}
-        <main className="flex-1 min-w-0 flex flex-col min-h-screen">
-          {/* Page Header */}
-          <header className="bg-white border-b border-[#E6E2F0] px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4 shrink-0">
+        <main
+          className="relative flex-1 min-w-0 flex flex-col h-dvh bg-white"
+          onDragEnter={(e) => {
+            if (e.dataTransfer.types.includes('Files')) setDragging(true);
+          }}
+        >
+          {/* Top bar */}
+          <header className="h-14 shrink-0 flex items-center gap-2 px-3 sm:px-5">
             <button
               type="button"
-              className="md:hidden p-2 text-[#77738A] hover:text-[#17152B]"
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-ds-muted hover:bg-ds-subtle hover:text-ds-ink"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
             >
               <span className="material-symbols-outlined">menu</span>
             </button>
-
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center shadow-sm shrink-0">
-                <span className="material-symbols-outlined text-white text-[20px]">smart_toy</span>
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-[16px] font-bold text-[#17152B] font-space leading-tight">
-                  AI Event Agent
-                </h1>
-                <p className="text-[12px] text-[#77738A]">
-                  Create events from flyers or conversation
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#10B981] bg-[#ECFDF5] border border-[#6EE7B7]/30 rounded-full px-2.5 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                Mock Mode
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h1 className="text-[15px] font-medium text-ds-ink truncate">AI Event Agent</h1>
+              <span className="text-[11px] text-ds-muted border border-ds-line rounded-md px-1.5 py-0.5 shrink-0">
+                Mock
               </span>
-              <Link
-                href="/app/events/new"
-                className="flex items-center gap-1.5 text-[13px] font-semibold text-[#77738A] hover:text-[#17152B] border border-[#E6E2F0] rounded-lg px-3 py-1.5 hover:bg-white transition-colors"
-              >
-                <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-                Classic Builder
-              </Link>
             </div>
+            <Link href="/app/events/new" className="ds-btn ds-btn-ghost ds-btn-sm hidden sm:inline-flex">
+              Classic builder
+            </Link>
+            {!isEmpty && (
+              <button type="button" onClick={handleNewChat} className="ds-btn ds-btn-secondary ds-btn-sm">
+                <span className="material-symbols-outlined text-[17px]" aria-hidden="true">edit_square</span>
+                New chat
+              </button>
+            )}
           </header>
 
-          {/* Chat area */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5">
-            {/* Flyer preview strip */}
-            {flyerPreview && (
-              <div className="flex items-center gap-3 bg-white border border-[#E6E2F0] rounded-xl p-3 shadow-xs max-w-xs">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={flyerPreview}
-                  alt="Uploaded event flyer"
-                  className="w-12 h-12 rounded-lg object-cover border border-[#E6E2F0]"
-                />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[12px] font-semibold text-[#17152B] truncate">Event Flyer</span>
-                  <span className="text-[11px] text-[#77738A]">
-                    {stage === 'extracting' ? 'Extracting…' : 'Analyzed ✓'}
-                  </span>
+          {isEmpty ? (
+            /* Welcome state: greeting and composer centered on the page */
+            <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 pb-[12vh]">
+              <div className="w-full max-w-2xl">
+                <div className="flex items-center justify-center gap-3 mb-8">
+                  <AgentMark className="text-[32px]" />
+                  <h2 className="text-[28px] sm:text-[36px] font-normal tracking-tight text-ds-ink">
+                    {getGreeting()}{firstName ? `, ${firstName}` : ''}
+                  </h2>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setFlyerPreview(null); setFlyerDataUri(null); }}
-                  className="ml-auto text-[#77738A] hover:text-[#ba1a1a] p-1"
-                  aria-label="Remove flyer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">close</span>
-                </button>
+                {composer}
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      onClick={() => {
+                        if (s.prompt === null) {
+                          fileInputRef.current?.click();
+                        } else {
+                          setInput(s.prompt);
+                          textareaRef.current?.focus();
+                        }
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-ds-line bg-white px-3 py-1.5 text-[13px] text-ds-body hover:bg-ds-subtle hover:text-ds-ink transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px] text-ds-muted" aria-hidden="true">{s.icon}</span>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
-
-            {messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                onEdit={handleFieldEdit}
-                onConfirm={handleConfirm}
-              />
-            ))}
-
-            {isTyping && <TypingIndicator />}
-
-            {/* Dropzone */}
-            {showDropzone && (
-              <div className="max-w-lg">
-                <FlyerDropzone onFile={handleFlyerFile} />
-              </div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Input Bar */}
-          <div className="bg-white border-t border-[#E6E2F0] px-4 sm:px-6 lg:px-8 py-4 shrink-0">
-            <div className="flex items-end gap-3 bg-[#F7F5FF] border border-[#E6E2F0] rounded-2xl px-4 py-2.5 focus-within:border-[#7C5CFC]/50 focus-within:ring-1 focus-within:ring-[#7C5CFC]/20 transition-all">
-              {/* Attach button */}
-              <button
-                type="button"
-                id="agent-attach-flyer"
-                onClick={() => setShowDropzone((v) => !v)}
-                title="Upload event flyer"
-                className={`p-1.5 rounded-lg transition-colors shrink-0 mb-0.5 ${
-                  showDropzone
-                    ? 'bg-[#7C5CFC]/10 text-[#7C5CFC]'
-                    : 'text-[#77738A] hover:text-[#7C5CFC] hover:bg-[#7C5CFC]/5'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[20px]">attach_file</span>
-              </button>
-
-              {/* Textarea */}
-              <textarea
-                ref={textareaRef}
-                id="agent-chat-input"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me to create an event, or describe it…"
-                rows={1}
-                className="flex-1 bg-transparent resize-none text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none leading-relaxed py-1 max-h-32 overflow-y-auto"
-                style={{ scrollbarWidth: 'none' }}
-                disabled={isTyping}
-                aria-label="Chat input"
-              />
-
-              {/* Send */}
-              <button
-                type="button"
-                id="agent-send-message"
-                onClick={handleSend}
-                disabled={!input.trim() || isTyping}
-                aria-label="Send message"
-                className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] text-white flex items-center justify-center shrink-0 hover:shadow-md hover:scale-105 transition-all disabled:opacity-40 disabled:scale-100 disabled:shadow-none"
-              >
-                <span className="material-symbols-outlined text-[18px]">send</span>
-              </button>
             </div>
+          ) : (
+            <>
+              {/* Conversation */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-4 pb-10 flex flex-col gap-7">
+                  {messages.map((msg) => (
+                    <Message
+                      key={msg.id}
+                      message={msg}
+                      onEdit={handleFieldEdit}
+                      onConfirm={handleConfirm}
+                    />
+                  ))}
+                  {isTyping && <ThinkingIndicator />}
+                  <div ref={bottomRef} />
+                </div>
+              </div>
 
-            <p className="text-[11px] text-[#77738A] mt-2 text-center">
-              AI Event Agent is in <strong>mock mode</strong> — no real AI calls or database writes.
-            </p>
-          </div>
+              {/* Composer docked at the bottom */}
+              <div className="shrink-0 px-4 sm:px-6 pb-3">
+                <div className="mx-auto w-full max-w-3xl">
+                  {composer}
+                  <p className="text-[11px] text-ds-muted mt-2 text-center">
+                    Mock mode: responses are simulated and nothing is saved.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Drag-and-drop overlay */}
+          {dragging && (
+            <div
+              className="absolute inset-0 z-30 flex items-center justify-center bg-white/90 p-6"
+              onDragOver={(e) => e.preventDefault()}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                const f = e.dataTransfer.files[0];
+                if (f) handleFlyerFile(f);
+              }}
+            >
+              <div className="pointer-events-none flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-ds-accent/50 bg-ds-accent-soft px-12 py-10 text-center">
+                <span className="material-symbols-outlined text-[32px] text-ds-accent">upload_file</span>
+                <p className="text-[15px] font-medium text-ds-ink">Drop your flyer to analyze it</p>
+                <p className="text-[13px] text-ds-muted">PNG or JPG</p>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

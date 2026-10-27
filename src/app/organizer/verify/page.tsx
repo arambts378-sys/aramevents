@@ -174,25 +174,25 @@ function VerifyForm() {
   };
 
   return (
-    <div className="w-full max-w-[440px] bg-white rounded-2xl p-7 sm:p-9 border border-[#E6E2F0] shadow-xl shadow-[#7C5CFC]/5 flex flex-col items-center">
+    <div className="w-full max-w-[440px] bg-white rounded-2xl p-7 sm:p-9 border border-ds-line shadow-xl shadow-black/5 flex flex-col items-center">
       {/* Brand Logo */}
       <Link href="/" className="flex flex-col items-center gap-2 group mb-5">
-        <div className="w-12 h-12 rounded-2xl bg-[#7C5CFC] flex items-center justify-center text-white shadow-md shadow-[#7C5CFC]/25 group-hover:scale-105 transition-transform duration-200">
+        <div className="w-12 h-12 rounded-2xl bg-ds-accent flex items-center justify-center text-white shadow-md shadow-black/5 group-hover:scale-105 transition-transform duration-200">
           <span className="material-symbols-outlined text-2xl">layers</span>
         </div>
         <div className="flex flex-col items-center text-center">
-          <span className="text-xl font-bold tracking-tight text-[#17152B]">ARAM BTS</span>
-          <span className="text-xs text-[#77738A] tracking-wider font-medium">Events Beyond Boundaries</span>
+          <span className="text-xl font-bold tracking-tight text-ds-ink">ARAM BTS</span>
+          <span className="text-xs text-ds-muted tracking-wider font-medium">Events Beyond Boundaries</span>
         </div>
       </Link>
 
       {/* Title & Instructions */}
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-extrabold text-[#17152B] tracking-tight">Verify your email</h1>
-        <p className="text-xs text-[#77738A] mt-2 font-normal">
+        <h1 className="text-2xl font-bold text-ds-ink tracking-tight">Verify your email</h1>
+        <p className="text-xs text-ds-muted mt-2 font-normal">
           If this account is awaiting verification, enter the 6-digit code sent to:
         </p>
-        <p className="text-xs font-bold text-[#17152B] mt-1 font-mono bg-[#F7F5FF] py-1 px-2.5 rounded-lg border border-[#E6E2F0] inline-block">
+        <p className="text-xs font-bold text-ds-ink mt-1 font-mono bg-ds-canvas py-1 px-2.5 rounded-lg border border-ds-line inline-block">
           {email ? maskEmailClient(email) : 'your email address'}
         </p>
       </div>
@@ -203,7 +203,7 @@ function VerifyForm() {
           <div
             role="alert"
             aria-live="polite"
-            className="w-full bg-[#DC2626]/10 border border-[#DC2626]/30 text-[#DC2626] rounded-xl p-3 text-xs font-semibold flex items-start gap-2"
+            className="w-full bg-ds-danger/10 border border-ds-danger/30 text-ds-danger rounded-xl p-3 text-xs font-semibold flex items-start gap-2"
           >
             <span className="material-symbols-outlined text-base shrink-0 mt-0.5">error</span>
             <span>{error}</span>
@@ -240,7 +240,7 @@ function VerifyForm() {
               onPaste={handlePaste}
               disabled={loading || success}
               aria-label={`Digit ${index + 1}`}
-              className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-extrabold text-[#17152B] bg-[#F7F5FF] border border-[#E6E2F0] rounded-xl focus:outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20 transition-all disabled:opacity-50"
+              className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold text-ds-ink bg-ds-canvas border border-ds-line rounded-xl focus:outline-none focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 transition-all disabled:opacity-50"
             />
           ))}
         </div>
@@ -249,7 +249,7 @@ function VerifyForm() {
         <button
           type="submit"
           disabled={loading || success || digits.join('').length !== 6}
-          className="w-full h-11 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-[#7C5CFC]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full h-11 bg-ds-accent hover:bg-ds-accent-strong text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-black/5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -266,10 +266,10 @@ function VerifyForm() {
 
       {/* Resend & Change Email Actions */}
       <div className="mt-6 flex flex-col items-center gap-3 text-xs">
-        <div className="text-[#77738A] flex items-center gap-1.5">
+        <div className="text-ds-muted flex items-center gap-1.5">
           <span>Didn&apos;t receive the code?</span>
           {cooldown > 0 ? (
-            <span className="font-semibold text-[#17152B] tabular-nums">
+            <span className="font-semibold text-ds-ink tabular-nums">
               Resend in {cooldown}s
             </span>
           ) : (
@@ -277,7 +277,7 @@ function VerifyForm() {
               type="button"
               onClick={handleResend}
               disabled={resending || loading}
-              className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline focus:outline-none"
+              className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline focus:outline-none"
             >
               {resending ? 'Sending...' : 'Resend code'}
             </button>
@@ -286,24 +286,24 @@ function VerifyForm() {
 
         <Link
           href="/organizer/register"
-          className="text-[#77738A] hover:text-[#17152B] transition-colors flex items-center gap-1"
+          className="text-ds-muted hover:text-ds-ink transition-colors flex items-center gap-1"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           <span>Change email</span>
         </Link>
 
-        <p className="text-[#77738A] text-center">
+        <p className="text-ds-muted text-center">
           Already have an account?{' '}
           <Link
             href="/login"
-            className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline"
+            className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
           >
             Sign in
           </Link>
           {' or '}
           <Link
             href="/forgot-password"
-            className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors underline-offset-2 hover:underline"
+            className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
           >
             reset your password
           </Link>
@@ -315,18 +315,18 @@ function VerifyForm() {
 
 export default function OrganizerVerifyPage() {
   return (
-    <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-10 px-4 selection:bg-[#7C5CFC]/20 selection:text-[#7C5CFC]">
+    <div className="min-h-screen bg-ds-canvas flex flex-col justify-between items-center py-10 px-4 selection:bg-ds-accent/20 selection:text-ds-accent">
       <div />
       <Suspense
         fallback={
-          <div className="w-full max-w-[440px] bg-white rounded-2xl p-9 border border-[#E6E2F0] flex items-center justify-center">
-            <span className="w-6 h-6 border-2 border-[#7C5CFC] border-t-transparent rounded-full animate-spin" />
+          <div className="w-full max-w-[440px] bg-white rounded-2xl p-9 border border-ds-line flex items-center justify-center">
+            <span className="w-6 h-6 border-2 border-ds-accent border-t-transparent rounded-full animate-spin" />
           </div>
         }
       >
         <VerifyForm />
       </Suspense>
-      <footer className="mt-8 text-center text-xs text-[#77738A]">
+      <footer className="mt-8 text-center text-xs text-ds-muted">
         © 2026 ARAM BTS. Events Beyond Boundaries.
       </footer>
     </div>

@@ -15,9 +15,9 @@ import {
 } from '@/lib/validation/auth';
 
 const INPUT_BASE =
-  'w-full px-3.5 py-3 bg-[#F7F5FF] border rounded-xl text-xs font-semibold text-[#27243A] placeholder-[#77738A]/60 focus:outline-none focus:ring-1 transition-colors';
-const INPUT_OK = 'border-[#E5E1F5] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]';
-const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]';
+  'w-full px-3.5 py-3 bg-ds-canvas border rounded-xl text-xs font-semibold text-ds-body placeholder-ds-muted/60 focus:outline-none focus:ring-1 transition-colors';
+const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-ds-accent';
+const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-ds-danger';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -101,25 +101,25 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-12 px-4">
+    <div className="min-h-screen bg-ds-canvas flex flex-col justify-between items-center py-12 px-4">
       <div />
-      <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-[#E5E1F5] shadow-xl shadow-[#7C5CFC]/5">
+      <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-ds-line shadow-xl shadow-black/5">
         <Link href="/" className="flex flex-col items-center gap-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-[#7C5CFC] flex items-center justify-center text-white">
+          <div className="w-12 h-12 rounded-2xl bg-ds-accent flex items-center justify-center text-white">
             <span className="material-symbols-outlined text-2xl">layers</span>
           </div>
-          <span className="text-xl font-bold tracking-tight text-[#27243A]">ARAM BTS</span>
+          <span className="text-xl font-bold tracking-tight text-ds-body">ARAM BTS</span>
         </Link>
 
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold text-[#27243A]">Choose a new password</h1>
-          <p className="text-xs text-[#77738A] mt-2">
+          <h1 className="text-2xl font-bold text-ds-body">Choose a new password</h1>
+          <p className="text-xs text-ds-muted mt-2">
             Use at least {PASSWORD_MIN_LENGTH} characters. Your password is case-sensitive.
           </p>
         </div>
 
         {error && (
-          <p role="alert" className="mb-4 bg-[#DC2626]/10 border border-[#DC2626]/30 text-[#DC2626] rounded-xl p-3 text-xs font-semibold">
+          <p role="alert" className="mb-4 bg-ds-danger/10 border border-ds-danger/30 text-ds-danger rounded-xl p-3 text-xs font-semibold">
             {error}
           </p>
         )}
@@ -131,16 +131,16 @@ export default function ResetPasswordPage() {
 
         {!sessionChecked ? (
           <div role="status" className="flex justify-center py-4">
-            <span className="w-5 h-5 border-2 border-[#7C5CFC] border-t-transparent rounded-full animate-spin" />
+            <span className="w-5 h-5 border-2 border-ds-accent border-t-transparent rounded-full animate-spin" />
           </div>
         ) : !hasRecoverySession ? (
           <div className="text-center">
-            <p className="text-xs text-[#77738A]">
+            <p className="text-xs text-ds-muted">
               This reset link is invalid or expired. Request a new password reset email.
             </p>
             <Link
               href="/forgot-password"
-              className="inline-block mt-5 text-xs font-bold text-[#7C5CFC] hover:text-[#5B3FE8]"
+              className="inline-block mt-5 text-xs font-bold text-ds-accent hover:text-ds-accent-strong"
             >
               Request a new reset link
             </Link>
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="new-password" className="text-xs font-semibold text-[#27243A]">
+              <label htmlFor="new-password" className="text-xs font-semibold text-ds-body">
                 New password
               </label>
               <div className="relative">
@@ -172,23 +172,23 @@ export default function ResetPasswordPage() {
                   type="button"
                   onClick={() => setPasswordVisible((visible) => !visible)}
                   aria-label={passwordVisible ? 'Hide password' : 'Show password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#77738A]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-ds-muted"
                 >
                   {passwordVisible ? 'Hide' : 'Show'}
                 </button>
               </div>
               {passwordError && (
-                <p id="new-password-error" role="alert" className="text-[11px] font-semibold text-[#DC2626]">
+                <p id="new-password-error" role="alert" className="text-[11px] font-semibold text-ds-danger">
                   {passwordError}
                 </p>
               )}
-              <p id="password-requirements" className="text-[11px] text-[#77738A]">
+              <p id="password-requirements" className="text-[11px] text-ds-muted">
                 At least {PASSWORD_MIN_LENGTH} characters
               </p>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirm-password" className="text-xs font-semibold text-[#27243A]">
+              <label htmlFor="confirm-password" className="text-xs font-semibold text-ds-body">
                 Confirm new password
               </label>
               <div className="relative">
@@ -212,13 +212,13 @@ export default function ResetPasswordPage() {
                   type="button"
                   onClick={() => setConfirmVisible((visible) => !visible)}
                   aria-label={confirmVisible ? 'Hide confirmation' : 'Show confirmation'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-[#77738A]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-ds-muted"
                 >
                   {confirmVisible ? 'Hide' : 'Show'}
                 </button>
               </div>
               {confirmationError && (
-                <p id="confirm-password-error" role="alert" className="text-[11px] font-semibold text-[#DC2626]">
+                <p id="confirm-password-error" role="alert" className="text-[11px] font-semibold text-ds-danger">
                   {confirmationError}
                 </p>
               )}
@@ -233,19 +233,19 @@ export default function ResetPasswordPage() {
               type="submit"
               disabled={loading || mismatch || updated}
               aria-busy={loading}
-              className="w-full h-12 mt-2 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-sm rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-12 mt-2 bg-ds-accent hover:bg-ds-accent-strong text-white font-bold text-sm rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? 'Updating...' : 'Update password'}
             </button>
           </form>
         )}
-        <p className="mt-6 text-center text-xs text-[#77738A]">
-          <Link href="/login" className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8]">
+        <p className="mt-6 text-center text-xs text-ds-muted">
+          <Link href="/login" className="font-bold text-ds-accent hover:text-ds-accent-strong">
             Back to sign in
           </Link>
         </p>
       </main>
-      <footer className="mt-8 text-center text-xs text-[#77738A]">
+      <footer className="mt-8 text-center text-xs text-ds-muted">
         © 2026 ARAM BTS. Events Beyond Boundaries.
       </footer>
     </div>

@@ -20,7 +20,7 @@ export function AnalyticsOverview({
       label: 'Total Events Hosted',
       value: totalEvents.toLocaleString(),
       icon: 'event',
-      gradient: 'from-[#6366F1] to-[#8B5CF6]',
+      gradient: 'from-[#6366F1] to-ds-accent',
       iconBg: 'bg-[#6366F1]/10',
       iconColor: 'text-[#6366F1]',
       borderColor: 'hover:border-[#6366F1]/40',
@@ -66,7 +66,7 @@ export function AnalyticsOverview({
       {cards.map((card, index) => (
         <div
           key={index}
-          className={`bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:shadow-md ${card.borderColor} group`}
+          className={`bg-white border border-ds-line rounded-2xl p-5 shadow-xs flex flex-col justify-between relative overflow-hidden transition-all duration-200 hover:shadow-md ${card.borderColor} group`}
         >
           {/* Vibrant top accent border on hover */}
           <div
@@ -74,7 +74,7 @@ export function AnalyticsOverview({
           />
 
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#77738A] uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-ds-muted uppercase tracking-wider">
               {card.label}
             </span>
             <div
@@ -85,10 +85,10 @@ export function AnalyticsOverview({
           </div>
 
           <div className="mt-4">
-            <div className="text-2xl sm:text-3xl font-extrabold text-[#17152B] tracking-tight">
+            <div className="text-2xl sm:text-3xl font-bold text-ds-ink tracking-tight">
               {card.value}
             </div>
-            <p className="text-[11px] text-[#77738A] mt-1.5 font-normal leading-relaxed">
+            <p className="text-[11px] text-ds-muted mt-1.5 font-normal leading-relaxed">
               {card.subtext}
             </p>
           </div>

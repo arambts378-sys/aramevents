@@ -10,8 +10,8 @@ interface EventsEmptyStateProps {
 
 export function EventsEmptyState({ isSearchEmpty, clearFilters }: EventsEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white border border-[#E6E2F0] rounded-2xl shadow-xs max-w-2xl mx-auto">
-      <div className="w-14 h-14 bg-[#F6F1FF] text-[#7C5CFC] rounded-2xl flex items-center justify-center mb-5 border border-[#E6E2F0]">
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white border border-ds-line rounded-2xl shadow-xs max-w-2xl mx-auto">
+      <div className="w-14 h-14 bg-ds-accent-soft text-ds-accent rounded-2xl flex items-center justify-center mb-5 border border-ds-line">
         <span className="material-symbols-outlined text-[28px]">
           {isSearchEmpty ? 'search_off' : 'event_available'}
         </span>
@@ -19,17 +19,17 @@ export function EventsEmptyState({ isSearchEmpty, clearFilters }: EventsEmptySta
 
       {isSearchEmpty ? (
         <>
-          <h2 className="text-[20px] md:text-[22px] font-bold text-[#17152B] font-space mb-2">
+          <h2 className="text-[20px] md:text-[22px] font-bold text-ds-ink font-space mb-2">
             No events found
           </h2>
-          <p className="text-[14px] text-[#77738A] max-w-md mx-auto mb-6 font-jakarta">
+          <p className="text-[14px] text-ds-muted max-w-md mx-auto mb-6 font-jakarta">
             Try adjusting your search or status filter.
           </p>
           {clearFilters && (
             <button
               type="button"
               onClick={clearFilters}
-              className="h-[40px] px-5 bg-white border border-[#E6E2F0] hover:bg-[#F6F1FF] text-[#17152B] font-semibold text-[13px] rounded-lg transition-colors shadow-xs cursor-pointer active:scale-[0.98]"
+              className="h-[40px] px-5 bg-white border border-ds-line hover:bg-ds-subtle text-ds-ink font-semibold text-[13px] rounded-lg transition-colors shadow-xs cursor-pointer active:scale-[0.98]"
             >
               Clear filters
             </button>
@@ -37,15 +37,15 @@ export function EventsEmptyState({ isSearchEmpty, clearFilters }: EventsEmptySta
         </>
       ) : (
         <>
-          <h2 className="text-[20px] md:text-[22px] font-bold text-[#17152B] font-space mb-2">
+          <h2 className="text-[20px] md:text-[22px] font-bold text-ds-ink font-space mb-2">
             No events yet
           </h2>
-          <p className="text-[14px] text-[#77738A] max-w-md mx-auto mb-6 font-jakarta">
+          <p className="text-[14px] text-ds-muted max-w-md mx-auto mb-6 font-jakarta">
             Create your first event to start managing registrations, people and event operations from one place.
           </p>
           <Link
             href="/app/events/new"
-            className="h-[44px] px-5 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[14px] font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.98]"
+            className="h-[44px] px-5 bg-ds-accent hover:bg-ds-accent-strong text-white text-[14px] font-semibold rounded-lg shadow-sm flex items-center gap-2 transition-all active:scale-[0.98]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span>Create Event</span>

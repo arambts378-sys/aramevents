@@ -36,17 +36,11 @@ export default async function SuperAdminLayout({
     forbidden();
   }
 
-  const { data: adminRole } = await supabase.rpc('get_my_platform_role');
-  const resolvedRole = adminRole || 'support';
-
   return (
-    <div className="min-h-screen bg-[#F7F5FF] text-[#17152B] flex flex-col md:flex-row w-full">
-      <MasterAdminSidebar
-        adminEmail={user.email || 'admin@arambts.internal'}
-        adminRole={resolvedRole}
-      />
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen overflow-y-auto">
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
+    <div className="flex min-h-screen w-full flex-col bg-ds-canvas text-ds-ink md:flex-row">
+      <MasterAdminSidebar adminEmail={user.email || 'admin@arambts.internal'} />
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <main className="ds-container flex-1 py-5 sm:py-6 lg:py-8">
           {children}
         </main>
       </div>

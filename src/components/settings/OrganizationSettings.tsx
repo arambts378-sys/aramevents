@@ -1,8 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppContext } from '@/context/AppContext';
 import { createClient } from '@/lib/supabase/client';
+import {
+  Field,
+  FooterHint,
+  Notice,
+  ReadOnlyValue,
+  SaveButton,
+  SettingsCard,
+  Spinner,
+  StatusNotices,
+  friendlyError,
+} from './SettingsUI';
 
 export function OrganizationSettings() {
   const { activeWorkspace, currentUser, updateActiveWorkspace } = useAppContext();
@@ -20,13 +31,21 @@ export function OrganizationSettings() {
     currentUser && activeWorkspace && activeWorkspace.owner_id === currentUser.id
   );
 
-  useEffect(() => {
+  // Reset the form whenever the saved workspace changes
+  const [syncedWorkspace, setSyncedWorkspace] = useState<typeof activeWorkspace>(null);
+  if (activeWorkspace !== syncedWorkspace) {
+    setSyncedWorkspace(activeWorkspace);
     if (activeWorkspace) {
       setName(activeWorkspace.name || '');
       setEmail(activeWorkspace.email || '');
       setLogoUrl(activeWorkspace.logo_url || null);
     }
-  }, [activeWorkspace]);
+  }
+
+  const clearFeedback = () => {
+    if (errorMessage) setErrorMessage('');
+    if (successMessage) setSuccessMessage('');
+  };
 
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,15 +68,9 @@ export function OrganizationSettings() {
         email: email.trim() || null,
       });
 
-      setSuccessMessage('Organization details updated successfully.');
-    } catch (err: any) {
-      const rawMsg = err?.message || '';
-      const isTechnical = /supabase|postgres|sql|relation|uuid|column/i.test(rawMsg);
-      setErrorMessage(
-        isTechnical || !rawMsg
-          ? 'Unable to save organization details. Please try again.'
-          : rawMsg
-      );
+      setSuccessMessage('Organization details updated.');
+    } catch (err) {
+      setErrorMessage(friendlyError(err, 'Unable to save organization details. Please try again.'));
     } finally {
       setIsSaving(false);
     }
@@ -136,9 +149,9 @@ export function OrganizationSettings() {
 
       await updateActiveWorkspace({ logo_url: newLogoUrl });
       setLogoUrl(newLogoUrl);
-      setSuccessMessage('Organization logo updated successfully.');
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Unable to upload organization logo.');
+      setSuccessMessage('Organization logo updated.');
+    } catch (err) {
+      setErrorMessage((err as { message?: string } | null)?.message || 'Unable to upload organization logo.');
     } finally {
       setIsUploadingLogo(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -171,252 +184,142 @@ export function OrganizationSettings() {
 
       await updateActiveWorkspace({ logo_url: null });
       setLogoUrl(null);
-      setSuccessMessage('Organization logo removed successfully.');
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Unable to remove organization logo.');
+      setSuccessMessage('Organization logo removed.');
+    } catch (err) {
+      setErrorMessage((err as { message?: string } | null)?.message || 'Unable to remove organization logo.');
     } finally {
       setIsUploadingLogo(false);
     }
   };
 
+  const unchanged =
+    name.trim() === activeWorkspace?.name && email.trim() === (activeWorkspace?.email || '');
+
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl border border-[#E6E2F0] p-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#E6E2F0] gap-4">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block">
-              ORGANIZATION SETTINGS
-            </span>
-            <h2 className="text-[20px] font-bold text-[#17152B] font-space mt-0.5">
-              Workspace Information
-            </h2>
-            <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5">
-              Manage organization identity, contact email, and branding for this workspace.
-            </p>
-          </div>
+    <div className="space-y-5">
+      {!isOwner && (
+        <Notice tone="warning" title="View only">
+          Only the workspace owner can change the organization name, contact email and logo.
+        </Notice>
+      )}
 
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold border ${
-                isOwner
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isOwner ? 'bg-emerald-500' : 'bg-amber-500'
-                }`}
-              ></span>
-              <span>{isOwner ? 'Workspace Owner' : 'Read Only Access'}</span>
-            </span>
-          </div>
-        </div>
+      <StatusNotices success={successMessage} error={errorMessage} />
 
-        {/* Non-owner Notice */}
-        {!isOwner && (
-          <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3">
-            <span className="material-symbols-outlined text-amber-600 text-[20px] mt-0.5 shrink-0">
-              info
-            </span>
-            <div className="text-[13px] font-jakarta">
-              <span className="font-semibold block">Organization settings are view-only.</span>
-              <span>
-                Only the workspace owner has permission to change the organization name, contact email, and logo.
+      {/* Logo */}
+      <SettingsCard
+        title="Logo"
+        description="Shown on your event websites, tickets and emails."
+        footer={<FooterHint>PNG, JPEG or WebP, up to 2 MB. A square image works best.</FooterHint>}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ds-line bg-ds-subtle">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="Organization logo" className="h-full w-full object-contain" />
+            ) : (
+              <span className="material-symbols-outlined text-[28px] text-ds-muted" aria-hidden="true">
+                domain
               </span>
-            </div>
+            )}
           </div>
-        )}
-
-        {/* Feedback Messages */}
-        {successMessage && (
-          <div
-            className="mt-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2.5 text-[13px] font-jakarta"
-            role="status"
-          >
-            <span className="material-symbols-outlined text-emerald-600 text-[18px]">
-              check_circle
-            </span>
-            <span>{successMessage}</span>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div
-            className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 flex items-center gap-2.5 text-[13px] font-jakarta"
-            role="alert"
-          >
-            <span className="material-symbols-outlined text-red-600 text-[18px]">
-              error
-            </span>
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* Logo Section */}
-        <div className="mt-6 pb-6 border-b border-[#E6E2F0]">
-          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta mb-2">
-            Organization Logo
-          </label>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <div className="w-20 h-20 rounded-xl bg-[#F6F1FF] border border-[#E6E2F0] flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt="Organization Logo"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <span className="material-symbols-outlined text-[32px] text-[#7C5CFC]">
-                  domain
-                </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!isOwner || isUploadingLogo}
+              className="ds-btn ds-btn-secondary ds-btn-sm"
+            >
+              {isUploadingLogo ? <Spinner /> : (
+                <span className="material-symbols-outlined text-[17px]" aria-hidden="true">upload</span>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={!isOwner || isUploadingLogo}
-                  className="px-3.5 py-1.5 bg-white border border-[#E6E2F0] hover:border-[#7C5CFC] hover:text-[#7C5CFC] text-[13px] font-semibold text-[#17152B] rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50 font-jakarta flex items-center gap-1.5"
-                >
-                  <span className="material-symbols-outlined text-[16px]">upload</span>
-                  <span>{logoUrl ? 'Replace Logo' : 'Upload Logo'}</span>
-                </button>
-
-                {logoUrl && (
-                  <button
-                    type="button"
-                    onClick={handleRemoveLogo}
-                    disabled={!isOwner || isUploadingLogo}
-                    className="px-3.5 py-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 text-[13px] font-semibold rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50 font-jakarta flex items-center gap-1.5"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                    <span>Remove</span>
-                  </button>
-                )}
-              </div>
-              <p className="text-[11px] text-[#77738A] font-jakarta">
-                Supported formats: PNG, JPEG, WebP. Maximum size: 2MB.
-              </p>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleLogoUpload}
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                disabled={!isOwner || isUploadingLogo}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Form Details */}
-        <form onSubmit={handleSaveDetails} className="mt-6 space-y-5">
-          {/* Organization Name */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="orgName"
-              className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
-            >
-              Organization Name <span className="text-[#DC2626]">*</span>
-            </label>
-            <input
-              type="text"
-              id="orgName"
-              name="orgName"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                if (errorMessage) setErrorMessage('');
-                if (successMessage) setSuccessMessage('');
-              }}
-              placeholder="e.g., Acme Events Corp"
-              disabled={!isOwner || isSaving}
-              className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs disabled:bg-[#FAF9FF] disabled:text-[#77738A] disabled:cursor-not-allowed"
-            />
-          </div>
-
-          {/* Organization Slug (Read-only) */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="slug"
-                className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
-              >
-                Workspace Identifier (Slug)
-              </label>
-              <span className="text-[11px] font-medium text-[#77738A] bg-[#F6F1FF] border border-[#E6E2F0] px-2 py-0.5 rounded-full font-jakarta">
-                Immutable
-              </span>
-            </div>
-            <input
-              type="text"
-              id="slug"
-              name="slug"
-              value={activeWorkspace?.slug || ''}
-              readOnly
-              disabled
-              className="w-full px-4 py-2.5 bg-[#FAF9FF] border border-[#E6E2F0] rounded-xl text-[14px] text-[#77738A] cursor-not-allowed font-jakarta shadow-xs select-all"
-            />
-            <p className="text-[11px] text-[#77738A] font-jakarta">
-              Used for system references and workspace event routing.
-            </p>
-          </div>
-
-          {/* Organization Email */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="orgEmail"
-              className="block text-[13px] font-semibold text-[#17152B] font-jakarta"
-            >
-              Organization Contact Email
-            </label>
-            <input
-              type="email"
-              id="orgEmail"
-              name="orgEmail"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errorMessage) setErrorMessage('');
-                if (successMessage) setSuccessMessage('');
-              }}
-              placeholder="contact@yourcompany.com"
-              disabled={!isOwner || isSaving}
-              className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-colors font-jakarta shadow-xs disabled:bg-[#FAF9FF] disabled:text-[#77738A] disabled:cursor-not-allowed"
-            />
-            <p className="text-[11px] text-[#77738A] font-jakarta">
-              Primary contact address for attendee communications and organization inquiries.
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          {isOwner && (
-            <div className="pt-4 border-t border-[#E6E2F0] flex justify-end">
+              {logoUrl ? 'Replace' : 'Upload logo'}
+            </button>
+            {logoUrl && (
               <button
-                type="submit"
-                disabled={
-                  isSaving ||
-                  (name.trim() === activeWorkspace?.name &&
-                    email.trim() === (activeWorkspace?.email || ''))
-                }
-                className="h-[42px] px-6 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[13px] font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 cursor-pointer font-jakarta"
+                type="button"
+                onClick={handleRemoveLogo}
+                disabled={!isOwner || isUploadingLogo}
+                className="ds-btn ds-btn-ghost ds-btn-sm text-ds-danger hover:bg-ds-danger-soft hover:text-ds-danger"
               >
-                {isSaving ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <span>Save Organization</span>
-                )}
+                Remove
               </button>
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleLogoUpload}
+            accept="image/png,image/jpeg,image/webp"
+            className="hidden"
+            disabled={!isOwner || isUploadingLogo}
+          />
+        </div>
+      </SettingsCard>
+
+      {/* Details */}
+      <form onSubmit={handleSaveDetails}>
+        <SettingsCard
+          title="Organization details"
+          description="Your organization's public name and contact address."
+          footer={
+            isOwner ? (
+              <>
+                <FooterHint>Changes apply to all events in this workspace.</FooterHint>
+                <SaveButton saving={isSaving} disabled={unchanged} />
+              </>
+            ) : (
+              <FooterHint>Ask the workspace owner to make changes.</FooterHint>
+            )
+          }
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Organization name" htmlFor="orgName" required>
+              <input
+                type="text"
+                id="orgName"
+                name="orgName"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  clearFeedback();
+                }}
+                placeholder="e.g. Acme Events"
+                disabled={!isOwner || isSaving}
+                className="ds-input disabled:bg-ds-subtle disabled:text-ds-muted disabled:cursor-not-allowed"
+              />
+            </Field>
+
+            <Field
+              label="Contact email"
+              htmlFor="orgEmail"
+              description="Used as the reply-to address for attendee emails."
+            >
+              <input
+                type="email"
+                id="orgEmail"
+                name="orgEmail"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  clearFeedback();
+                }}
+                placeholder="contact@yourcompany.com"
+                disabled={!isOwner || isSaving}
+                className="ds-input disabled:bg-ds-subtle disabled:text-ds-muted disabled:cursor-not-allowed"
+              />
+            </Field>
+
+            <div className="sm:col-span-2">
+              <Field
+                label="Workspace ID"
+                description="A permanent identifier used in links and integrations. It can't be changed."
+              >
+                <ReadOnlyValue id="slug">{activeWorkspace?.slug || '—'}</ReadOnlyValue>
+              </Field>
             </div>
-          )}
-        </form>
-      </div>
+          </div>
+        </SettingsCard>
+      </form>
     </div>
   );
 }

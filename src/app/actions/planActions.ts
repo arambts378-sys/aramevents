@@ -36,7 +36,15 @@ export async function getWorkspacePlan(workspaceId: string): Promise<PlanResult<
           )
           .eq('workspace_id', wsId)
           .maybeSingle();
-        if (error) throw error;
+        if (error) {
+          // PGRST205: table not found — the workspace_subscriptions migration hasn't been
+          // applied to this database. Fall back to the default plan instead of failing.
+          if (error.code === 'PGRST205') {
+            console.warn('[plans] workspace_subscriptions table is missing; apply supabase/migrations/20261013000000_workspace_subscriptions.sql. Using default plan.');
+            return null;
+          }
+          throw error;
+        }
         return (data as WorkspaceSubscriptionRow | null) ?? null;
       },
     },

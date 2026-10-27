@@ -44,21 +44,21 @@ export function PersonOverviewCards({
       {cards.map((card, idx) => (
         <div
           key={idx}
-          className="bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs flex flex-col justify-between"
+          className="bg-white border border-ds-line rounded-2xl p-5 shadow-xs flex flex-col justify-between"
         >
           <div className="flex items-center justify-between pb-3">
-            <span className="text-xs font-bold text-[#77738A] uppercase tracking-wider">
+            <span className="text-xs font-bold text-ds-muted uppercase tracking-wider">
               {card.label}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-[#7C5CFC]/10 text-[#7C5CFC] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-ds-accent/10 text-ds-accent flex items-center justify-center">
               <span className="material-symbols-outlined text-[18px]">{card.icon}</span>
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-[#17152B] tracking-tight">
+            <div className="text-2xl sm:text-3xl font-bold text-ds-ink tracking-tight">
               {card.value}
             </div>
-            <p className="text-[11px] font-medium text-[#77738A] mt-1">
+            <p className="text-[11px] font-medium text-ds-muted mt-1">
               {card.subtext}
             </p>
           </div>

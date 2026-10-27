@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui';
 import { getPlatformEvents } from '@/services/superAdminPortal.server';
 import { EventsTableClient } from '@/components/super-admin/EventsTableClient';
 
@@ -57,32 +58,25 @@ export default async function SuperAdminEventsPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-[#7C5CFC]">
-          Platform Governance
-        </p>
-        <h1 className="mt-1 font-space text-2xl sm:text-3xl font-bold tracking-tight text-[#17152B]">
-          Global Event Management
-        </h1>
-        <p className="mt-1 text-sm text-[#77738A]">
-          Search across tenant workspaces, inspect event configurations, and execute controlled moderation actions.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Platform Governance"
+        title="Global Event Management"
+        description="Search across tenant workspaces, inspect event configurations, and execute controlled moderation actions."
+      />
 
       {/* Filter Bar */}
-      <section className="bg-white rounded-2xl border border-[#E6E2F0] p-4 sm:p-5 shadow-2xs">
+      <section className="ds-card p-4 sm:p-5">
         <form
           action="/super-admin/events"
           method="get"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
         >
           <div className="lg:col-span-2">
-            <label htmlFor="search-input" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="search-input" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Search Events
             </label>
             <div className="relative">
-              <span className="material-symbols-outlined text-[18px] text-[#77738A] absolute left-3 top-2.5">
+              <span className="material-symbols-outlined text-[18px] text-ds-muted absolute left-3 top-2.5">
                 search
               </span>
               <input
@@ -91,20 +85,20 @@ export default async function SuperAdminEventsPage({
                 type="search"
                 defaultValue={search ?? ''}
                 placeholder="Event name, slug, workspace, or ID..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+                className="ds-input pl-9 pr-3"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="status-select" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="status-select" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Lifecycle Status
             </label>
             <select
               id="status-select"
               name="status"
               defaultValue={status ?? 'all'}
-              className="w-full px-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] bg-white outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input"
             >
               <option value="all">All Lifecycles</option>
               <option value="published">Published</option>
@@ -114,14 +108,14 @@ export default async function SuperAdminEventsPage({
           </div>
 
           <div>
-            <label htmlFor="moderation-select" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="moderation-select" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Moderation State
             </label>
             <select
               id="moderation-select"
               name="moderation"
               defaultValue={moderationStatus ?? 'all'}
-              className="w-full px-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] bg-white outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input"
             >
               <option value="all">All States</option>
               <option value="normal">Normal</option>
@@ -133,13 +127,13 @@ export default async function SuperAdminEventsPage({
           <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white text-xs font-bold hover:shadow-md transition-all h-[38px] cursor-pointer"
+              className="flex-1 px-4 py-2 rounded-xl bg-ds-accent text-white text-xs font-bold hover:shadow-md transition-all h-[38px] cursor-pointer"
             >
               Filter
             </button>
             <Link
               href="/super-admin/events"
-              className="px-3 py-2 rounded-xl border border-[#E6E2F0] text-[#77738A] hover:bg-[#F6F1FF] text-xs font-semibold h-[38px] flex items-center justify-center transition-colors"
+              className="px-3 py-2 rounded-xl border border-ds-line text-ds-muted hover:bg-ds-subtle text-xs font-semibold h-[38px] flex items-center justify-center transition-colors"
             >
               Reset
             </Link>
@@ -148,14 +142,14 @@ export default async function SuperAdminEventsPage({
       </section>
 
       {/* Directory Table */}
-      <section className="bg-white rounded-2xl border border-[#E6E2F0] overflow-hidden shadow-2xs">
+      <section className="ds-card overflow-hidden">
         {items.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto mb-3">
               <span className="material-symbols-outlined text-[24px]">calendar_month</span>
             </div>
-            <p className="font-space text-base font-bold text-[#17152B]">No events found</p>
-            <p className="mt-1 text-xs text-[#77738A]">
+            <p className="font-space text-base font-bold text-ds-ink">No events found</p>
+            <p className="mt-1 text-xs text-ds-muted">
               Try adjusting your search criteria or lifecycle filters.
             </p>
           </div>
@@ -164,7 +158,7 @@ export default async function SuperAdminEventsPage({
             <EventsTableClient items={items} />
 
             {/* Pagination */}
-            <div className="p-4 border-t border-[#E6E2F0] flex items-center justify-between text-xs text-[#77738A]">
+            <div className="p-4 border-t border-ds-line flex items-center justify-between text-xs text-ds-muted">
               <span>
                 Showing page {page} of {totalPages} ({totalCount.toLocaleString()} total events)
               </span>
@@ -172,10 +166,10 @@ export default async function SuperAdminEventsPage({
                 <Link
                   href={buildPageHref(params, page - 1)}
                   aria-disabled={page <= 1}
-                  className={`px-3 py-1.5 rounded-lg border border-[#E6E2F0] font-semibold ${
+                  className={`px-3 py-1.5 rounded-lg border border-ds-line font-semibold ${
                     page <= 1
                       ? 'pointer-events-none opacity-40'
-                      : 'hover:bg-[#F6F1FF] text-[#17152B]'
+                      : 'hover:bg-ds-subtle text-ds-ink'
                   }`}
                 >
                   Previous
@@ -183,10 +177,10 @@ export default async function SuperAdminEventsPage({
                 <Link
                   href={buildPageHref(params, page + 1)}
                   aria-disabled={page >= totalPages}
-                  className={`px-3 py-1.5 rounded-lg border border-[#E6E2F0] font-semibold ${
+                  className={`px-3 py-1.5 rounded-lg border border-ds-line font-semibold ${
                     page >= totalPages
                       ? 'pointer-events-none opacity-40'
-                      : 'hover:bg-[#F6F1FF] text-[#17152B]'
+                      : 'hover:bg-ds-subtle text-ds-ink'
                   }`}
                 >
                   Next

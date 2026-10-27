@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -85,7 +86,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
   const navItems = [
     { name: 'Home', path: '/app', icon: 'home', exact: true },
     { name: 'Events', path: '/app/events', icon: 'calendar_today', exact: false },
-    { name: 'AI Event Agent', path: '/app/agent', icon: 'smart_toy', exact: false, badge: 'AI' },
+    { name: 'AI Event Agent', path: '/app/agent', icon: 'auto_awesome', exact: false, badge: 'New' },
     { name: 'People', path: '/app/people', icon: 'group', exact: false },
     { name: 'Analytics', path: '/app/analytics', icon: 'bar_chart', exact: false },
     { name: 'Settings', path: '/app/settings', icon: 'settings', exact: false },
@@ -123,26 +124,33 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
         aria-modal={mobileOpen ? true : undefined}
         aria-label={mobileOpen ? 'Workspace navigation' : undefined}
         className={`w-[min(18rem,calc(100vw-2rem))] ${
-          collapsed ? 'md:w-[76px]' : 'md:w-[230px]'
-        } shrink-0 bg-white border-r border-[#E6E2F0] flex flex-col justify-between h-dvh max-h-dvh fixed md:sticky top-0 z-50 md:z-40 select-none transition-all duration-200 ease-in-out overscroll-y-contain pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] ${
+          collapsed ? 'md:w-[76px]' : 'md:w-[236px]'
+        } shrink-0 bg-ds-subtle border-r border-ds-line flex flex-col justify-between h-dvh max-h-dvh fixed md:sticky top-0 z-50 md:z-40 select-none transition-all duration-200 ease-in-out overscroll-y-contain pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] ${
           mobileOpen ? 'translate-x-0 visible' : '-translate-x-full invisible md:translate-x-0 md:visible'
         }`}
       >
-        <div className={`flex flex-col ${collapsed ? 'p-3' : 'p-5'}`}>
+        <div className="flex flex-col p-3">
           {/* Brand Header */}
-          <div className="pb-6 border-b border-[#E6E2F0]">
-            <div className="flex items-center justify-between">
-              <Link href="/app" className="flex min-w-0 items-center gap-2.5 group" onClick={onClose}>
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C5CFC] to-[#6366F1] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-all">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="deployed_code">
-                    deployed_code
-                  </span>
-                </div>
-                <div className={`items-center gap-1.5 ${collapsed ? 'hidden' : 'flex'}`}>
-                  <span className="font-space font-bold text-[#17152B] tracking-tight text-[16px]">
-                    ARAM BTS
-                  </span>
-                </div>
+          <div className="px-1 pb-3">
+            <div className={`flex items-center ${collapsed ? 'h-10 justify-between md:h-auto md:flex-col md:gap-1.5' : 'h-10 justify-between'}`}>
+              <Link href="/app" className={`flex min-w-0 items-center gap-2.5 rounded-lg py-1 ${collapsed ? 'px-1.5 md:px-0' : 'px-1.5'}`} onClick={onClose}>
+                <Image
+                  src="/aram-logo.png"
+                  alt="Aram"
+                  width={1382}
+                  height={418}
+                  priority
+                  className={`h-6 w-auto ${collapsed ? 'md:hidden' : ''}`}
+                />
+                {collapsed && (
+                  <Image
+                    src="/aram-mark.png"
+                    alt="Aram"
+                    width={339}
+                    height={418}
+                    className="hidden h-6 w-auto md:block"
+                  />
+                )}
               </Link>
               <div className="flex items-center gap-1">
                 <button
@@ -151,7 +159,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                   aria-label={collapsed ? 'Expand workspace sidebar' : 'Collapse workspace sidebar'}
                   aria-expanded={!collapsed}
                   title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                  className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-[#77738A] hover:bg-[#F6F1FF] hover:text-[#17152B] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C5CFC]"
+                  className="hidden md:flex w-8 h-8 items-center justify-center rounded-lg text-ds-muted hover:bg-ds-subtle hover:text-ds-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
                 >
                   <span aria-hidden="true" className="material-symbols-outlined text-[19px]">
                     {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
@@ -162,7 +170,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                     type="button"
                     onClick={onClose}
                     data-sidebar-close
-                    className="md:hidden min-h-11 min-w-11 text-[#77738A] hover:text-[#17152B] p-2 rounded-md"
+                    className="md:hidden min-h-11 min-w-11 text-ds-muted hover:text-ds-ink p-2 rounded-md"
                     aria-label="Close menu"
                   >
                     <span className="material-symbols-outlined text-[20px]">close</span>
@@ -170,15 +178,10 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                 )}
               </div>
             </div>
-            <div className={`text-[#77738A] text-[10px] tracking-wider uppercase font-semibold mt-1.5 pl-0.5 ${
-              collapsed ? 'hidden' : 'block'
-            }`}>
-              EVENT OPERATING SYSTEM
-            </div>
           </div>
 
           {/* Navigation Menu */}
-          <nav className="space-y-1.5 mt-5">
+          <nav className="space-y-0.5">
             {navItems.map((item) => {
               const isActive = item.exact
                 ? pathname === item.path
@@ -191,53 +194,51 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
                   onClick={onClose}
                   aria-current={isActive ? 'page' : undefined}
                   title={collapsed ? item.name : undefined}
-                  className={`flex min-h-11 items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-all ${
+                  className={`flex min-h-9 items-center gap-2.5 px-2.5 rounded-lg text-[14px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-ds-accent ${
                     isActive
-                      ? 'bg-[#F6F1FF] text-[#7C5CFC] font-semibold'
-                      : 'text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF]/60 font-medium'
+                      ? 'bg-ds-ink/[0.06] text-ds-ink font-medium'
+                      : 'text-ds-body hover:text-ds-ink hover:bg-ds-ink/[0.04]'
                   } ${collapsed ? 'md:justify-center md:px-1' : ''}`}
                 >
                   <span
-                    className={`material-symbols-outlined text-[20px] ${
-                      isActive ? 'text-[#7C5CFC]' : 'text-[#77738A]'
+                    className={`material-symbols-outlined text-[19px] ${
+                      isActive ? 'text-ds-ink' : 'text-ds-muted'
                     }`}
+                    style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
                     data-icon={item.icon}
                   >
                     {item.icon}
                   </span>
-                  <span className={`${collapsed ? 'md:sr-only' : ''} flex-1 min-w-0`}>{item.name}</span>
+                  <span className={`${collapsed ? 'md:sr-only' : ''} flex-1 min-w-0 truncate`}>{item.name}</span>
                   {'badge' in item && item.badge && !collapsed && (
-                    <span className="text-[9px] font-bold bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white rounded-full px-1.5 py-0.5 leading-none shrink-0">
+                    <span className="text-[10px] font-medium text-ds-accent-strong bg-ds-accent-soft rounded-md px-1.5 py-0.5 leading-none shrink-0">
                       {item.badge}
                     </span>
                   )}
                 </Link>
               );
             })}
-
           </nav>
         </div>
 
         {/* Bottom Profile Block */}
-        <div className={`border-t border-[#E6E2F0] flex flex-col gap-3 bg-white ${
-          collapsed ? 'p-3' : 'p-4'
-        }`}>
+        <div className="border-t border-ds-line flex flex-col gap-0.5 p-3">
           <Link
             href="/app/profile"
             onClick={onClose}
             title={collapsed ? displayName : undefined}
-            className={`flex items-center gap-3 hover:bg-[#F6F1FF]/50 p-1.5 rounded-lg transition-colors ${
+            className={`flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-ds-ink/[0.04] transition-colors ${
               collapsed ? 'md:justify-center' : ''
             }`}
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1]/15 to-[#8B5CF6]/15 text-[#6366F1] flex items-center justify-center font-bold text-[14px] border border-[#6366F1]/20 shrink-0">
+            <div className="w-8 h-8 rounded-full bg-ds-ink text-white flex items-center justify-center font-medium text-[12px] shrink-0">
               {initials}
             </div>
             <div className={`flex-col min-w-0 flex-1 ${collapsed ? 'hidden' : 'flex'}`}>
-              <span className="text-[14px] font-bold text-[#17152B] truncate leading-tight">
+              <span className="text-[13px] font-medium text-ds-ink truncate leading-tight">
                 {displayName}
               </span>
-              <span className="text-[12px] text-[#77738A] truncate">
+              <span className="text-[11px] text-ds-muted truncate">
                 {displayRole}
               </span>
             </div>
@@ -248,7 +249,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
             onClick={handleLogout}
             disabled={loggingOut}
             title="Sign out of your account"
-            className={`flex min-h-11 items-center gap-2 px-2 py-1.5 text-[#77738A] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/30 rounded-md text-[13px] font-medium transition-colors text-left w-full cursor-pointer disabled:opacity-50 ${
+            className={`flex min-h-9 items-center gap-2.5 px-2.5 py-1.5 text-ds-muted hover:text-ds-ink hover:bg-ds-ink/[0.04] rounded-lg text-[13px] transition-colors text-left w-full cursor-pointer disabled:opacity-50 ${
               collapsed ? 'md:justify-center' : ''
             }`}
           >

@@ -76,8 +76,8 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -86,15 +86,15 @@ export default function AnalyticsPage() {
         />
 
         {/* Right Main Workspace */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
           {/* Top Breadcrumb & Mobile Menu Toggle */}
           <div className="flex items-center justify-between pb-2">
-            <div className="flex items-center gap-1.5 text-xs text-[#77738A]">
-              <Link href="/app" className="hover:text-[#17152B] transition-colors">
+            <div className="flex items-center gap-1.5 text-xs text-ds-muted">
+              <Link href="/app" className="hover:text-ds-ink transition-colors">
                 Home
               </Link>
               <span>&gt;</span>
-              <span className="text-[#17152B] font-semibold">Analytics</span>
+              <span className="text-ds-ink font-semibold">Analytics</span>
             </div>
           </div>
 

@@ -4,15 +4,15 @@ import React from 'react';
 
 export function LiveControlDashboard() {
   return (
-    <section className="py-24 bg-[#0d0b1a] text-white border-t border-white/10" id="solutions">
+    <section className="py-24 bg-ds-ink text-white border-t border-white/10" id="solutions">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <span className="text-xs font-bold text-[#EDE9FE] uppercase tracking-wider">ENTERPRISE COMMAND CENTER</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mt-1 tracking-tight">
               See Your Event. Live.
             </h2>
-            <p className="text-base text-[#77738A] mt-2 max-w-xl font-normal">
+            <p className="text-base text-ds-muted mt-2 max-w-xl font-normal">
               Real-time ingress curves, gate-by-gate velocity, and instant incident telemetry aggregated across every sensor node.
             </p>
           </div>
@@ -23,7 +23,7 @@ export function LiveControlDashboard() {
               <span className="w-2 h-2 rounded-full bg-[#22C55E] live-pulse" />
               ALL 8 GATES OPERATIONAL
             </div>
-            <span className="text-xs text-[#77738A] pr-2 font-mono">Sync: 0.1s</span>
+            <span className="text-xs text-ds-muted pr-2 font-mono">Sync: 0.1s</span>
           </div>
         </div>
 
@@ -34,7 +34,7 @@ export function LiveControlDashboard() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h4 className="text-lg font-bold text-white">Attendee Ingress Velocity</h4>
-                <span className="text-xs text-[#77738A]">Scans aggregated by 15-minute intervals</span>
+                <span className="text-xs text-ds-muted">Scans aggregated by 15-minute intervals</span>
               </div>
               <span className="text-xs text-[#22C55E] bg-[#22C55E]/15 px-2.5 py-1 rounded-md font-bold">
                 Peak: 340 scans/min
@@ -52,8 +52,8 @@ export function LiveControlDashboard() {
                 {/* Gradient Area */}
                 <defs>
                   <linearGradient id="ingressGradient" x1="0%" x2="0%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#7C5CFC" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#7C5CFC" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="#6D50F5" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#6D50F5" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
 
@@ -66,7 +66,7 @@ export function LiveControlDashboard() {
                 <path
                   d="M0,190 Q60,180 120,130 T240,60 T360,30 T440,90 T500,140"
                   fill="none"
-                  stroke="#7C5CFC"
+                  stroke="#6D50F5"
                   strokeLinecap="round"
                   strokeWidth="3.5"
                 />
@@ -76,7 +76,7 @@ export function LiveControlDashboard() {
               </svg>
             </div>
 
-            <div className="flex justify-between items-center text-xs text-[#77738A] pt-4 border-t border-white/10 mt-2 font-mono">
+            <div className="flex justify-between items-center text-xs text-ds-muted pt-4 border-t border-white/10 mt-2 font-mono">
               <span>06:30 AM</span>
               <span>07:00 AM</span>
               <span className="text-[#22C55E] font-bold">07:30 AM (Doors)</span>
@@ -92,9 +92,9 @@ export function LiveControlDashboard() {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h4 className="text-lg font-bold text-white">Zone Capacities</h4>
-                  <span className="text-xs text-[#77738A]">Real-time occupancy limits</span>
+                  <span className="text-xs text-ds-muted">Real-time occupancy limits</span>
                 </div>
-                <span className="material-symbols-outlined text-[#77738A]">pie_chart</span>
+                <span className="material-symbols-outlined text-ds-muted">pie_chart</span>
               </div>
 
               <div className="space-y-4">
@@ -105,7 +105,7 @@ export function LiveControlDashboard() {
                     <span className="text-[#22C55E] font-mono font-bold">92% (1,380 / 1,500)</span>
                   </div>
                   <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-[#7C5CFC] rounded-full" style={{ width: '92%' }} />
+                    <div className="h-full bg-ds-accent rounded-full" style={{ width: '92%' }} />
                   </div>
                 </div>
 
@@ -116,7 +116,7 @@ export function LiveControlDashboard() {
                     <span className="text-white/80 font-mono font-bold">64% (640 / 1,000)</span>
                   </div>
                   <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-[#5B3FE8] rounded-full" style={{ width: '64%' }} />
+                    <div className="h-full bg-ds-accent-strong rounded-full" style={{ width: '64%' }} />
                   </div>
                 </div>
 
@@ -138,7 +138,7 @@ export function LiveControlDashboard() {
                     <span className="text-[#22C55E] font-mono font-bold">96% (48 / 50)</span>
                   </div>
                   <div className="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-[#7C5CFC] rounded-full" style={{ width: '96%' }} />
+                    <div className="h-full bg-ds-accent rounded-full" style={{ width: '96%' }} />
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export function LiveControlDashboard() {
                 <span className="material-symbols-outlined text-[#22C55E] text-sm">shield</span>
                 <span className="text-xs text-[#22C55E] font-bold">Emergency Exits Clear</span>
               </div>
-              <span className="text-xs text-[#77738A] font-mono">Sensors: 100% Ok</span>
+              <span className="text-xs text-ds-muted font-mono">Sensors: 100% Ok</span>
             </div>
           </div>
         </div>

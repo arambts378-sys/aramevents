@@ -456,25 +456,25 @@ export default function SpeakersPage() {
   // Loading Skeleton State
   if (!isHydrated || loading) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+      <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+          <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
             <div className="w-full space-y-8 animate-pulse">
-              <div className="h-5 w-36 bg-[#E6E2F0] rounded-md" />
+              <div className="h-5 w-36 bg-ds-line rounded-md" />
               <div className="flex justify-between items-end">
                 <div className="space-y-2">
-                  <div className="h-10 w-72 bg-[#E6E2F0] rounded-xl" />
-                  <div className="h-4 w-96 bg-[#E6E2F0] rounded" />
+                  <div className="h-10 w-72 bg-ds-line rounded-xl" />
+                  <div className="h-4 w-96 bg-ds-line rounded" />
                 </div>
-                <div className="h-10 w-36 bg-[#E6E2F0] rounded-xl" />
+                <div className="h-10 w-36 bg-ds-line rounded-xl" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-28 bg-white border border-[#E6E2F0] rounded-2xl" />
+                  <div key={i} className="h-28 bg-white border border-ds-line rounded-2xl" />
                 ))}
               </div>
-              <div className="h-96 bg-white border border-[#E6E2F0] rounded-2xl" />
+              <div className="h-96 bg-white border border-ds-line rounded-2xl" />
             </div>
           </main>
         </div>
@@ -485,21 +485,21 @@ export default function SpeakersPage() {
   // Event Not Found State
   if (!event) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+      <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen p-6 flex items-center justify-center w-full">
-            <div className="max-w-md w-full bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+          <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen p-6 flex items-center justify-center w-full">
+            <div className="max-w-md w-full bg-white border border-ds-line rounded-2xl p-8 text-center shadow-xs space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto border border-ds-line">
                 <span className="material-symbols-outlined text-[24px]">event_busy</span>
               </div>
-              <h2 className="text-xl font-bold font-space text-[#17152B]">Event Not Found</h2>
-              <p className="text-sm text-[#77738A] font-jakarta">
+              <h2 className="text-xl font-bold font-space text-ds-ink">Event Not Found</h2>
+              <p className="text-sm text-ds-muted font-jakarta">
                 The requested event could not be located in this workspace.
               </p>
               <Link
                 href="/app/events"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#7C5CFC] text-white text-sm font-semibold rounded-xl hover:bg-[#5B3FE8] transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-ds-accent text-white text-sm font-semibold rounded-xl hover:bg-ds-accent-strong transition-colors"
               >
                 Back to Events
               </Link>
@@ -511,8 +511,8 @@ export default function SpeakersPage() {
   }
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -521,7 +521,7 @@ export default function SpeakersPage() {
         />
 
         {/* Right Main Content Area */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
           <div className="w-full space-y-8">
             {/* Notification Feedback Banner */}
             {successMessage && (
@@ -559,7 +559,7 @@ export default function SpeakersPage() {
                     <button
                       type="button"
                       onClick={() => router.push(`/app/events/${eventId}/speakers`)}
-                      className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-[#77738A] hover:text-[#7C5CFC] transition-colors group font-jakarta cursor-pointer"
+                      className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-ds-muted hover:text-ds-accent transition-colors group font-jakarta cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-150">
                         arrow_back
@@ -570,7 +570,7 @@ export default function SpeakersPage() {
                     <button
                       type="button"
                       onClick={() => setMobileMenuOpen(true)}
-                      className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#17152B] bg-white border border-[#E6E2F0] rounded-lg shadow-xs"
+                      className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-ds-ink bg-white border border-ds-line rounded-lg shadow-xs"
                       aria-label="Open navigation menu"
                     >
                       <span className="material-symbols-outlined text-[16px]">menu</span>
@@ -581,14 +581,14 @@ export default function SpeakersPage() {
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pb-1">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-[#77738A]">
+                        <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-ds-muted">
                           EVENT WORKSPACE · {event.name}
                         </span>
                       </div>
-                      <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-[#17152B] leading-none font-space uppercase">
+                      <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-ds-ink leading-none font-space uppercase">
                         {isEditingExisting ? 'SPEAKER' : 'NEW SPEAKER'}
                       </h1>
-                      <p className="text-[14px] text-[#77738A] font-jakarta">
+                      <p className="text-[14px] text-ds-muted font-jakarta">
                         Edit speaker profile and event information.
                       </p>
                     </div>
@@ -598,7 +598,7 @@ export default function SpeakersPage() {
                         type="button"
                         onClick={() => router.push(`/app/events/${eventId}/speakers`)}
                         disabled={isSubmitting}
-                        className="px-4 h-11 rounded-xl bg-white border border-[#E6E2F0] text-[#17152B] font-semibold text-[13px] hover:border-[#7C5CFC] transition-colors font-jakarta shadow-xs disabled:opacity-50"
+                        className="px-4 h-11 rounded-xl bg-white border border-ds-line text-ds-ink font-semibold text-[13px] hover:border-ds-accent transition-colors font-jakarta shadow-xs disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -607,7 +607,7 @@ export default function SpeakersPage() {
                         type="button"
                         onClick={() => handleSaveSpeaker()}
                         disabled={isSubmitting}
-                        className="inline-flex items-center gap-2 px-6 h-11 rounded-xl bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] transition-colors shadow-xs active:scale-[0.99] font-jakarta disabled:opacity-70 cursor-pointer"
+                        className="inline-flex items-center gap-2 px-6 h-11 rounded-xl bg-ds-accent text-white font-semibold text-[13px] hover:bg-ds-accent-strong transition-colors shadow-xs active:scale-[0.99] font-jakarta disabled:opacity-70 cursor-pointer"
                       >
                         {isSubmitting ? (
                           <>
@@ -634,19 +634,19 @@ export default function SpeakersPage() {
                   <div className="lg:col-span-8 space-y-6">
                     
                     {/* Card 1: PROFILE */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-                      <div className="border-b border-[#E6E2F0] pb-4">
-                        <h2 className="text-[16px] font-bold text-[#17152B] font-space tracking-tight">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+                      <div className="border-b border-ds-line pb-4">
+                        <h2 className="text-[16px] font-bold text-ds-ink font-space tracking-tight">
                           PROFILE
                         </h2>
-                        <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5">
+                        <p className="text-[13px] text-ds-muted font-jakarta mt-0.5">
                           Manage basic speaker information.
                         </p>
                       </div>
 
                       {/* Photo Upload Section */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 bg-[#FAF9FF] rounded-xl border border-[#E6E2F0]/70">
-                        <div className="w-20 h-20 rounded-2xl bg-white border border-[#E6E2F0] flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 bg-ds-subtle rounded-xl border border-ds-line/70">
+                        <div className="w-20 h-20 rounded-2xl bg-white border border-ds-line flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                           {personForm.avatar_url ? (
                             <img
                               src={personForm.avatar_url}
@@ -654,7 +654,7 @@ export default function SpeakersPage() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <span className="text-xl font-bold text-[#7C5CFC] font-space">
+                            <span className="text-xl font-bold text-ds-accent font-space">
                               {getInitials(personForm.first_name, personForm.last_name)}
                             </span>
                           )}
@@ -666,7 +666,7 @@ export default function SpeakersPage() {
                               type="button"
                               onClick={() => photoInputRef.current?.click()}
                               disabled={isUploadingPhoto || isSubmitting}
-                              className="px-3.5 py-1.5 bg-white border border-[#E6E2F0] hover:border-[#7C5CFC] hover:text-[#7C5CFC] text-[13px] font-semibold text-[#17152B] rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50 font-jakarta flex items-center gap-1.5"
+                              className="px-3.5 py-1.5 bg-white border border-ds-line hover:border-ds-accent hover:text-ds-accent text-[13px] font-semibold text-ds-ink rounded-lg shadow-xs transition-colors cursor-pointer disabled:opacity-50 font-jakarta flex items-center gap-1.5"
                             >
                               <span className="material-symbols-outlined text-[16px]">
                                 {isUploadingPhoto ? 'sync' : 'photo_camera'}
@@ -692,7 +692,7 @@ export default function SpeakersPage() {
                               </button>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#77738A] font-jakarta">
+                          <p className="text-[11px] text-ds-muted font-jakarta">
                             JPG, PNG, or WebP. Max 2MB. Photo will appear immediately in Public Preview.
                           </p>
                           <input
@@ -708,8 +708,8 @@ export default function SpeakersPage() {
                       {/* Name Fields (2 Columns Desktop) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
-                            First Name <span className="text-[#DC2626]">*</span>
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
+                            First Name <span className="text-ds-danger">*</span>
                           </label>
                           <input
                             type="text"
@@ -722,21 +722,21 @@ export default function SpeakersPage() {
                               }
                             }}
                             placeholder="e.g. Jane"
-                            className={`w-full px-4 py-2.5 bg-white border rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:ring-1 transition-all font-jakarta shadow-2xs ${
+                            className={`w-full px-4 py-2.5 bg-white border rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:ring-1 transition-all font-jakarta shadow-2xs ${
                               formErrors.first_name
-                                ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]'
-                                : 'border-[#E6E2F0] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]'
+                                ? 'border-ds-danger focus:border-ds-danger focus:ring-ds-danger'
+                                : 'border-ds-line focus:border-ds-accent focus:ring-ds-accent'
                             }`}
                           />
                           {formErrors.first_name && (
-                            <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                            <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                               {formErrors.first_name}
                             </p>
                           )}
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Last Name
                           </label>
                           <input
@@ -746,7 +746,7 @@ export default function SpeakersPage() {
                               setPersonForm({ ...personForm, last_name: e.target.value })
                             }
                             placeholder="e.g. Doe"
-                            className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                            className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                           />
                         </div>
                       </div>
@@ -755,11 +755,11 @@ export default function SpeakersPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
-                              Email Address <span className="text-[#DC2626]">*</span>
+                            <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
+                              Email Address <span className="text-ds-danger">*</span>
                             </label>
                             {isEditingExisting && (
-                              <span className="text-[10px] font-medium text-[#77738A] bg-[#F6F1FF] border border-[#E6E2F0] px-1.5 py-0.5 rounded font-jakarta">
+                              <span className="text-[10px] font-medium text-ds-muted bg-ds-accent-soft border border-ds-line px-1.5 py-0.5 rounded font-jakarta">
                                 Identity Bound
                               </span>
                             )}
@@ -778,26 +778,26 @@ export default function SpeakersPage() {
                             placeholder="e.g. jane@company.com"
                             className={`w-full px-4 py-2.5 border rounded-xl text-[14px] transition-all font-jakarta shadow-2xs ${
                               isEditingExisting
-                                ? 'bg-[#FAF9FF] text-[#77738A] border-[#E6E2F0] cursor-not-allowed'
+                                ? 'bg-ds-subtle text-ds-muted border-ds-line cursor-not-allowed'
                                 : formErrors.email
-                                ? 'bg-white border-[#DC2626] text-[#17152B] focus:border-[#DC2626] focus:ring-1 focus:ring-[#DC2626]'
-                                : 'bg-white border-[#E6E2F0] text-[#17152B] focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC]'
+                                ? 'bg-white border-ds-danger text-ds-ink focus:border-ds-danger focus:ring-1 focus:ring-ds-danger'
+                                : 'bg-white border-ds-line text-ds-ink focus:border-ds-accent focus:ring-1 focus:ring-ds-accent'
                             }`}
                           />
                           {formErrors.email && (
-                            <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                            <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                               {formErrors.email}
                             </p>
                           )}
                           {isEditingExisting && (
-                            <p className="text-[11px] text-[#77738A] font-jakarta">
+                            <p className="text-[11px] text-ds-muted font-jakarta">
                               Email address is preserved and tied to workspace identity.
                             </p>
                           )}
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Phone Number
                           </label>
                           <input
@@ -807,26 +807,26 @@ export default function SpeakersPage() {
                               setPersonForm({ ...personForm, phone: e.target.value })
                             }
                             placeholder="e.g. +1 (555) 000-0000"
-                            className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                            className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Card 2: PROFESSIONAL INFORMATION */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-                      <div className="border-b border-[#E6E2F0] pb-4">
-                        <h2 className="text-[16px] font-bold text-[#17152B] font-space tracking-tight">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+                      <div className="border-b border-ds-line pb-4">
+                        <h2 className="text-[16px] font-bold text-ds-ink font-space tracking-tight">
                           PROFESSIONAL INFORMATION
                         </h2>
-                        <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5">
+                        <p className="text-[13px] text-ds-muted font-jakarta mt-0.5">
                           Professional background and company affiliation.
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Job Title
                           </label>
                           <input
@@ -836,12 +836,12 @@ export default function SpeakersPage() {
                               setPersonForm({ ...personForm, job_title: e.target.value })
                             }
                             placeholder="e.g. AI Engineer"
-                            className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                            className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                           />
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Organization
                           </label>
                           <input
@@ -851,26 +851,26 @@ export default function SpeakersPage() {
                               setPersonForm({ ...personForm, organization: e.target.value })
                             }
                             placeholder="e.g. ARAM Analytics"
-                            className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                            className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Card 3: BIOGRAPHY */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-                      <div className="border-b border-[#E6E2F0] pb-4">
-                        <h2 className="text-[16px] font-bold text-[#17152B] font-space tracking-tight">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+                      <div className="border-b border-ds-line pb-4">
+                        <h2 className="text-[16px] font-bold text-ds-ink font-space tracking-tight">
                           BIOGRAPHY
                         </h2>
-                        <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5">
+                        <p className="text-[13px] text-ds-muted font-jakarta mt-0.5">
                           Public presenter summary and event introduction.
                         </p>
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
-                          Headline <span className="text-[#DC2626]">*</span>
+                        <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
+                          Headline <span className="text-ds-danger">*</span>
                         </label>
                         <input
                           type="text"
@@ -883,14 +883,14 @@ export default function SpeakersPage() {
                             }
                           }}
                           placeholder="e.g. Keynote Speaker & AI Visionary"
-                          className={`w-full px-4 py-2.5 bg-white border rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:ring-1 transition-all font-jakarta shadow-2xs ${
+                          className={`w-full px-4 py-2.5 bg-white border rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:ring-1 transition-all font-jakarta shadow-2xs ${
                             formErrors.headline
-                              ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]'
-                              : 'border-[#E6E2F0] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]'
+                              ? 'border-ds-danger focus:border-ds-danger focus:ring-ds-danger'
+                              : 'border-ds-line focus:border-ds-accent focus:ring-ds-accent'
                           }`}
                         />
                         {formErrors.headline && (
-                          <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                          <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                             {formErrors.headline}
                           </p>
                         )}
@@ -898,10 +898,10 @@ export default function SpeakersPage() {
 
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Biography
                           </label>
-                          <span className="text-[11px] text-[#77738A] font-mono">
+                          <span className="text-[11px] text-ds-muted font-mono">
                             {speakerForm.bio.length} chars
                           </span>
                         </div>
@@ -912,29 +912,29 @@ export default function SpeakersPage() {
                           }
                           rows={5}
                           placeholder="Detailed presenter biography for the public website and program..."
-                          className="w-full px-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs resize-y"
+                          className="w-full px-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs resize-y"
                         />
                       </div>
                     </div>
 
                     {/* Card 4: SOCIAL PROFILES */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
-                      <div className="border-b border-[#E6E2F0] pb-4">
-                        <h2 className="text-[16px] font-bold text-[#17152B] font-space tracking-tight">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 sm:p-7 shadow-xs space-y-6">
+                      <div className="border-b border-ds-line pb-4">
+                        <h2 className="text-[16px] font-bold text-ds-ink font-space tracking-tight">
                           SOCIAL PROFILES
                         </h2>
-                        <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5">
+                        <p className="text-[13px] text-ds-muted font-jakarta mt-0.5">
                           Connect social media and personal portfolio links.
                         </p>
                       </div>
 
                       <div className="space-y-4">
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             LinkedIn URL
                           </label>
                           <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]">
                               link
                             </span>
                             <input
@@ -944,22 +944,22 @@ export default function SpeakersPage() {
                                 setSpeakerForm({ ...speakerForm, linkedin_url: e.target.value })
                               }
                               placeholder="https://linkedin.com/in/username"
-                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                             />
                           </div>
                           {formErrors.linkedin_url && (
-                            <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                            <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                               {formErrors.linkedin_url}
                             </p>
                           )}
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             Website URL
                           </label>
                           <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]">
                               language
                             </span>
                             <input
@@ -969,22 +969,22 @@ export default function SpeakersPage() {
                                 setSpeakerForm({ ...speakerForm, website_url: e.target.value })
                               }
                               placeholder="https://yourwebsite.com"
-                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                             />
                           </div>
                           {formErrors.website_url && (
-                            <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                            <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                               {formErrors.website_url}
                             </p>
                           )}
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                          <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                             X / Twitter URL
                           </label>
                           <div className="relative">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]">
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]">
                               tag
                             </span>
                             <input
@@ -994,11 +994,11 @@ export default function SpeakersPage() {
                                 setSpeakerForm({ ...speakerForm, twitter_url: e.target.value })
                               }
                               placeholder="https://x.com/username"
-                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                              className="w-full pl-10 pr-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                             />
                           </div>
                           {formErrors.twitter_url && (
-                            <p className="text-[#DC2626] text-xs font-medium font-jakarta mt-1">
+                            <p className="text-ds-danger text-xs font-medium font-jakarta mt-1">
                               {formErrors.twitter_url}
                             </p>
                           )}
@@ -1013,12 +1013,12 @@ export default function SpeakersPage() {
                           <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 block">
                             DANGER ZONE
                           </span>
-                          <h2 className="text-[16px] font-bold text-[#17152B] font-space mt-0.5">
+                          <h2 className="text-[16px] font-bold text-ds-ink font-space mt-0.5">
                             {selectedSpeaker.status === 'active'
                               ? 'Deactivate Speaker'
                               : 'Reactivate Speaker'}
                           </h2>
-                          <p className="text-[13px] text-[#77738A] font-jakarta mt-0.5 leading-relaxed">
+                          <p className="text-[13px] text-ds-muted font-jakarta mt-0.5 leading-relaxed">
                             {selectedSpeaker.status === 'active'
                               ? 'Deactivating removes this speaker from the public event website lineup while preserving their profile, history, and workspace record.'
                               : 'Reactivating restores this presenter to the active event speaker roster and public schedule.'}
@@ -1048,23 +1048,23 @@ export default function SpeakersPage() {
                   <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
                     
                     {/* Card 1: PUBLIC PREVIEW */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-4">
-                      <div className="border-b border-[#E6E2F0] pb-3">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C5CFC] block font-mono">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="border-b border-ds-line pb-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-ds-accent block font-mono">
                           PUBLIC PREVIEW
                         </span>
-                        <h2 className="text-[15px] font-bold text-[#17152B] font-space mt-0.5">
+                        <h2 className="text-[15px] font-bold text-ds-ink font-space mt-0.5">
                           Lineup Preview
                         </h2>
-                        <p className="text-[12px] text-[#77738A] font-jakarta">
+                        <p className="text-[12px] text-ds-muted font-jakarta">
                           Live preview of how this speaker appears on the event website.
                         </p>
                       </div>
 
                       {/* Mocked Website Speaker Card Preview */}
-                      <div className="bg-[#FAF9FF] border border-[#E6E2F0] rounded-xl p-5 text-center space-y-3 transition-all duration-150">
+                      <div className="bg-ds-subtle border border-ds-line rounded-xl p-5 text-center space-y-3 transition-all duration-150">
                         {/* Avatar */}
-                        <div className="w-20 h-20 rounded-full mx-auto overflow-hidden bg-white border border-[#E6E2F0] flex items-center justify-center shadow-xs">
+                        <div className="w-20 h-20 rounded-full mx-auto overflow-hidden bg-white border border-ds-line flex items-center justify-center shadow-xs">
                           {personForm.avatar_url ? (
                             <img
                               src={personForm.avatar_url}
@@ -1072,7 +1072,7 @@ export default function SpeakersPage() {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-[#F6F1FF] text-[#7C5CFC] font-bold font-space text-[22px] flex items-center justify-center">
+                            <div className="w-full h-full bg-ds-accent-soft text-ds-accent font-bold font-space text-[22px] flex items-center justify-center">
                               {getInitials(personForm.first_name, personForm.last_name)}
                             </div>
                           )}
@@ -1080,19 +1080,19 @@ export default function SpeakersPage() {
 
                         {/* Speaker Name */}
                         <div>
-                          <h3 className="font-bold text-[#17152B] font-space text-[16px] leading-tight">
+                          <h3 className="font-bold text-ds-ink font-space text-[16px] leading-tight">
                             {personForm.first_name.trim() || personForm.last_name.trim()
                               ? `${personForm.first_name} ${personForm.last_name}`.trim()
                               : 'Speaker Name'}
                           </h3>
-                          <div className="text-[12px] text-[#7C5CFC] font-semibold mt-0.5 line-clamp-1">
+                          <div className="text-[12px] text-ds-accent font-semibold mt-0.5 line-clamp-1">
                             {speakerForm.headline.trim() || 'Presenter Headline'}
                           </div>
                         </div>
 
                         {/* Job Title & Org */}
                         {(personForm.job_title || personForm.organization) && (
-                          <div className="text-[12px] text-[#77738A] font-jakarta leading-tight line-clamp-1">
+                          <div className="text-[12px] text-ds-muted font-jakarta leading-tight line-clamp-1">
                             {personForm.job_title}
                             {personForm.job_title && personForm.organization && ' at '}
                             {personForm.organization}
@@ -1100,12 +1100,12 @@ export default function SpeakersPage() {
                         )}
 
                         {/* Bio snippet */}
-                        <div className="text-[12px] text-[#77738A] font-jakarta line-clamp-3 text-left bg-white p-3 rounded-lg border border-[#E6E2F0]/60 italic leading-relaxed">
+                        <div className="text-[12px] text-ds-muted font-jakarta line-clamp-3 text-left bg-white p-3 rounded-lg border border-ds-line/60 italic leading-relaxed">
                           {speakerForm.bio.trim() || 'Speaker biography will appear here.'}
                         </div>
 
                         {/* Social Link Badges */}
-                        <div className="flex items-center justify-center gap-3 pt-2 text-[#77738A]">
+                        <div className="flex items-center justify-center gap-3 pt-2 text-ds-muted">
                           {speakerForm.linkedin_url && (
                             <a
                               href={speakerForm.linkedin_url}
@@ -1122,7 +1122,7 @@ export default function SpeakersPage() {
                               href={speakerForm.website_url}
                               target="_blank"
                               rel="noreferrer"
-                              className="hover:text-[#7C5CFC] transition-colors"
+                              className="hover:text-ds-accent transition-colors"
                               title="Website"
                             >
                               <span className="material-symbols-outlined text-[18px]">language</span>
@@ -1142,7 +1142,7 @@ export default function SpeakersPage() {
                           {!speakerForm.linkedin_url &&
                             !speakerForm.website_url &&
                             !speakerForm.twitter_url && (
-                              <span className="text-[11px] text-[#77738A]/60 font-jakarta">
+                              <span className="text-[11px] text-ds-muted/60 font-jakarta">
                                 No social links provided
                               </span>
                             )}
@@ -1151,26 +1151,26 @@ export default function SpeakersPage() {
                     </div>
 
                     {/* Card 2: EVENT VISIBILITY */}
-                    <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-4">
-                      <div className="border-b border-[#E6E2F0] pb-3">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] block font-mono">
+                    <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-4">
+                      <div className="border-b border-ds-line pb-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted block font-mono">
                           EVENT SETTINGS
                         </span>
-                        <h2 className="text-[15px] font-bold text-[#17152B] font-space mt-0.5">
+                        <h2 className="text-[15px] font-bold text-ds-ink font-space mt-0.5">
                           Visibility &amp; Status
                         </h2>
-                        <p className="text-[12px] text-[#77738A] font-jakarta">
+                        <p className="text-[12px] text-ds-muted font-jakarta">
                           Control visibility and featured status across this event.
                         </p>
                       </div>
 
                       {/* Featured Speaker Toggle */}
-                      <div className="p-3.5 bg-[#FAF9FF] rounded-xl border border-[#E6E2F0] flex items-center justify-between gap-3">
+                      <div className="p-3.5 bg-ds-subtle rounded-xl border border-ds-line flex items-center justify-between gap-3">
                         <div>
-                          <div className="text-[13px] font-bold text-[#17152B] font-jakarta">
+                          <div className="text-[13px] font-bold text-ds-ink font-jakarta">
                             Featured Speaker
                           </div>
-                          <div className="text-[11px] text-[#77738A] font-jakarta">
+                          <div className="text-[11px] text-ds-muted font-jakarta">
                             Highlight this speaker in featured lineups.
                           </div>
                         </div>
@@ -1184,13 +1184,13 @@ export default function SpeakersPage() {
                             }
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#7C5CFC]"></div>
+                          <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ds-accent"></div>
                         </label>
                       </div>
 
                       {/* Current Status Badge */}
-                      <div className="flex items-center justify-between p-3.5 bg-[#FAF9FF] rounded-xl border border-[#E6E2F0]">
-                        <span className="text-[13px] font-bold text-[#17152B] font-jakarta">
+                      <div className="flex items-center justify-between p-3.5 bg-ds-subtle rounded-xl border border-ds-line">
+                        <span className="text-[13px] font-bold text-ds-ink font-jakarta">
                           Speaker Status
                         </span>
                         <span
@@ -1213,7 +1213,7 @@ export default function SpeakersPage() {
 
                       {/* Display Order */}
                       <div className="space-y-1.5">
-                        <label className="block text-[13px] font-semibold text-[#17152B] font-jakarta">
+                        <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
                           Display Order
                         </label>
                         <input
@@ -1226,9 +1226,9 @@ export default function SpeakersPage() {
                             })
                           }
                           min={0}
-                          className="w-full px-4 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] font-mono focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] transition-all font-jakarta shadow-2xs"
+                          className="w-full px-4 py-2 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent transition-all font-jakarta shadow-2xs"
                         />
-                        <p className="text-[11px] text-[#77738A] font-jakarta">
+                        <p className="text-[11px] text-ds-muted font-jakarta">
                           Lower numbers appear earlier in presenter lists.
                         </p>
                       </div>
@@ -1246,7 +1246,7 @@ export default function SpeakersPage() {
                   <div className="flex items-center justify-between">
                     <Link
                       href={`/app/events/${eventId}`}
-                      className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-[#77738A] hover:text-[#7C5CFC] transition-colors group font-jakarta"
+                      className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-ds-muted hover:text-ds-accent transition-colors group font-jakarta"
                     >
                       <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-150">
                         arrow_back
@@ -1257,7 +1257,7 @@ export default function SpeakersPage() {
                     <button
                       type="button"
                       onClick={() => setMobileMenuOpen(true)}
-                      className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#17152B] bg-white border border-[#E6E2F0] rounded-lg shadow-xs"
+                      className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-ds-ink bg-white border border-ds-line rounded-lg shadow-xs"
                       aria-label="Open navigation menu"
                     >
                       <span className="material-symbols-outlined text-[16px]">menu</span>
@@ -1269,14 +1269,14 @@ export default function SpeakersPage() {
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pb-1">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-[#77738A]">
+                        <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-ds-muted">
                           EVENT WORKSPACE · {event.name}
                         </span>
                       </div>
-                      <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-[#17152B] leading-none font-space">
+                      <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-ds-ink leading-none font-space">
                         SPEAKERS
                       </h1>
-                      <p className="text-[14px] text-[#77738A] font-jakarta">
+                      <p className="text-[14px] text-ds-muted font-jakarta">
                         Manage speakers, presenters and event participants.
                       </p>
                     </div>
@@ -1285,7 +1285,7 @@ export default function SpeakersPage() {
                       <button
                         type="button"
                         onClick={() => router.push(`/app/events/${eventId}/speakers?edit=new`)}
-                        className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] transition-colors shadow-xs active:scale-[0.99] font-jakarta cursor-pointer"
+                        className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-ds-accent text-white font-semibold text-[13px] hover:bg-ds-accent-strong transition-colors shadow-xs active:scale-[0.99] font-jakarta cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[18px]">add</span>
                         <span>Add Speaker</span>
@@ -1297,27 +1297,27 @@ export default function SpeakersPage() {
                 {/* 2. Summary Metric Cards (3 KPI Cards) */}
                 <section className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   {/* Card 1: Total Speakers */}
-                  <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+                  <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                         Total Speakers
                       </span>
-                      <span className="material-symbols-outlined text-[20px] text-[#7C5CFC]">
+                      <span className="material-symbols-outlined text-[20px] text-ds-accent">
                         podium
                       </span>
                     </div>
-                    <div className="text-[28px] font-bold text-[#17152B] font-space leading-tight">
+                    <div className="text-[28px] font-bold text-ds-ink font-space leading-tight">
                       {metrics.total}
                     </div>
-                    <p className="text-[12px] text-[#77738A] font-jakarta">
+                    <p className="text-[12px] text-ds-muted font-jakarta">
                       All event speakers
                     </p>
                   </div>
 
                   {/* Card 2: Active */}
-                  <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+                  <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                         Active
                       </span>
                       <span className="material-symbols-outlined text-[20px] text-emerald-600">
@@ -1327,34 +1327,34 @@ export default function SpeakersPage() {
                     <div className="text-[28px] font-bold text-emerald-700 font-space leading-tight">
                       {metrics.active}
                     </div>
-                    <p className="text-[12px] text-[#77738A] font-jakarta">
+                    <p className="text-[12px] text-ds-muted font-jakarta">
                       Currently active
                     </p>
                   </div>
 
                   {/* Card 3: Featured */}
-                  <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+                  <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                         Featured
                       </span>
                       <span className="material-symbols-outlined text-[20px] text-amber-500">
                         star
                       </span>
                     </div>
-                    <div className="text-[28px] font-bold text-[#17152B] font-space leading-tight">
+                    <div className="text-[28px] font-bold text-ds-ink font-space leading-tight">
                       {metrics.featured}
                     </div>
-                    <p className="text-[12px] text-[#77738A] font-jakarta">
+                    <p className="text-[12px] text-ds-muted font-jakarta">
                       Featured speakers
                     </p>
                   </div>
                 </section>
 
                 {/* 3. Directory Toolbar (Search & Filters) */}
-                <section className="bg-white border border-[#E6E2F0] rounded-2xl p-4 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
+                <section className="bg-white border border-ds-line rounded-2xl p-4 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
                   <div className="relative w-full md:w-80">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]">
                       search
                     </span>
                     <input
@@ -1362,7 +1362,7 @@ export default function SpeakersPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search speakers..."
-                      className="w-full pl-9 pr-4 py-2 bg-[#FAF9FF] border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] transition-all font-jakarta"
+                      className="w-full pl-9 pr-4 py-2 bg-ds-subtle border border-ds-line rounded-xl text-[13px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent transition-all font-jakarta"
                     />
                   </div>
 
@@ -1370,7 +1370,7 @@ export default function SpeakersPage() {
                     <select
                       value={featuredFilter}
                       onChange={(e) => setFeaturedFilter(e.target.value as any)}
-                      className="px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[12px] font-semibold text-[#17152B] focus:outline-none focus:border-[#7C5CFC] transition-colors font-jakarta shadow-2xs"
+                      className="px-3 py-2 bg-white border border-ds-line rounded-xl text-[12px] font-semibold text-ds-ink focus:outline-none focus:border-ds-accent transition-colors font-jakarta shadow-2xs"
                     >
                       <option value="all">All Profiles</option>
                       <option value="featured">Featured Only</option>
@@ -1380,7 +1380,7 @@ export default function SpeakersPage() {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value as any)}
-                      className="px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[12px] font-semibold text-[#17152B] focus:outline-none focus:border-[#7C5CFC] transition-colors font-jakarta shadow-2xs"
+                      className="px-3 py-2 bg-white border border-ds-line rounded-xl text-[12px] font-semibold text-ds-ink focus:outline-none focus:border-ds-accent transition-colors font-jakarta shadow-2xs"
                     >
                       <option value="all">All Statuses</option>
                       <option value="active">Active Only</option>
@@ -1391,24 +1391,24 @@ export default function SpeakersPage() {
 
                 {/* 4. Speaker Cards Grid / Empty State */}
                 {filteredSpeakers.length === 0 ? (
-                  <div className="bg-white border border-[#E6E2F0] rounded-2xl py-16 px-6 text-center space-y-4 max-w-md mx-auto shadow-xs">
-                    <div className="w-14 h-14 rounded-2xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+                  <div className="bg-white border border-ds-line rounded-2xl py-16 px-6 text-center space-y-4 max-w-md mx-auto shadow-xs">
+                    <div className="w-14 h-14 rounded-2xl bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto border border-ds-line">
                       <span className="material-symbols-outlined text-[28px]">podium</span>
                     </div>
                     {speakers.length === 0 ? (
                       <>
                         <div className="space-y-1">
-                          <h3 className="text-[18px] font-bold text-[#17152B] font-space">
+                          <h3 className="text-[18px] font-bold text-ds-ink font-space">
                             No speakers added yet
                           </h3>
-                          <p className="text-[13px] text-[#77738A] font-jakarta leading-relaxed">
+                          <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
                             Add speakers to build your event program and populate the public presenter lineup.
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={() => router.push(`/app/events/${eventId}/speakers?edit=new`)}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] transition-colors shadow-xs font-jakarta"
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ds-accent text-white font-semibold text-[13px] hover:bg-ds-accent-strong transition-colors shadow-xs font-jakarta"
                         >
                           <span className="material-symbols-outlined text-[18px]">add</span>
                           <span>Add Speaker</span>
@@ -1417,10 +1417,10 @@ export default function SpeakersPage() {
                     ) : (
                       <>
                         <div className="space-y-1">
-                          <h3 className="text-[18px] font-bold text-[#17152B] font-space">
+                          <h3 className="text-[18px] font-bold text-ds-ink font-space">
                             No matching speakers
                           </h3>
-                          <p className="text-[13px] text-[#77738A] font-jakarta">
+                          <p className="text-[13px] text-ds-muted font-jakarta">
                             Try adjusting your search query or profile filters.
                           </p>
                         </div>
@@ -1431,7 +1431,7 @@ export default function SpeakersPage() {
                             setFeaturedFilter('all');
                             setStatusFilter('all');
                           }}
-                          className="px-4 py-2 text-[#7C5CFC] text-xs font-semibold hover:bg-[#F6F1FF] rounded-lg transition-colors font-jakarta"
+                          className="px-4 py-2 text-ds-accent text-xs font-semibold hover:bg-ds-subtle rounded-lg transition-colors font-jakarta"
                         >
                           Clear Filters
                         </button>
@@ -1443,7 +1443,7 @@ export default function SpeakersPage() {
                     {filteredSpeakers.map((p) => (
                       <div
                         key={p.id}
-                        className={`bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs hover:border-[#7C5CFC]/60 transition-all duration-200 flex flex-col justify-between relative group ${
+                        className={`bg-white border border-ds-line rounded-2xl p-6 shadow-xs hover:border-ds-accent/60 transition-all duration-200 flex flex-col justify-between relative group ${
                           p.status === 'inactive' ? 'opacity-60' : ''
                         }`}
                       >
@@ -1464,7 +1464,7 @@ export default function SpeakersPage() {
 
                         {/* Speaker Identity Info */}
                         <div className="flex flex-col items-center text-center mt-2">
-                          <div className="w-20 h-20 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center font-bold font-space text-[22px] mb-3 border border-[#E6E2F0] overflow-hidden shadow-2xs">
+                          <div className="w-20 h-20 rounded-full bg-ds-accent-soft text-ds-accent flex items-center justify-center font-bold font-space text-[22px] mb-3 border border-ds-line overflow-hidden shadow-2xs">
                             {p.person?.avatar_url ? (
                               <img
                                 src={p.person.avatar_url}
@@ -1476,16 +1476,16 @@ export default function SpeakersPage() {
                             )}
                           </div>
 
-                          <h3 className="font-bold text-[#17152B] font-space text-[16px] line-clamp-1">
+                          <h3 className="font-bold text-ds-ink font-space text-[16px] line-clamp-1">
                             {p.person?.first_name} {p.person?.last_name}
                           </h3>
 
-                          <div className="text-[13px] text-[#7C5CFC] font-semibold mt-0.5 line-clamp-1 min-h-[20px]">
+                          <div className="text-[13px] text-ds-accent font-semibold mt-0.5 line-clamp-1 min-h-[20px]">
                             {p.speaker_profile?.headline || 'Speaker'}
                           </div>
 
                           {(p.person?.job_title || p.person?.organization) && (
-                            <div className="text-[12px] text-[#77738A] font-jakarta mt-1 line-clamp-1">
+                            <div className="text-[12px] text-ds-muted font-jakarta mt-1 line-clamp-1">
                               {p.person?.job_title}
                               {p.person?.job_title && p.person?.organization && ' at '}
                               {p.person?.organization}
@@ -1493,7 +1493,7 @@ export default function SpeakersPage() {
                           )}
 
                           {/* Social Icons */}
-                          <div className="flex items-center justify-center gap-3 mt-3 h-5 text-[#77738A]">
+                          <div className="flex items-center justify-center gap-3 mt-3 h-5 text-ds-muted">
                             {p.speaker_profile?.linkedin_url && (
                               <a
                                 href={p.speaker_profile.linkedin_url}
@@ -1509,7 +1509,7 @@ export default function SpeakersPage() {
                                 href={p.speaker_profile.website_url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="hover:text-[#7C5CFC] transition-colors"
+                                className="hover:text-ds-accent transition-colors"
                               >
                                 <span className="material-symbols-outlined text-[17px]">language</span>
                               </a>
@@ -1528,7 +1528,7 @@ export default function SpeakersPage() {
                         </div>
 
                         {/* Bottom Actions */}
-                        <div className="mt-5 pt-4 border-t border-[#E6E2F0] flex items-center justify-between">
+                        <div className="mt-5 pt-4 border-t border-ds-line flex items-center justify-between">
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(p)}
@@ -1546,7 +1546,7 @@ export default function SpeakersPage() {
                             onClick={() =>
                               router.push(`/app/events/${eventId}/speakers?edit=${p.id}`)
                             }
-                            className="px-3 py-1.5 bg-white border border-[#E6E2F0] hover:border-[#7C5CFC] hover:text-[#7C5CFC] text-[#17152B] rounded-lg text-xs font-semibold transition-colors shadow-2xs font-jakarta cursor-pointer"
+                            className="px-3 py-1.5 bg-white border border-ds-line hover:border-ds-accent hover:text-ds-accent text-ds-ink rounded-lg text-xs font-semibold transition-colors shadow-2xs font-jakarta cursor-pointer"
                           >
                             Edit Profile
                           </button>

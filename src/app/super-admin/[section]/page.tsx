@@ -16,10 +16,10 @@ export default async function SuperAdminPlaceholderPage({
   if (!label) notFound();
 
   return (
-    <section className="rounded-2xl border border-[#E6E2F0] bg-white p-5 shadow-xs sm:p-8">
-      <p className="text-xs font-bold uppercase tracking-wider text-[#7C5CFC]">Phase 1 placeholder</p>
+    <section className="ds-card p-5 shadow-xs sm:p-8">
+      <p className="text-xs font-bold uppercase tracking-wider text-ds-accent">Phase 1 placeholder</p>
       <h1 className="mt-2 font-space text-2xl font-bold tracking-tight sm:text-3xl">{label}</h1>
-      <p className="mt-3 text-sm leading-relaxed text-[#686477]">
+      <p className="mt-3 text-sm leading-relaxed text-ds-muted">
         This area is reserved for a later phase and has no operational functionality yet.
       </p>
     </section>

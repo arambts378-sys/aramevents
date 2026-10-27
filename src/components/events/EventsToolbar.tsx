@@ -22,7 +22,7 @@ export function EventsToolbar({
       {/* Search Input */}
       <div className="relative flex-1 max-w-md">
         <span
-          className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-[#77738A] pointer-events-none"
+          className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-ds-muted pointer-events-none"
           data-icon="search"
         >
           search
@@ -32,14 +32,14 @@ export function EventsToolbar({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search events by name, location, or type..."
-          className="w-full pl-10 pr-9 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] placeholder:text-[#77738A] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] shadow-xs transition-colors font-jakarta"
+          className="w-full pl-10 pr-9 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink placeholder:text-ds-muted focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent shadow-xs transition-colors font-jakarta"
           aria-label="Search events"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] hover:text-[#17152B] p-0.5 rounded-full"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted hover:text-ds-ink p-0.5 rounded-full"
             aria-label="Clear search"
           >
             <span className="material-symbols-outlined text-[16px]">close</span>
@@ -56,7 +56,7 @@ export function EventsToolbar({
           id="status-filter"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] font-medium text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] shadow-xs transition-colors cursor-pointer font-jakarta"
+          className="w-full appearance-none pl-3.5 pr-9 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] font-medium text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent shadow-xs transition-colors cursor-pointer font-jakarta"
         >
           <option value="all">All Statuses</option>
           {availableStatuses.map((status) => (
@@ -66,7 +66,7 @@ export function EventsToolbar({
           ))}
         </select>
         <span
-          className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#77738A] text-[18px]"
+          className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ds-muted text-[18px]"
           data-icon="expand_more"
         >
           expand_more

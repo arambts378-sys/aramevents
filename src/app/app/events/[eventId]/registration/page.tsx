@@ -152,29 +152,29 @@ export default function OrganizerRegistrationPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1200px] mx-auto w-full p-4 sm:p-8 flex flex-col lg:flex-row gap-6 sm:gap-10 items-start">
+      <main className="flex-1 max-w-[1760px] mx-auto w-full p-4 sm:p-8 flex flex-col lg:flex-row gap-6 sm:gap-10 items-start">
         
         {/* Left Column: Settings */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
           {/* Tickets & Pricing Link Card */}
           <Link
             href={`/app/events/${eventId}/tickets`}
-            className="group bg-white border border-[#E6E2F0] rounded-2xl p-5 shadow-xs hover:border-[#7C5CFC] hover:shadow-sm transition-all duration-150 flex items-center justify-between"
+            className="group bg-white border border-ds-line rounded-2xl p-5 shadow-xs hover:border-ds-accent hover:shadow-sm transition-all duration-150 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center border border-[#E6E2F0]/60 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center border border-ds-line/60 group-hover:scale-105 transition-transform">
                 <span className="material-symbols-outlined text-[22px]">sell</span>
               </div>
               <div>
-                <h3 className="text-[14px] font-bold text-[#17152B] font-space group-hover:text-[#7C5CFC] transition-colors">
+                <h3 className="text-[14px] font-bold text-ds-ink font-space group-hover:text-ds-accent transition-colors">
                   Tickets &amp; Pricing
                 </h3>
-                <p className="text-[12px] text-[#77738A] font-jakarta leading-tight mt-0.5">
+                <p className="text-[12px] text-ds-muted font-jakarta leading-tight mt-0.5">
                   Create ticket types, set prices and manage availability.
                 </p>
               </div>
             </div>
-            <span className="material-symbols-outlined text-[20px] text-[#77738A] group-hover:text-[#7C5CFC] group-hover:translate-x-0.5 transition-all">
+            <span className="material-symbols-outlined text-[20px] text-ds-muted group-hover:text-ds-accent group-hover:translate-x-0.5 transition-all">
               arrow_forward
             </span>
           </Link>

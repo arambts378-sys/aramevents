@@ -252,10 +252,10 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                           key={ticket.id}
                           className={`relative flex items-start gap-3.5 p-4 rounded-2xl border cursor-pointer transition-all ${
                             isSelected
-                              ? 'border-[#7C5CFC] bg-[#F6F1FF]/60 ring-1 ring-[#7C5CFC]'
+                              ? 'border-ds-accent bg-ds-accent-soft/60 ring-1 ring-ds-accent'
                               : isUnavailable
                               ? 'border-outline-variant/40 bg-zinc-50 opacity-60 cursor-not-allowed'
-                              : 'border-outline-variant/60 hover:border-[#7C5CFC]/60 bg-white'
+                              : 'border-outline-variant/60 hover:border-ds-accent/60 bg-white'
                           }`}
                         >
                           <input
@@ -265,20 +265,20 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                             value={ticket.id}
                             checked={isSelected}
                             onChange={() => setSelectedTicketId(ticket.id)}
-                            className="w-4 h-4 mt-1 text-[#7C5CFC] focus:ring-[#7C5CFC]"
+                            className="w-4 h-4 mt-1 text-ds-accent focus:ring-ds-accent"
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="font-bold text-[15px] text-[#17152B]">
+                              <span className="font-bold text-[15px] text-ds-ink">
                                 {ticket.name}
                               </span>
-                              <span className="font-mono font-bold text-[15px] text-[#17152B]">
+                              <span className="font-mono font-bold text-[15px] text-ds-ink">
                                 {formatPaiseToINR(ticket.price_amount)}
                               </span>
                             </div>
 
                             {ticket.description && (
-                              <p className="text-[12px] text-[#77738A] mt-0.5 line-clamp-2">
+                              <p className="text-[12px] text-ds-muted mt-0.5 line-clamp-2">
                                 {ticket.description}
                               </p>
                             )}

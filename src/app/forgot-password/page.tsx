@@ -6,9 +6,9 @@ import { createClient } from '@/lib/supabase/client';
 import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
 
 const INPUT_BASE =
-  'w-full px-3.5 py-3 bg-[#F7F5FF] border rounded-xl text-xs font-semibold text-[#27243A] placeholder-[#77738A]/60 focus:outline-none focus:ring-1 transition-colors';
-const INPUT_OK = 'border-[#E5E1F5] focus:border-[#7C5CFC] focus:ring-[#7C5CFC]';
-const INPUT_BAD = 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]';
+  'w-full px-3.5 py-3 bg-ds-canvas border rounded-xl text-xs font-semibold text-ds-body placeholder-ds-muted/60 focus:outline-none focus:ring-1 transition-colors';
+const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-ds-accent';
+const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-ds-danger';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -53,25 +53,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5FF] flex flex-col justify-between items-center py-12 px-4">
+    <div className="min-h-screen bg-ds-canvas flex flex-col justify-between items-center py-12 px-4">
       <div />
-      <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-[#E5E1F5] shadow-xl shadow-[#7C5CFC]/5">
+      <main className="w-full max-w-[420px] bg-white rounded-2xl p-8 sm:p-10 border border-ds-line shadow-xl shadow-black/5">
         <Link href="/" className="flex flex-col items-center gap-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-[#7C5CFC] flex items-center justify-center text-white">
+          <div className="w-12 h-12 rounded-2xl bg-ds-accent flex items-center justify-center text-white">
             <span className="material-symbols-outlined text-2xl">layers</span>
           </div>
-          <span className="text-xl font-bold tracking-tight text-[#27243A]">ARAM BTS</span>
+          <span className="text-xl font-bold tracking-tight text-ds-body">ARAM BTS</span>
         </Link>
 
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold text-[#27243A]">Reset your password</h1>
-          <p className="text-xs text-[#77738A] mt-2">
+          <h1 className="text-2xl font-bold text-ds-body">Reset your password</h1>
+          <p className="text-xs text-ds-muted mt-2">
             Enter your email and we&apos;ll send password reset instructions if an account exists.
           </p>
         </div>
 
         {error && (
-          <p role="alert" className="mb-4 bg-[#DC2626]/10 border border-[#DC2626]/30 text-[#DC2626] rounded-xl p-3 text-xs font-semibold">
+          <p role="alert" className="mb-4 bg-ds-danger/10 border border-ds-danger/30 text-ds-danger rounded-xl p-3 text-xs font-semibold">
             {error}
           </p>
         )}
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-2" noValidate>
-          <label htmlFor="recovery-email" className="text-xs font-semibold text-[#27243A]">
+          <label htmlFor="recovery-email" className="text-xs font-semibold text-ds-body">
             Email address
           </label>
           <input
@@ -105,7 +105,7 @@ export default function ForgotPasswordPage() {
             maxLength={255}
           />
           {emailError && (
-            <p id="recovery-email-error" role="alert" className="text-[11px] font-semibold text-[#DC2626]">
+            <p id="recovery-email-error" role="alert" className="text-[11px] font-semibold text-ds-danger">
               {emailError}
             </p>
           )}
@@ -113,20 +113,20 @@ export default function ForgotPasswordPage() {
             type="submit"
             disabled={loading}
             aria-busy={loading}
-            className="w-full h-12 mt-3 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white font-bold text-sm rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full h-12 mt-3 bg-ds-accent hover:bg-ds-accent-strong text-white font-bold text-sm rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? 'Sending...' : 'Send reset instructions'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-[#77738A]">
+        <p className="mt-6 text-center text-xs text-ds-muted">
           Remembered your password?{' '}
-          <Link href="/login" className="font-bold text-[#7C5CFC] hover:text-[#5B3FE8]">
+          <Link href="/login" className="font-bold text-ds-accent hover:text-ds-accent-strong">
             Sign in
           </Link>
         </p>
       </main>
-      <footer className="mt-8 text-center text-xs text-[#77738A]">
+      <footer className="mt-8 text-center text-xs text-ds-muted">
         © 2026 ARAM BTS. Events Beyond Boundaries.
       </footer>
     </div>

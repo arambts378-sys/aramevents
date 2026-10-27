@@ -10,11 +10,8 @@ export function EventOperationsSection() {
     <section
       ref={ref}
       id="operations"
-      className="relative overflow-hidden bg-[#11101A] py-12 text-white select-none sm:py-16 lg:py-24"
+      className="relative overflow-hidden bg-ds-ink py-12 text-white select-none sm:py-16 lg:py-24"
     >
-      {/* Ambient Stage Glow Elements */}
-      <div className="absolute -top-40 right-1/4 w-96 h-96 bg-[#5F3ADD]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 left-10 w-96 h-96 bg-[#573AE4]/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
         {/* Section Header */}
@@ -40,7 +37,7 @@ export function EventOperationsSection() {
             </h2>
 
             <p
-              className={`font-jakarta text-[15px] sm:text-[16px] text-[#C9C4D8] leading-relaxed transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`font-jakarta text-[15px] sm:text-[16px] text-ds-line-strong leading-relaxed transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
@@ -53,7 +50,7 @@ export function EventOperationsSection() {
               isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <span className="text-[11px] text-[#C9C4D8] uppercase tracking-wider font-semibold">
+            <span className="text-[11px] text-ds-line-strong uppercase tracking-wider font-semibold">
               NETWORK PROTOCOL
             </span>
             <span className="px-3 py-1 rounded-md bg-white/5 border border-white/15 text-[#CABEFF] text-[11px] font-mono">
@@ -77,7 +74,7 @@ export function EventOperationsSection() {
                 backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDEr9ruX6EZtJ_fWX4MrTnr09fQox8ii_d2xiQOnAYFoe017D4Q55KHOtMeKPd1jMyYAkpCjw5xcEqfZhqpULJlNhUGUkVhkwqQpXUvJDrdzZnAiLc-F8LDgqQtr-Mk1u00NhHRvH5oCC0xF5bK_suNbpLteQsL8Q88Oxh4HCXqLtpQz1CfhrcFNW7naIlZNKVU-nIkFDtEMlSCQObb1i_pIrQM0iDXBz3RklaHp7d1E7x4jXCfG1v5Hg')`,
               }}
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#11101A] via-[#11101A]/85 to-[#11101A]/70" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ds-ink via-ds-ink/85 to-ds-ink/70" />
 
             {/* Live HUD Telemetry Overlay */}
             <div className="relative z-10 flex flex-col justify-between p-4 sm:p-6 md:min-h-[520px] md:p-10">
@@ -91,7 +88,7 @@ export function EventOperationsSection() {
                     </span>
                   </div>
                   <span className="hidden text-[12px] text-white/30 sm:inline">|</span>
-                  <span className="text-[11px] text-[#C9C4D8] font-mono sm:text-[12px]">
+                  <span className="text-[11px] text-ds-line-strong font-mono sm:text-[12px]">
                     GATE ARRAY: ALPHA 01-08
                   </span>
                 </div>
@@ -104,7 +101,7 @@ export function EventOperationsSection() {
               {/* Main HUD Telemetry Readout Grid */}
               <div className="my-6 grid min-w-0 grid-cols-1 gap-3 font-jakarta sm:grid-cols-2 sm:gap-4 sm:my-8 xl:my-10 xl:grid-cols-4 xl:gap-6">
                 {/* Metric 1 */}
-                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-[#11101A]/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
+                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-ds-ink/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
                   <div className="mb-2 text-[11px] font-semibold leading-snug tracking-wide text-[#E2DEED] sm:tracking-wider">
                     Attendees Present
                   </div>
@@ -120,7 +117,7 @@ export function EventOperationsSection() {
                 </div>
 
                 {/* Metric 2 */}
-                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-[#11101A]/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
+                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-ds-ink/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
                   <div className="mb-2 text-[11px] font-semibold leading-snug tracking-wide text-[#E2DEED] sm:tracking-wider">
                     Checked In Flow
                   </div>
@@ -136,7 +133,7 @@ export function EventOperationsSection() {
                 </div>
 
                 {/* Metric 3 */}
-                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-[#11101A]/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
+                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-ds-ink/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
                   <div className="mb-2 text-[11px] font-semibold leading-snug tracking-wide text-[#E2DEED] sm:tracking-wider">
                     Active Venue Zones
                   </div>
@@ -152,7 +149,7 @@ export function EventOperationsSection() {
                 </div>
 
                 {/* Metric 4 */}
-                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-[#11101A]/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
+                <div className="flex min-w-0 flex-col justify-between rounded-xl border border-white/15 bg-ds-ink/80 p-4 shadow-sm backdrop-blur-sm sm:p-5 xl:bg-white/5 xl:p-6">
                   <div className="mb-2 text-[11px] font-semibold leading-snug tracking-wide text-[#E2DEED] sm:tracking-wider">
                     Current Arrival Rate
                   </div>
@@ -170,14 +167,14 @@ export function EventOperationsSection() {
               {/* Bottom Cue Strip Row */}
               <div className="flex flex-col justify-between gap-3 rounded-xl border border-white/15 bg-black/50 p-3 font-jakarta sm:gap-4 sm:p-4 md:flex-row md:items-center">
                 <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-4 md:w-auto">
-                  <span className="shrink-0 rounded bg-[#5F3ADD] px-2.5 py-1 font-mono text-[11px] font-bold text-white">
+                  <span className="shrink-0 rounded bg-ds-accent px-2.5 py-1 font-mono text-[11px] font-bold text-white">
                     RUN-OF-SHOW
                   </span>
                   <span className="min-w-0 text-[12px] font-medium leading-relaxed text-white">
                     CUE 42 // KEYNOTE OPENING REEL &amp; INTRO LIGHTS
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[11px] font-mono text-[#D8D3E3] sm:text-[12px] md:justify-start">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[11px] font-mono text-ds-line-strong sm:text-[12px] md:justify-start">
                   <span>TIMECODE: 09:59:45.12</span>
                   <span className="text-emerald-400 font-bold flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 live-pulse" />

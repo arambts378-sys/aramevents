@@ -132,7 +132,7 @@ export default function WebsitePreview({
   return (
     <div
       ref={canvasRef}
-      className="preview-canvas flex-1 w-full h-full overflow-y-auto overflow-x-auto bg-[#F7F5FF] p-6 sm:p-8 flex flex-col items-center custom-scrollbar select-text"
+      className="preview-canvas flex-1 w-full h-full overflow-y-auto overflow-x-auto bg-ds-canvas p-6 sm:p-8 flex flex-col items-center custom-scrollbar select-text"
     >
       {/* Visual Sizer Wrapper: exact scaled dimensions for zero clipping & true vertical scrolling */}
       <div
@@ -154,13 +154,13 @@ export default function WebsitePreview({
           }}
           className={`preview-scale-wrapper bg-white shadow-xl transition-all duration-150 flex flex-col ${
             isMobile
-              ? 'rounded-[36px] border-[8px] border-[#17152B] overflow-hidden ring-1 ring-black/20'
-              : 'rounded-xl border border-[#D5D0E5] overflow-hidden'
+              ? 'rounded-[36px] border-[8px] border-ds-ink overflow-hidden ring-1 ring-black/20'
+              : 'rounded-xl border border-ds-line-strong overflow-hidden'
           }`}
         >
           {/* Compact Browser Frame Chrome */}
           {!isMobile ? (
-            <div className="h-9 bg-[#F4F1FB] border-b border-[#E6E2F0] px-3.5 flex items-center justify-between select-none shrink-0">
+            <div className="h-9 bg-ds-accent-soft border-b border-ds-line px-3.5 flex items-center justify-between select-none shrink-0">
               {/* Traffic Lights */}
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-400"></span>
@@ -169,17 +169,17 @@ export default function WebsitePreview({
               </div>
 
               {/* Compact SSL URL Bar */}
-              <div className="flex items-center gap-1.5 px-3 py-0.5 bg-white rounded-md border border-[#E6E2F0] text-[11px] font-mono text-[#77738A] shadow-2xs min-w-[220px] max-w-[340px] justify-center">
+              <div className="flex items-center gap-1.5 px-3 py-0.5 bg-white rounded-md border border-ds-line text-[11px] font-mono text-ds-muted shadow-2xs min-w-[220px] max-w-[340px] justify-center">
                 <span className="material-symbols-outlined text-[13px] text-emerald-600">
                   lock
                 </span>
-                <span className="truncate text-[#17152B] font-medium tracking-tight">
+                <span className="truncate text-ds-ink font-medium tracking-tight">
                   {publicDisplayUrl}
                 </span>
               </div>
 
               {/* Quick Actions */}
-              <div className="flex items-center gap-2 text-[#77738A]">
+              <div className="flex items-center gap-2 text-ds-muted">
                 <button
                   type="button"
                   onClick={() => {
@@ -187,7 +187,7 @@ export default function WebsitePreview({
                       setContentHeight(frameRef.current.offsetHeight);
                     }
                   }}
-                  className="hover:text-[#17152B] transition-colors p-0.5 rounded"
+                  className="hover:text-ds-ink transition-colors p-0.5 rounded"
                   title="Recalculate preview layout"
                 >
                   <span className="material-symbols-outlined text-[15px]">refresh</span>
@@ -196,7 +196,7 @@ export default function WebsitePreview({
                   href={`/events/${publicUrlSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-[#7C5CFC] transition-colors p-0.5 rounded"
+                  className="hover:text-ds-accent transition-colors p-0.5 rounded"
                   title="Open live website in new tab"
                 >
                   <span className="material-symbols-outlined text-[15px]">open_in_new</span>
@@ -205,7 +205,7 @@ export default function WebsitePreview({
             </div>
           ) : (
             /* Mobile Device Top Speaker / Notch & Mini Bar */
-            <div className="bg-[#17152B] pt-2 pb-1.5 px-6 flex flex-col items-center select-none shrink-0">
+            <div className="bg-ds-ink pt-2 pb-1.5 px-6 flex flex-col items-center select-none shrink-0">
               <div className="w-16 h-1 bg-white/20 rounded-full mb-2" />
               <div className="w-full flex items-center justify-between text-white/60 text-[10px] font-mono px-2">
                 <span>9:41</span>
@@ -224,7 +224,7 @@ export default function WebsitePreview({
               backgroundColor: draft.theme?.colors?.background || template.colors.background,
               color: draft.theme?.colors?.text || template.colors.text,
             }}
-            className="w-full text-[#17152B] flex-1 flex flex-col"
+            className="w-full text-ds-ink flex-1 flex flex-col"
           >
             <EventWebsiteRenderer
               event={event}
@@ -237,7 +237,7 @@ export default function WebsitePreview({
 
           {/* Mobile Bottom Home Bar */}
           {isMobile && (
-            <div className="bg-[#17152B] py-2 flex items-center justify-center shrink-0">
+            <div className="bg-ds-ink py-2 flex items-center justify-center shrink-0">
               <div className="w-24 h-1 bg-white/40 rounded-full" />
             </div>
           )}

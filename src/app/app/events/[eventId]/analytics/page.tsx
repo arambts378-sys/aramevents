@@ -153,7 +153,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-w-0 p-4 sm:p-6 md:p-10 max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="min-w-0 p-4 sm:p-6 md:p-10 max-w-[1760px] mx-auto space-y-8 pb-20">
       <div className="flex items-center justify-between">
         <div>
           <Link href={`/app/events/${eventId}`} className="text-primary hover:underline text-sm font-medium mb-2 inline-block">

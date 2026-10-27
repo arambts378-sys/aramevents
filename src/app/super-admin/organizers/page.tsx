@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui';
 import { getPlatformOrganizers } from '@/services/superAdminPortal.server';
 import { OrganizersTableClient } from '@/components/super-admin/OrganizersTableClient';
 
@@ -56,32 +57,25 @@ export default async function SuperAdminOrganizersPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <p className="text-xs font-bold uppercase tracking-wider text-[#7C5CFC]">
-          Platform Administration
-        </p>
-        <h1 className="mt-1 font-space text-2xl sm:text-3xl font-bold tracking-tight text-[#17152B]">
-          Organizer & Workspace Directory
-        </h1>
-        <p className="mt-1 text-sm text-[#77738A]">
-          Supervise tenant workspaces, monitor plan entitlements, and control account suspension.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Platform Administration"
+        title="Organizer & Workspace Directory"
+        description="Supervise tenant workspaces, monitor plan entitlements, and control account suspension."
+      />
 
       {/* Filter Bar */}
-      <section className="bg-white rounded-2xl border border-[#E6E2F0] p-4 sm:p-5 shadow-2xs">
+      <section className="ds-card p-4 sm:p-5">
         <form
           action="/super-admin/organizers"
           method="get"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"
         >
           <div className="lg:col-span-2">
-            <label htmlFor="search-input" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="search-input" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Search
             </label>
             <div className="relative">
-              <span className="material-symbols-outlined text-[18px] text-[#77738A] absolute left-3 top-2.5">
+              <span className="material-symbols-outlined text-[18px] text-ds-muted absolute left-3 top-2.5">
                 search
               </span>
               <input
@@ -90,20 +84,20 @@ export default async function SuperAdminOrganizersPage({
                 type="search"
                 defaultValue={search ?? ''}
                 placeholder="Workspace name, slug, or ID..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+                className="ds-input pl-9 pr-3"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="plan-select" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="plan-select" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Subscription Plan
             </label>
             <select
               id="plan-select"
               name="plan"
               defaultValue={plan ?? 'all'}
-              className="w-full px-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] bg-white outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input"
             >
               <option value="all">All Plans</option>
               <option value="free">Free</option>
@@ -113,14 +107,14 @@ export default async function SuperAdminOrganizersPage({
           </div>
 
           <div>
-            <label htmlFor="status-select" className="block text-xs font-bold uppercase tracking-wider text-[#77738A] mb-1.5">
+            <label htmlFor="status-select" className="block text-xs font-bold uppercase tracking-wider text-ds-muted mb-1.5">
               Account Status
             </label>
             <select
               id="status-select"
               name="status"
               defaultValue={status ?? 'all'}
-              className="w-full px-3 py-2 rounded-xl border border-[#D8D3E3] text-sm text-[#17152B] bg-white outline-none focus:border-[#7C5CFC] focus:ring-2 focus:ring-[#7C5CFC]/20"
+              className="ds-input"
             >
               <option value="all">All Statuses</option>
               <option value="active">Active Only</option>
@@ -131,13 +125,13 @@ export default async function SuperAdminOrganizersPage({
           <div className="flex items-end gap-2">
             <button
               type="submit"
-              className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white text-xs font-bold hover:shadow-md transition-all h-[38px] cursor-pointer"
+              className="flex-1 px-4 py-2 rounded-xl bg-ds-accent text-white text-xs font-bold hover:shadow-md transition-all h-[38px] cursor-pointer"
             >
               Filter
             </button>
             <Link
               href="/super-admin/organizers"
-              className="px-3 py-2 rounded-xl border border-[#E6E2F0] text-[#77738A] hover:bg-[#F6F1FF] text-xs font-semibold h-[38px] flex items-center justify-center transition-colors"
+              className="px-3 py-2 rounded-xl border border-ds-line text-ds-muted hover:bg-ds-subtle text-xs font-semibold h-[38px] flex items-center justify-center transition-colors"
             >
               Reset
             </Link>
@@ -146,14 +140,14 @@ export default async function SuperAdminOrganizersPage({
       </section>
 
       {/* Directory Table */}
-      <section className="bg-white rounded-2xl border border-[#E6E2F0] overflow-hidden shadow-2xs">
+      <section className="ds-card overflow-hidden">
         {items.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto mb-3">
               <span className="material-symbols-outlined text-[24px]">corporate_fare</span>
             </div>
-            <p className="font-space text-base font-bold text-[#17152B]">No workspaces found</p>
-            <p className="mt-1 text-xs text-[#77738A]">
+            <p className="font-space text-base font-bold text-ds-ink">No workspaces found</p>
+            <p className="mt-1 text-xs text-ds-muted">
               Try adjusting your search criteria or plan filters.
             </p>
           </div>
@@ -162,7 +156,7 @@ export default async function SuperAdminOrganizersPage({
             <OrganizersTableClient items={items} />
 
             {/* Pagination */}
-            <div className="p-4 border-t border-[#E6E2F0] flex items-center justify-between text-xs text-[#77738A]">
+            <div className="p-4 border-t border-ds-line flex items-center justify-between text-xs text-ds-muted">
               <span>
                 Showing page {page} of {totalPages} ({totalCount.toLocaleString()} total organizations)
               </span>
@@ -170,10 +164,10 @@ export default async function SuperAdminOrganizersPage({
                 <Link
                   href={buildPageHref(params, page - 1)}
                   aria-disabled={page <= 1}
-                  className={`px-3 py-1.5 rounded-lg border border-[#E6E2F0] font-semibold ${
+                  className={`px-3 py-1.5 rounded-lg border border-ds-line font-semibold ${
                     page <= 1
                       ? 'pointer-events-none opacity-40'
-                      : 'hover:bg-[#F6F1FF] text-[#17152B]'
+                      : 'hover:bg-ds-subtle text-ds-ink'
                   }`}
                 >
                   Previous
@@ -181,10 +175,10 @@ export default async function SuperAdminOrganizersPage({
                 <Link
                   href={buildPageHref(params, page + 1)}
                   aria-disabled={page >= totalPages}
-                  className={`px-3 py-1.5 rounded-lg border border-[#E6E2F0] font-semibold ${
+                  className={`px-3 py-1.5 rounded-lg border border-ds-line font-semibold ${
                     page >= totalPages
                       ? 'pointer-events-none opacity-40'
-                      : 'hover:bg-[#F6F1FF] text-[#17152B]'
+                      : 'hover:bg-ds-subtle text-ds-ink'
                   }`}
                 >
                   Next

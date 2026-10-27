@@ -3,13 +3,13 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="border-t border-[#E6E2F0] bg-white">
+    <footer className="border-t border-ds-line bg-white">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between">
         <div className="text-center md:text-left">
-          <Link href="/" className="text-lg font-bold tracking-tight text-[#17152B]">
-            ARAM <span className="text-[#7C5CFC]">Tickets</span>
+          <Link href="/" className="text-lg font-bold tracking-tight text-ds-ink">
+            ARAM <span className="text-ds-accent">Tickets</span>
           </Link>
-          <p className="mt-2 text-xs text-[#77738A]">
+          <p className="mt-2 text-xs text-ds-muted">
             © 2026 WisRight Technologies. All rights reserved.
           </p>
         </div>
@@ -18,28 +18,28 @@ export function Footer() {
           aria-label="Footer navigation"
           className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
         >
-          <Link href="/#features" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/#features" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Features
           </Link>
-          <Link href="/#event-day" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/#event-day" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Event day
           </Link>
-          <Link href="/pricing" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/pricing" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Pricing
           </Link>
-          <Link href="/contact" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/contact" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Contact
           </Link>
-          <Link href="/login" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/login" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Log in
           </Link>
-          <Link href="/organizer/register" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/organizer/register" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Create account
           </Link>
-          <Link href="/privacy" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/privacy" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="py-1 text-sm text-[#77738A] hover:text-[#17152B]">
+          <Link href="/terms" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Terms and Conditions
           </Link>
         </nav>

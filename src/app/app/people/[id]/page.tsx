@@ -58,8 +58,8 @@ export default function PersonDetailPage() {
   };
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar */}
         <Sidebar
           currentUser={currentUser}
@@ -68,19 +68,19 @@ export default function PersonDetailPage() {
         />
 
         {/* Right Main Content */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 flex flex-col gap-6 overflow-y-auto w-full">
           {/* Top Breadcrumbs */}
           <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-1.5 text-xs text-[#77738A]">
-              <Link href="/app" className="hover:text-[#17152B] transition-colors">
+            <div className="flex items-center gap-1.5 text-xs text-ds-muted">
+              <Link href="/app" className="hover:text-ds-ink transition-colors">
                 Home
               </Link>
               <span>&gt;</span>
-              <Link href="/app/people" className="hover:text-[#17152B] transition-colors">
+              <Link href="/app/people" className="hover:text-ds-ink transition-colors">
                 People
               </Link>
               <span>&gt;</span>
-              <span className="text-[#17152B] font-semibold truncate max-w-[200px]">
+              <span className="text-ds-ink font-semibold truncate max-w-[200px]">
                 {data?.person.fullName || 'Person Details'}
               </span>
             </div>
@@ -95,15 +95,15 @@ export default function PersonDetailPage() {
               onRetry={loadPerson}
             />
           ) : !data ? (
-            <div className="bg-white border border-[#E6E2F0] rounded-2xl p-12 text-center shadow-xs">
-              <h3 className="text-base font-bold text-[#17152B]">Person Not Found</h3>
-              <p className="text-xs text-[#77738A] mt-1">
+            <div className="bg-white border border-ds-line rounded-2xl p-12 text-center shadow-xs">
+              <h3 className="text-base font-bold text-ds-ink">Person Not Found</h3>
+              <p className="text-xs text-ds-muted mt-1">
                 The requested person could not be found in this workspace.
               </p>
               <button
                 type="button"
                 onClick={() => router.push('/app/people')}
-                className="mt-4 px-4 py-2 bg-[#7C5CFC] text-white text-xs font-semibold rounded-xl"
+                className="mt-4 px-4 py-2 bg-ds-accent text-white text-xs font-semibold rounded-xl"
               >
                 Back to Directory
               </button>

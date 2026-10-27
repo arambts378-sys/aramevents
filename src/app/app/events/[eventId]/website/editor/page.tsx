@@ -120,26 +120,26 @@ export default function EventWebsiteEditorPage() {
   // Loading Skeleton State
   if (!isHydrated) {
     return (
-      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex flex-col overflow-hidden antialiased">
-        <header className="h-[68px] bg-white border-b border-[#E6E2F0] px-6 flex items-center justify-between animate-pulse">
-          <div className="h-5 w-48 bg-[#E6E2F0] rounded-md" />
-          <div className="h-8 w-64 bg-[#E6E2F0] rounded-lg" />
-          <div className="h-9 w-32 bg-[#E6E2F0] rounded-lg" />
+      <div className="h-screen bg-ds-canvas text-ds-ink flex flex-col overflow-hidden antialiased">
+        <header className="h-[68px] bg-white border-b border-ds-line px-6 flex items-center justify-between animate-pulse">
+          <div className="h-5 w-48 bg-ds-line rounded-md" />
+          <div className="h-8 w-64 bg-ds-line rounded-lg" />
+          <div className="h-9 w-32 bg-ds-line rounded-lg" />
         </header>
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-[280px] bg-white border-r border-[#E6E2F0] p-4 space-y-3 animate-pulse">
-            <div className="h-5 w-32 bg-[#E6E2F0] rounded" />
+          <div className="w-[280px] bg-white border-r border-ds-line p-4 space-y-3 animate-pulse">
+            <div className="h-5 w-32 bg-ds-line rounded" />
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-10 bg-[#F6F1FF] rounded-lg" />
+              <div key={i} className="h-10 bg-ds-accent-soft rounded-lg" />
             ))}
           </div>
-          <div className="flex-1 bg-[#ECE8F5] p-8 flex items-center justify-center animate-pulse">
-            <div className="w-full max-w-[1000px] h-[550px] bg-white rounded-xl border border-[#E6E2F0]" />
+          <div className="flex-1 bg-ds-line p-8 flex items-center justify-center animate-pulse">
+            <div className="w-full max-w-[1000px] h-[550px] bg-white rounded-xl border border-ds-line" />
           </div>
-          <div className="w-[340px] bg-white border-l border-[#E6E2F0] p-4 space-y-4 animate-pulse">
-            <div className="h-5 w-28 bg-[#E6E2F0] rounded" />
+          <div className="w-[340px] bg-white border-l border-ds-line p-4 space-y-4 animate-pulse">
+            <div className="h-5 w-28 bg-ds-line rounded" />
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-36 bg-[#F6F1FF] rounded-xl" />
+              <div key={i} className="h-36 bg-ds-accent-soft rounded-xl" />
             ))}
           </div>
         </div>
@@ -150,19 +150,19 @@ export default function EventWebsiteEditorPage() {
   // Event Not Found State
   if (!event) {
     return (
-      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex items-center justify-center p-6 antialiased">
-        <div className="max-w-md w-full bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+      <div className="h-screen bg-ds-canvas text-ds-ink flex items-center justify-center p-6 antialiased">
+        <div className="max-w-md w-full bg-white border border-ds-line rounded-2xl p-8 text-center shadow-xs space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto border border-ds-line">
             <span className="material-symbols-outlined text-[24px]">event_busy</span>
           </div>
-          <h1 className="text-[20px] font-bold text-[#17152B] font-space">Event Not Found</h1>
-          <p className="text-[13px] text-[#77738A] font-jakarta">
+          <h1 className="text-[20px] font-bold text-ds-ink font-space">Event Not Found</h1>
+          <p className="text-[13px] text-ds-muted font-jakarta">
             The event for this website editor does not exist or has been removed.
           </p>
           <div className="pt-2">
             <Link
               href="/app/events"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#7C5CFC] hover:bg-[#5B3FE8] text-white text-[13px] font-semibold rounded-lg transition-colors shadow-xs font-jakarta"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-ds-accent hover:bg-ds-accent-strong text-white text-[13px] font-semibold rounded-lg transition-colors shadow-xs font-jakarta"
             >
               <span className="material-symbols-outlined text-[16px]">arrow_back</span>
               <span>Back to Events</span>
@@ -176,9 +176,9 @@ export default function EventWebsiteEditorPage() {
   // Loading Draft state
   if (!draft) {
     return (
-      <div className="h-screen bg-[#F7F5FF] text-[#17152B] flex items-center justify-center p-6 antialiased">
-        <div className="flex items-center gap-3 text-[#77738A] font-jakarta text-[14px]">
-          <span className="material-symbols-outlined animate-spin text-[20px] text-[#7C5CFC]">
+      <div className="h-screen bg-ds-canvas text-ds-ink flex items-center justify-center p-6 antialiased">
+        <div className="flex items-center gap-3 text-ds-muted font-jakarta text-[14px]">
+          <span className="material-symbols-outlined animate-spin text-[20px] text-ds-accent">
             sync
           </span>
           <span>Loading Website Editor...</span>
@@ -396,7 +396,7 @@ export default function EventWebsiteEditorPage() {
   const sortedSections = [...draft.sections].sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <div className="h-screen w-full flex flex-col overflow-hidden bg-[#F7F5FF] text-[#17152B] antialiased select-none font-jakarta">
+    <div className="h-screen w-full flex flex-col overflow-hidden bg-ds-canvas text-ds-ink antialiased select-none font-jakarta">
       {/* 1. TOP EDITOR TOOLBAR (~68px) */}
       <EditorToolbar
         event={event}
@@ -420,14 +420,14 @@ export default function EventWebsiteEditorPage() {
 
       {/* Responsive Panel Switcher for Viewports < 1280px (hidden in expand focus mode) */}
       {!isExpandedPreview && (
-        <div className="xl:hidden flex items-center justify-around border-b border-[#E6E2F0] bg-white px-2 py-1.5 text-[12px] font-semibold shrink-0 z-20">
+        <div className="xl:hidden flex items-center justify-around border-b border-ds-line bg-white px-2 py-1.5 text-[12px] font-semibold shrink-0 z-20">
           <button
             type="button"
             onClick={() => setMobileTab('sections')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
               mobileTab === 'sections'
-                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-ds-accent-soft text-ds-accent'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">view_list</span>
@@ -438,8 +438,8 @@ export default function EventWebsiteEditorPage() {
             onClick={() => setMobileTab('preview')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
               mobileTab === 'preview'
-                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-ds-accent-soft text-ds-accent'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">preview</span>
@@ -450,8 +450,8 @@ export default function EventWebsiteEditorPage() {
             onClick={() => setMobileTab('templates')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-colors ${
               mobileTab === 'templates'
-                ? 'bg-[#F6F1FF] text-[#7C5CFC]'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-ds-accent-soft text-ds-accent'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">palette</span>
@@ -462,7 +462,7 @@ export default function EventWebsiteEditorPage() {
 
       {/* Temporary Success Toast Notification */}
       {saveSuccessNotice && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#17152B] text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-white/10 animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-ds-ink text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-white/10 animate-fade-in">
           <span className="material-symbols-outlined text-[18px] text-emerald-400">
             check_circle
           </span>
@@ -477,21 +477,21 @@ export default function EventWebsiteEditorPage() {
         {/* =================================================================== */}
         {!isExpandedPreview && (
           <aside
-            className={`w-full xl:w-[280px] bg-[#F7F5FF] border-r border-[#E6E2F0] flex flex-col shrink-0 min-h-0 overflow-hidden z-10 transition-all ${
+            className={`w-full xl:w-[280px] bg-ds-canvas border-r border-ds-line flex flex-col shrink-0 min-h-0 overflow-hidden z-10 transition-all ${
               mobileTab === 'sections' ? 'flex' : 'hidden xl:flex'
             }`}
           >
             {/* Header */}
-            <div className="p-3.5 border-b border-[#E6E2F0] bg-white shrink-0">
+            <div className="p-3.5 border-b border-ds-line bg-white shrink-0">
               {activeSectionId ? (
-                <div className="flex items-center gap-1 p-0.5 bg-[#F6F1FF] rounded-lg border border-[#E6E2F0]">
+                <div className="flex items-center gap-1 p-0.5 bg-ds-accent-soft rounded-lg border border-ds-line">
                   <button
                     type="button"
                     onClick={() => setLeftPanelView('sections')}
                     className={`flex-1 py-1 text-center rounded-md text-[11px] font-semibold transition-all ${
                       leftPanelView === 'sections'
-                        ? 'bg-white text-[#7C5CFC] shadow-xs'
-                        : 'text-[#77738A] hover:text-[#17152B]'
+                        ? 'bg-white text-ds-accent shadow-xs'
+                        : 'text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     Sections ({draft.sections.length})
@@ -501,8 +501,8 @@ export default function EventWebsiteEditorPage() {
                     onClick={() => setLeftPanelView('properties')}
                     className={`flex-1 py-1 text-center rounded-md text-[11px] font-semibold transition-all ${
                       leftPanelView === 'properties'
-                        ? 'bg-white text-[#7C5CFC] shadow-xs'
-                        : 'text-[#77738A] hover:text-[#17152B]'
+                        ? 'bg-white text-ds-accent shadow-xs'
+                        : 'text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     Edit: {formatSectionTitle(activeSectionId)}
@@ -511,8 +511,8 @@ export default function EventWebsiteEditorPage() {
               ) : (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <h2 className="text-[14px] font-bold text-[#17152B] font-space">Website Sections</h2>
-                    <span className="text-[11px] font-mono font-semibold text-[#77738A]">
+                    <h2 className="text-[14px] font-bold text-ds-ink font-space">Website Sections</h2>
+                    <span className="text-[11px] font-mono font-semibold text-ds-muted">
                       ({draft.sections.length})
                     </span>
                   </div>
@@ -540,17 +540,17 @@ export default function EventWebsiteEditorPage() {
                         }}
                         className={`h-[46px] rounded-lg flex items-center justify-between px-3 transition-all group cursor-pointer border ${
                           isActive
-                            ? 'bg-[#F0EBFF] border-[#7C5CFC] text-[#7C5CFC] font-semibold shadow-xs'
+                            ? 'bg-ds-accent-soft border-ds-accent text-ds-accent font-semibold shadow-xs'
                             : !isVisible
-                            ? 'bg-white/60 border-[#E6E2F0] text-[#77738A]/70 opacity-60 hover:opacity-100 hover:bg-white'
-                            : 'bg-white border-[#E6E2F0] text-[#17152B] hover:border-[#7C5CFC]/40 hover:bg-white'
+                            ? 'bg-white/60 border-ds-line text-ds-muted/70 opacity-60 hover:opacity-100 hover:bg-white'
+                            : 'bg-white border-ds-line text-ds-ink hover:border-ds-accent/40 hover:bg-white'
                         }`}
                       >
                         {/* Left: Drag / Order Indicator + Name */}
                         <div className="flex items-center gap-2 min-w-0">
                           <span
                             className={`material-symbols-outlined text-[17px] ${
-                              isActive ? 'text-[#7C5CFC]' : 'text-[#c9c4d8] group-hover:text-[#77738A]'
+                              isActive ? 'text-ds-accent' : 'text-ds-line-strong group-hover:text-ds-muted'
                             }`}
                           >
                             drag_indicator
@@ -567,7 +567,7 @@ export default function EventWebsiteEditorPage() {
                                 e.stopPropagation();
                                 setLeftPanelView('properties');
                               }}
-                              className="px-2 py-0.5 text-[11px] font-semibold bg-[#7C5CFC] text-white rounded-md hover:bg-[#5B3FE8] transition-colors flex items-center gap-0.5 shadow-2xs mr-1"
+                              className="px-2 py-0.5 text-[11px] font-semibold bg-ds-accent text-white rounded-md hover:bg-ds-accent-strong transition-colors flex items-center gap-0.5 shadow-2xs mr-1"
                               title="Edit Section Content"
                             >
                               <span className="material-symbols-outlined text-[13px]">edit</span>
@@ -581,7 +581,7 @@ export default function EventWebsiteEditorPage() {
                               handleMoveSection(section.id, 'up');
                             }}
                             disabled={idx === 0}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-[#77738A] hover:text-[#7C5CFC] disabled:opacity-20 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-ds-muted hover:text-ds-accent disabled:opacity-20 transition-opacity"
                             title="Move section up"
                             aria-label="Move section up"
                           >
@@ -594,7 +594,7 @@ export default function EventWebsiteEditorPage() {
                               handleMoveSection(section.id, 'down');
                             }}
                             disabled={idx === sortedSections.length - 1}
-                            className="opacity-0 group-hover:opacity-100 p-0.5 text-[#77738A] hover:text-[#7C5CFC] disabled:opacity-20 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-0.5 text-ds-muted hover:text-ds-accent disabled:opacity-20 transition-opacity"
                             title="Move section down"
                             aria-label="Move section down"
                           >
@@ -608,8 +608,8 @@ export default function EventWebsiteEditorPage() {
                             }}
                             className={`p-0.5 transition-colors ${
                               isVisible
-                                ? 'text-[#77738A] hover:text-[#7C5CFC]'
-                                : 'text-[#c9c4d8] hover:text-[#17152B]'
+                                ? 'text-ds-muted hover:text-ds-accent'
+                                : 'text-ds-line-strong hover:text-ds-ink'
                             }`}
                             title={isVisible ? 'Hide Section' : 'Show Section'}
                             aria-label={isVisible ? 'Hide Section' : 'Show Section'}
@@ -625,8 +625,8 @@ export default function EventWebsiteEditorPage() {
                 </div>
 
                 {/* Left Sidebar Footer */}
-                <div className="p-3 border-t border-[#E6E2F0] bg-white text-center shrink-0">
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-[#77738A]">
+                <div className="p-3 border-t border-ds-line bg-white text-center shrink-0">
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-ds-muted">
                     <span className="material-symbols-outlined text-[14px]">touch_app</span>
                     <span>Click section to highlight &amp; scroll</span>
                   </div>
@@ -634,16 +634,16 @@ export default function EventWebsiteEditorPage() {
               </>
             ) : (
               <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white min-h-0">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E6E2F0]">
+                <div className="flex items-center justify-between pb-3 border-b border-ds-line">
                   <button
                     type="button"
                     onClick={() => setLeftPanelView('sections')}
-                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-[#7C5CFC] hover:text-[#5B3FE8] transition-colors"
+                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-ds-accent hover:text-ds-accent-strong transition-colors"
                   >
                     <span className="material-symbols-outlined text-[15px]">arrow_back</span>
                     <span>All Sections</span>
                   </button>
-                  <span className="text-[11px] font-mono font-semibold text-[#77738A] uppercase">
+                  <span className="text-[11px] font-mono font-semibold text-ds-muted uppercase">
                     {formatSectionTitle(activeSectionId || '')}
                   </span>
                 </div>
@@ -687,7 +687,7 @@ export default function EventWebsiteEditorPage() {
         {/* =================================================================== */}
         {!isExpandedPreview && (
           <aside
-            className={`w-full xl:w-[340px] bg-white border-l border-[#E6E2F0] flex flex-col shrink-0 min-h-0 overflow-hidden z-10 ${
+            className={`w-full xl:w-[340px] bg-white border-l border-ds-line flex flex-col shrink-0 min-h-0 overflow-hidden z-10 ${
               mobileTab === 'templates' ? 'flex' : 'hidden xl:flex'
             }`}
           >
@@ -705,50 +705,50 @@ export default function EventWebsiteEditorPage() {
       {/* Template Switch Confirmation Dialog */}
       {pendingTemplateId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#E6E2F0] space-y-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-ds-line space-y-4">
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-full bg-ds-accent-soft text-ds-accent flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-[22px]">auto_awesome_mosaic</span>
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-[#17152B] font-space leading-snug">
+                <h3 className="text-base font-bold text-ds-ink font-space leading-snug">
                   Switching templates will apply the recommended section layout.
                 </h3>
-                <p className="text-xs text-[#77738A] font-jakarta leading-relaxed">
+                <p className="text-xs text-ds-muted font-jakarta leading-relaxed">
                   Your event content will be preserved. Existing sections that are not part of this template remain available.
                 </p>
               </div>
             </div>
 
-            <div className="p-3 bg-[#F6F1FF]/60 rounded-xl border border-[#E6E2F0] text-xs font-mono space-y-1.5">
-              <div className="text-[11px] font-bold text-[#17152B] flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#7C5CFC]"></span>
+            <div className="p-3 bg-ds-accent-soft/60 rounded-xl border border-ds-line text-xs font-mono space-y-1.5">
+              <div className="text-[11px] font-bold text-ds-ink flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-ds-accent"></span>
                 <span>Template: {templates.find((t) => t.id === pendingTemplateId)?.name}</span>
               </div>
-              <div className="text-[10px] text-[#77738A] leading-relaxed">
+              <div className="text-[10px] text-ds-muted leading-relaxed">
                 Recommended Order: {templates.find((t) => t.id === pendingTemplateId)?.defaultSections.map((s) => s.replace('_', ' ')).join(' → ')}
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E2F0]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-ds-line">
               <button
                 type="button"
                 onClick={() => setPendingTemplateId(null)}
-                className="px-3.5 py-2 text-xs font-semibold text-[#77738A] hover:text-[#17152B] hover:bg-gray-100 rounded-lg transition-colors"
+                className="px-3.5 py-2 text-xs font-semibold text-ds-muted hover:text-ds-ink hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => applyTemplateChange(pendingTemplateId, false)}
-                className="px-3.5 py-2 text-xs font-semibold text-[#7C5CFC] bg-[#F6F1FF] hover:bg-[#EAE2FD] rounded-lg transition-colors border border-[#7C5CFC]/20"
+                className="px-3.5 py-2 text-xs font-semibold text-ds-accent bg-ds-accent-soft hover:bg-ds-subtle rounded-lg transition-colors border border-ds-accent/20"
               >
                 Keep Current Layout
               </button>
               <button
                 type="button"
                 onClick={() => applyTemplateChange(pendingTemplateId, true)}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#7C5CFC] hover:bg-[#6847F3] rounded-lg shadow-xs transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-white bg-ds-accent hover:bg-ds-accent rounded-lg shadow-xs transition-colors"
               >
                 Apply Recommended Layout
               </button>

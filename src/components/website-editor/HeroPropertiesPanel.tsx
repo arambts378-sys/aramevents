@@ -47,12 +47,12 @@ export default function HeroPropertiesPanel({ section, updateSection }: { sectio
         
         {content.image ? (
           <div className="space-y-2 border rounded p-2 bg-gray-50">
-            <span className="text-xs bg-[#7A1F3D] text-white px-2 py-0.5 rounded">Event flyer</span>
+            <span className="text-xs bg-ds-accent text-white px-2 py-0.5 rounded">Event flyer</span>
             <img src={content.image} alt="Hero Flyer Preview" className="w-full h-32 object-contain bg-gray-200 rounded" />
             <div className="flex justify-between gap-2 pt-2">
               <button 
                 onClick={() => fileInputRef.current?.click()} 
-                className="flex-1 px-2 py-1.5 text-xs font-semibold text-[#7A1F3D] border border-[#7A1F3D] rounded hover:bg-[#7A1F3D]/10"
+                className="flex-1 px-2 py-1.5 text-xs font-semibold text-ds-accent border border-ds-accent rounded hover:bg-ds-accent/10"
                 disabled={uploading}
               >
                 {uploading ? 'Uploading...' : 'Replace Image'}
@@ -69,7 +69,7 @@ export default function HeroPropertiesPanel({ section, updateSection }: { sectio
           <div className="border border-dashed p-4 rounded text-center">
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 text-sm font-semibold text-[#7A1F3D] bg-[#7A1F3D]/10 rounded hover:bg-[#7A1F3D]/20"
+              className="px-4 py-2 text-sm font-semibold text-ds-accent bg-ds-accent/10 rounded hover:bg-ds-accent/20"
               disabled={uploading}
             >
               {uploading ? 'Uploading...' : 'Upload Hero Image'}

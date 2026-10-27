@@ -302,8 +302,8 @@ export default function OrganizerTicketsPage() {
       case 'inactive':
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F6F1FF] border border-[#E6E2F0] text-[#77738A] font-mono text-[11px] font-semibold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#77738A]"></span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-ds-accent-soft border border-ds-line text-ds-muted font-mono text-[11px] font-semibold uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-ds-muted"></span>
             Inactive
           </span>
         );
@@ -330,25 +330,25 @@ export default function OrganizerTicketsPage() {
   // Loading Skeleton
   if (!isHydrated || loading) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+      <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+          <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
             <div className="w-full space-y-8 animate-pulse">
-              <div className="h-5 w-32 bg-[#E6E2F0] rounded-md" />
+              <div className="h-5 w-32 bg-ds-line rounded-md" />
               <div className="flex justify-between items-end">
                 <div className="space-y-2">
-                  <div className="h-10 w-72 bg-[#E6E2F0] rounded-xl" />
-                  <div className="h-4 w-96 bg-[#E6E2F0] rounded" />
+                  <div className="h-10 w-72 bg-ds-line rounded-xl" />
+                  <div className="h-4 w-96 bg-ds-line rounded" />
                 </div>
-                <div className="h-10 w-36 bg-[#E6E2F0] rounded-xl" />
+                <div className="h-10 w-36 bg-ds-line rounded-xl" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-28 bg-white border border-[#E6E2F0] rounded-2xl" />
+                  <div key={i} className="h-28 bg-white border border-ds-line rounded-2xl" />
                 ))}
               </div>
-              <div className="h-96 bg-white border border-[#E6E2F0] rounded-2xl" />
+              <div className="h-96 bg-white border border-ds-line rounded-2xl" />
             </div>
           </main>
         </div>
@@ -359,17 +359,17 @@ export default function OrganizerTicketsPage() {
   // Event Not Found State
   if (!event) {
     return (
-      <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-        <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+      <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+        <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
           <Sidebar currentUser={currentUser} />
-          <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen p-6 flex items-center justify-center w-full">
-            <div className="max-w-md w-full bg-white border border-[#E6E2F0] rounded-2xl p-8 text-center shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+          <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen p-6 flex items-center justify-center w-full">
+            <div className="max-w-md w-full bg-white border border-ds-line rounded-2xl p-8 text-center shadow-xs space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto border border-ds-line">
                 <span className="material-symbols-outlined text-[24px]">event_busy</span>
               </div>
-              <h2 className="text-xl font-bold font-space text-[#17152B]">Event Not Found</h2>
-              <p className="text-sm text-[#77738A] font-jakarta">The requested event could not be located in this workspace.</p>
-              <Link href="/app/events" className="inline-flex items-center gap-2 px-4 py-2 bg-[#7C5CFC] text-white text-sm font-semibold rounded-xl hover:bg-[#5B3FE8] transition-colors">
+              <h2 className="text-xl font-bold font-space text-ds-ink">Event Not Found</h2>
+              <p className="text-sm text-ds-muted font-jakarta">The requested event could not be located in this workspace.</p>
+              <Link href="/app/events" className="inline-flex items-center gap-2 px-4 py-2 bg-ds-accent text-white text-sm font-semibold rounded-xl hover:bg-ds-accent-strong transition-colors">
                 Back to Events
               </Link>
             </div>
@@ -380,8 +380,8 @@ export default function OrganizerTicketsPage() {
   }
 
   return (
-    <div className="h-full bg-[#F7F5FF] text-[#17152B] antialiased min-h-screen w-full">
-      <div className="min-h-screen flex flex-row w-full bg-[#F7F5FF]">
+    <div className="h-full bg-ds-canvas text-ds-ink antialiased min-h-screen w-full">
+      <div className="min-h-screen flex flex-row w-full bg-ds-canvas">
         {/* Left Persistent Sidebar (230px) */}
         <Sidebar
           currentUser={currentUser}
@@ -390,7 +390,7 @@ export default function OrganizerTicketsPage() {
         />
 
         {/* Right Main Content Area */}
-        <main className="flex-1 min-w-0 bg-[#F7F5FF] min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
+        <main className="flex-1 min-w-0 bg-ds-canvas min-h-screen px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 overflow-y-auto w-full">
           <div className="w-full space-y-8">
             
             {/* 1. Top Navigation & Eyebrow */}
@@ -398,7 +398,7 @@ export default function OrganizerTicketsPage() {
               <div className="flex items-center justify-between">
                 <Link
                   href={`/app/events/${eventId}`}
-                  className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-[#77738A] hover:text-[#7C5CFC] transition-colors group font-jakarta"
+                  className="inline-flex items-center gap-1.5 font-semibold text-[13px] text-ds-muted hover:text-ds-accent transition-colors group font-jakarta"
                 >
                   <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-150">
                     arrow_back
@@ -410,7 +410,7 @@ export default function OrganizerTicketsPage() {
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(true)}
-                  className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#17152B] bg-white border border-[#E6E2F0] rounded-lg shadow-xs"
+                  className="md:hidden flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-ds-ink bg-white border border-ds-line rounded-lg shadow-xs"
                   aria-label="Open navigation menu"
                 >
                   <span className="material-symbols-outlined text-[16px]">menu</span>
@@ -422,14 +422,14 @@ export default function OrganizerTicketsPage() {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pb-1">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-[#77738A]">
+                    <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-ds-muted">
                       EVENT WORKSPACE · {event.name}
                     </span>
                   </div>
-                  <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-[#17152B] leading-none font-space">
+                  <h1 className="text-[32px] md:text-[40px] tracking-tight font-bold text-ds-ink leading-none font-space">
                     TICKETS &amp; PRICING
                   </h1>
-                  <p className="text-[14px] text-[#77738A] font-jakarta">
+                  <p className="text-[14px] text-ds-muted font-jakarta">
                     Create ticket types, set pricing and control availability for your event.
                   </p>
                 </div>
@@ -442,8 +442,8 @@ export default function OrganizerTicketsPage() {
                     title={isMigrationPending ? 'Database migration pending: 20261012000000_tickets_and_pricing.sql' : 'Create Ticket'}
                     className={`inline-flex items-center gap-2 px-5 h-11 rounded-xl font-semibold text-[13px] transition-colors shadow-xs active:scale-[0.99] font-jakarta ${
                       isMigrationPending
-                        ? 'bg-[#E6E2F0] text-[#77738A] cursor-not-allowed hover:bg-[#DDD8E8]'
-                        : 'bg-[#7C5CFC] text-white hover:bg-[#5B3FE8] cursor-pointer'
+                        ? 'bg-ds-line text-ds-muted cursor-not-allowed hover:bg-ds-line-strong'
+                        : 'bg-ds-accent text-white hover:bg-ds-accent-strong cursor-pointer'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">add</span>
@@ -470,17 +470,17 @@ export default function OrganizerTicketsPage() {
 
             {/* Migration Pending Notice */}
             {isMigrationPending && (
-              <div className="p-5 bg-[#F7F5FF] border border-[#E6E2F0] rounded-2xl text-[#17152B] font-jakarta space-y-2 shadow-xs">
-                <div className="flex items-center gap-2 font-bold text-[14px] text-[#17152B]">
-                  <span className="material-symbols-outlined text-[#7C5CFC] text-[20px]">database</span>
+              <div className="p-5 bg-ds-canvas border border-ds-line rounded-2xl text-ds-ink font-jakarta space-y-2 shadow-xs">
+                <div className="flex items-center gap-2 font-bold text-[14px] text-ds-ink">
+                  <span className="material-symbols-outlined text-ds-accent text-[20px]">database</span>
                   <span>Database Migration Notice</span>
                 </div>
-                <p className="text-[13px] text-[#77738A] leading-relaxed">
-                  The <code className="bg-white border border-[#E6E2F0] px-1.5 py-0.5 rounded text-xs font-mono font-bold text-[#17152B]">public.event_ticket_types</code> table has not yet been executed on the remote database.
+                <p className="text-[13px] text-ds-muted leading-relaxed">
+                  The <code className="bg-white border border-ds-line px-1.5 py-0.5 rounded text-xs font-mono font-bold text-ds-ink">public.event_ticket_types</code> table has not yet been executed on the remote database.
                 </p>
-                <div className="flex items-center gap-2 text-[12px] text-[#77738A] pt-0.5">
+                <div className="flex items-center gap-2 text-[12px] text-ds-muted pt-0.5">
                   <span>Migration file:</span>
-                  <code className="bg-white border border-[#E6E2F0] px-2 py-0.5 rounded font-mono font-bold text-[#7C5CFC]">
+                  <code className="bg-white border border-ds-line px-2 py-0.5 rounded font-mono font-bold text-ds-accent">
                     20261012000000_tickets_and_pricing.sql
                   </code>
                 </div>
@@ -490,25 +490,25 @@ export default function OrganizerTicketsPage() {
             {/* 2. Summary Cards (4 Cards) */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {/* Card 1: Total Ticket Types */}
-              <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+              <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                     Total Ticket Types
                   </span>
-                  <span className="material-symbols-outlined text-[20px] text-[#7C5CFC]">sell</span>
+                  <span className="material-symbols-outlined text-[20px] text-ds-accent">sell</span>
                 </div>
-                <div className="text-[28px] font-bold text-[#17152B] font-space leading-tight">
+                <div className="text-[28px] font-bold text-ds-ink font-space leading-tight">
                   {summary.totalTypes}
                 </div>
-                <p className="text-[12px] text-[#77738A] font-jakarta">
+                <p className="text-[12px] text-ds-muted font-jakarta">
                   Active &amp; draft tiers
                 </p>
               </div>
 
               {/* Card 2: Tickets Sold */}
-              <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+              <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                     Tickets Sold
                   </span>
                   <span className="material-symbols-outlined text-[20px] text-emerald-600">confirmation_number</span>
@@ -516,58 +516,58 @@ export default function OrganizerTicketsPage() {
                 <div className="text-[28px] font-bold text-emerald-700 font-space leading-tight">
                   {summary.ticketsSold}
                 </div>
-                <p className="text-[12px] text-[#77738A] font-jakarta">
+                <p className="text-[12px] text-ds-muted font-jakarta">
                   Confirmed attendee passes
                 </p>
               </div>
 
               {/* Card 3: Tickets Remaining */}
-              <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+              <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                     Tickets Remaining
                   </span>
-                  <span className="material-symbols-outlined text-[20px] text-[#7C5CFC]">inventory_2</span>
+                  <span className="material-symbols-outlined text-[20px] text-ds-accent">inventory_2</span>
                 </div>
-                <div className="text-[28px] font-bold text-[#17152B] font-space leading-tight">
+                <div className="text-[28px] font-bold text-ds-ink font-space leading-tight">
                   {summary.ticketsRemaining}
                 </div>
-                <p className="text-[12px] text-[#77738A] font-jakarta">
+                <p className="text-[12px] text-ds-muted font-jakarta">
                   Available for booking
                 </p>
               </div>
 
               {/* Card 4: Revenue (Real calculated revenue only: ₹0) */}
-              <div className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs space-y-2">
+              <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                     Revenue
                   </span>
                   <span className="material-symbols-outlined text-[20px] text-zinc-500">payments</span>
                 </div>
-                <div className="text-[28px] font-bold text-[#17152B] font-space leading-tight">
+                <div className="text-[28px] font-bold text-ds-ink font-space leading-tight">
                   {summary.revenueDisplay}
                 </div>
-                <p className="text-[12px] text-[#77738A] font-jakarta">
+                <p className="text-[12px] text-ds-muted font-jakarta">
                   {summary.revenueNotice}
                 </p>
               </div>
             </section>
 
             {/* 3. Payment Gateway Configuration Status Notice */}
-            <section className="bg-white border border-[#E6E2F0] rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <section className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center shrink-0 border border-[#E6E2F0]/60">
+                <div className="w-10 h-10 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center shrink-0 border border-ds-line/60">
                   <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[15px] font-bold text-[#17152B] font-space">Payment Configuration</h3>
+                    <h3 className="text-[15px] font-bold text-ds-ink font-space">Payment Configuration</h3>
                     <span className="px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600 font-mono text-[10px] font-semibold uppercase tracking-wider">
                       Not Configured
                     </span>
                   </div>
-                  <p className="text-[13px] text-[#77738A] font-jakarta leading-relaxed">
+                  <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
                     Online payment processing is not configured for this event. Free tickets can be booked immediately. Paid ticket checkout remains safely blocked until a payment provider is connected.
                   </p>
                 </div>
@@ -575,15 +575,15 @@ export default function OrganizerTicketsPage() {
             </section>
 
             {/* 4. Ticket Types List / Table */}
-            <section className="bg-white border border-[#E6E2F0] rounded-2xl shadow-xs overflow-hidden">
-              <div className="p-6 border-b border-[#E6E2F0] flex items-center justify-between">
+            <section className="bg-white border border-ds-line rounded-2xl shadow-xs overflow-hidden">
+              <div className="p-6 border-b border-ds-line flex items-center justify-between">
                 <div>
-                  <h2 className="text-[18px] font-bold text-[#17152B] font-space">Ticket Types</h2>
-                  <p className="text-[13px] text-[#77738A] font-jakarta">
+                  <h2 className="text-[18px] font-bold text-ds-ink font-space">Ticket Types</h2>
+                  <p className="text-[13px] text-ds-muted font-jakarta">
                     Manage pricing, quantities, sales periods and visibility.
                   </p>
                 </div>
-                <span className="text-[12px] font-bold font-mono text-[#77738A] bg-[#F7F5FF] px-2.5 py-1 rounded-lg border border-[#E6E2F0]">
+                <span className="text-[12px] font-bold font-mono text-ds-muted bg-ds-canvas px-2.5 py-1 rounded-lg border border-ds-line">
                   {tickets.length} {tickets.length === 1 ? 'tier' : 'tiers'}
                 </span>
               </div>
@@ -591,12 +591,12 @@ export default function OrganizerTicketsPage() {
               {tickets.length === 0 ? (
                 /* Empty State */
                 <div className="py-20 px-6 text-center space-y-4 max-w-md mx-auto">
-                  <div className="w-14 h-14 rounded-2xl bg-[#F6F1FF] text-[#7C5CFC] flex items-center justify-center mx-auto border border-[#E6E2F0]">
+                  <div className="w-14 h-14 rounded-2xl bg-ds-accent-soft text-ds-accent flex items-center justify-center mx-auto border border-ds-line">
                     <span className="material-symbols-outlined text-[28px]">sell</span>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-[18px] font-bold text-[#17152B] font-space">No ticket types yet</h3>
-                    <p className="text-[13px] text-[#77738A] font-jakarta leading-relaxed">
+                    <h3 className="text-[18px] font-bold text-ds-ink font-space">No ticket types yet</h3>
+                    <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
                       Create your first ticket type to start accepting registrations. You can offer free or paid tiers with custom quotas and sales schedules.
                     </p>
                   </div>
@@ -607,8 +607,8 @@ export default function OrganizerTicketsPage() {
                     title={isMigrationPending ? 'Database migration pending: 20261012000000_tickets_and_pricing.sql' : 'Create Ticket'}
                     className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-[13px] transition-colors shadow-xs ${
                       isMigrationPending
-                        ? 'bg-[#E6E2F0] text-[#77738A] cursor-not-allowed hover:bg-[#DDD8E8]'
-                        : 'bg-[#7C5CFC] text-white hover:bg-[#5B3FE8] cursor-pointer'
+                        ? 'bg-ds-line text-ds-muted cursor-not-allowed hover:bg-ds-line-strong'
+                        : 'bg-ds-accent text-white hover:bg-ds-accent-strong cursor-pointer'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">add</span>
@@ -622,7 +622,7 @@ export default function OrganizerTicketsPage() {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-[#FAF9FF] border-b border-[#E6E2F0] text-[11px] font-bold text-[#77738A] uppercase tracking-wider font-jakarta">
+                        <tr className="bg-ds-subtle border-b border-ds-line text-[11px] font-bold text-ds-muted uppercase tracking-wider font-jakarta">
                           <th className="px-6 py-3.5">Ticket Name</th>
                           <th className="px-6 py-3.5">Type &amp; Price</th>
                           <th className="px-6 py-3.5">Inventory</th>
@@ -632,16 +632,16 @@ export default function OrganizerTicketsPage() {
                           <th className="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E6E2F0] text-[13px] font-jakarta">
+                      <tbody className="divide-y divide-ds-line text-[13px] font-jakarta">
                         {tickets.map((ticket) => (
-                          <tr key={ticket.id} className="hover:bg-[#FAF9FF]/60 transition-colors">
+                          <tr key={ticket.id} className="hover:bg-ds-subtle/60 transition-colors">
                             {/* Ticket Name */}
                             <td className="px-6 py-4">
-                              <div className="font-bold text-[#17152B] font-space text-[14px]">
+                              <div className="font-bold text-ds-ink font-space text-[14px]">
                                 {ticket.name}
                               </div>
                               {ticket.description && (
-                                <div className="text-[12px] text-[#77738A] truncate max-w-xs mt-0.5" title={ticket.description}>
+                                <div className="text-[12px] text-ds-muted truncate max-w-xs mt-0.5" title={ticket.description}>
                                   {ticket.description}
                                 </div>
                               )}
@@ -649,7 +649,7 @@ export default function OrganizerTicketsPage() {
 
                             {/* Type & Price */}
                             <td className="px-6 py-4">
-                              <div className="font-bold text-[#17152B] font-mono text-[14px]">
+                              <div className="font-bold text-ds-ink font-mono text-[14px]">
                                 {formatPaiseToINR(ticket.price_amount)}
                               </div>
                               <span className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded mt-0.5 ${
@@ -662,19 +662,19 @@ export default function OrganizerTicketsPage() {
                             {/* Inventory */}
                             <td className="px-6 py-4">
                               <div className="space-y-1">
-                                <div className="flex items-center gap-1.5 text-[12px] text-[#17152B]">
+                                <div className="flex items-center gap-1.5 text-[12px] text-ds-ink">
                                   <span className="font-semibold">{ticket.quantity_sold || 0}</span>
-                                  <span className="text-[#77738A]">/</span>
+                                  <span className="text-ds-muted">/</span>
                                   <span className="font-semibold">{ticket.quantity_total} sold</span>
                                 </div>
-                                <div className="text-[11px] text-[#77738A]">
+                                <div className="text-[11px] text-ds-muted">
                                   {ticket.quantity_remaining || 0} remaining
                                 </div>
                               </div>
                             </td>
 
                             {/* Sales Period */}
-                            <td className="px-6 py-4 text-[12px] text-[#77738A]">
+                            <td className="px-6 py-4 text-[12px] text-ds-muted">
                               {formatSalesPeriod(ticket.sales_start_at, ticket.sales_end_at)}
                             </td>
 
@@ -701,7 +701,7 @@ export default function OrganizerTicketsPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleOpenEditModal(ticket)}
-                                  className="p-1.5 text-[#77738A] hover:text-[#7C5CFC] hover:bg-[#F6F1FF] rounded-lg transition-colors"
+                                  className="p-1.5 text-ds-muted hover:text-ds-accent hover:bg-ds-subtle rounded-lg transition-colors"
                                   title="Edit Ticket"
                                   aria-label={`Edit ${ticket.name}`}
                                 >
@@ -710,7 +710,7 @@ export default function OrganizerTicketsPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleToggleActive(ticket)}
-                                  className="p-1.5 text-[#77738A] hover:text-[#17152B] hover:bg-[#F6F1FF] rounded-lg transition-colors"
+                                  className="p-1.5 text-ds-muted hover:text-ds-ink hover:bg-ds-subtle rounded-lg transition-colors"
                                   title={ticket.is_active ? 'Deactivate Ticket' : 'Activate Ticket'}
                                   aria-label={ticket.is_active ? `Deactivate ${ticket.name}` : `Activate ${ticket.name}`}
                                 >
@@ -721,7 +721,7 @@ export default function OrganizerTicketsPage() {
                                 <button
                                   type="button"
                                   onClick={() => setDeleteModalTicket(ticket)}
-                                  className="p-1.5 text-[#77738A] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                  className="p-1.5 text-ds-muted hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                   title="Delete / Deactivate Ticket"
                                   aria-label={`Delete or deactivate ${ticket.name}`}
                                 >
@@ -736,40 +736,40 @@ export default function OrganizerTicketsPage() {
                   </div>
 
                   {/* Mobile Stacked Cards */}
-                  <div className="md:hidden divide-y divide-[#E6E2F0]">
+                  <div className="md:hidden divide-y divide-ds-line">
                     {tickets.map((ticket) => (
                       <div key={ticket.id} className="p-5 space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h3 className="font-bold text-[#17152B] font-space text-[16px]">{ticket.name}</h3>
+                            <h3 className="font-bold text-ds-ink font-space text-[16px]">{ticket.name}</h3>
                             {ticket.description && (
-                              <p className="text-[12px] text-[#77738A] mt-0.5">{ticket.description}</p>
+                              <p className="text-[12px] text-ds-muted mt-0.5">{ticket.description}</p>
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-[#17152B] font-mono text-[16px]">
+                            <div className="font-bold text-ds-ink font-mono text-[16px]">
                               {formatPaiseToINR(ticket.price_amount)}
                             </div>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#77738A]">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-ds-muted">
                               {ticket.ticket_type}
                             </span>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 text-[12px] bg-[#FAF9FF] p-3 rounded-xl border border-[#E6E2F0]">
+                        <div className="grid grid-cols-2 gap-3 text-[12px] bg-ds-subtle p-3 rounded-xl border border-ds-line">
                           <div>
-                            <span className="text-[#77738A] block">Inventory:</span>
-                            <span className="font-semibold text-[#17152B]">
+                            <span className="text-ds-muted block">Inventory:</span>
+                            <span className="font-semibold text-ds-ink">
                               {ticket.quantity_sold || 0} / {ticket.quantity_total} sold
                             </span>
                           </div>
                           <div>
-                            <span className="text-[#77738A] block">Remaining:</span>
-                            <span className="font-semibold text-[#17152B]">{ticket.quantity_remaining || 0}</span>
+                            <span className="text-ds-muted block">Remaining:</span>
+                            <span className="font-semibold text-ds-ink">{ticket.quantity_remaining || 0}</span>
                           </div>
                           <div className="col-span-2">
-                            <span className="text-[#77738A] block">Sales Period:</span>
-                            <span className="font-medium text-[#17152B]">
+                            <span className="text-ds-muted block">Sales Period:</span>
+                            <span className="font-medium text-ds-ink">
                               {formatSalesPeriod(ticket.sales_start_at, ticket.sales_end_at)}
                             </span>
                           </div>
@@ -778,7 +778,7 @@ export default function OrganizerTicketsPage() {
                         <div className="flex items-center justify-between pt-1">
                           <div className="flex items-center gap-2">
                             {renderStatusBadge(ticket.derived_status)}
-                            <span className="text-[11px] font-semibold text-[#77738A] capitalize">
+                            <span className="text-[11px] font-semibold text-ds-muted capitalize">
                               {ticket.visibility}
                             </span>
                           </div>
@@ -787,7 +787,7 @@ export default function OrganizerTicketsPage() {
                             <button
                               type="button"
                               onClick={() => handleOpenEditModal(ticket)}
-                              className="px-3 py-1.5 bg-white border border-[#E6E2F0] text-[#17152B] rounded-lg text-xs font-semibold hover:border-[#7C5CFC]"
+                              className="px-3 py-1.5 bg-white border border-ds-line text-ds-ink rounded-lg text-xs font-semibold hover:border-ds-accent"
                             >
                               Edit
                             </button>
@@ -817,17 +817,17 @@ export default function OrganizerTicketsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">
           {isMigrationPending ? (
             /* Migration Setup Required Notice Dialog */
-            <div className="bg-white border border-[#E6E2F0] rounded-2xl w-full max-w-lg shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-[#E6E2F0] pb-4">
+            <div className="bg-white border border-ds-line rounded-2xl w-full max-w-lg shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between border-b border-ds-line pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
                     <span className="material-symbols-outlined text-[22px]">database</span>
                   </div>
                   <div>
-                    <h2 className="text-[18px] font-bold text-[#17152B] font-space">
+                    <h2 className="text-[18px] font-bold text-ds-ink font-space">
                       DATABASE SETUP REQUIRED
                     </h2>
-                    <p className="text-[12px] text-[#77738A] font-jakarta">
+                    <p className="text-[12px] text-ds-muted font-jakarta">
                       Ticket database table not initialized
                     </p>
                   </div>
@@ -835,21 +835,21 @@ export default function OrganizerTicketsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="text-[#77738A] hover:text-[#17152B] p-1.5 rounded-lg"
+                  className="text-ds-muted hover:text-ds-ink p-1.5 rounded-lg"
                   aria-label="Close modal"
                 >
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
 
-              <div className="space-y-3 font-jakarta text-[13px] text-[#77738A] leading-relaxed">
+              <div className="space-y-3 font-jakarta text-[13px] text-ds-muted leading-relaxed">
                 <p>
                   The ticket database has not been initialized for this environment.
                 </p>
-                <p className="font-semibold text-[#17152B]">
+                <p className="font-semibold text-ds-ink">
                   Apply migration:
                 </p>
-                <div className="p-3 bg-[#FAF9FF] border border-[#E6E2F0] rounded-xl font-mono text-[12px] font-bold text-[#17152B] select-all">
+                <div className="p-3 bg-ds-subtle border border-ds-line rounded-xl font-mono text-[12px] font-bold text-ds-ink select-all">
                   20261012000000_tickets_and_pricing.sql
                 </div>
                 <p>
@@ -857,32 +857,32 @@ export default function OrganizerTicketsPage() {
                 </p>
               </div>
 
-              <div className="flex justify-end pt-2 border-t border-[#E6E2F0]">
+              <div className="flex justify-end pt-2 border-t border-ds-line">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-5 py-2.5 bg-white border border-[#E6E2F0] hover:border-[#7C5CFC] text-[#17152B] font-semibold text-[13px] rounded-xl transition-colors font-jakarta cursor-pointer"
+                  className="px-5 py-2.5 bg-white border border-ds-line hover:border-ds-accent text-ds-ink font-semibold text-[13px] rounded-xl transition-colors font-jakarta cursor-pointer"
                 >
                   Close
                 </button>
               </div>
             </div>
           ) : (
-            <div className="bg-white border border-[#E6E2F0] rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white border border-ds-line rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-150">
               {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-[#E6E2F0] pb-4">
+              <div className="flex items-center justify-between border-b border-ds-line pb-4">
                 <div>
-                  <h2 className="text-[20px] font-bold text-[#17152B] font-space">
+                  <h2 className="text-[20px] font-bold text-ds-ink font-space">
                     {editingTicket ? 'Edit Ticket Type' : 'Create Ticket Type'}
                   </h2>
-                  <p className="text-[13px] text-[#77738A] font-jakarta">
+                  <p className="text-[13px] text-ds-muted font-jakarta">
                     Configure ticket pricing, sales period and purchase rules.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="text-[#77738A] hover:text-[#17152B] p-1.5 rounded-lg"
+                  className="text-ds-muted hover:text-ds-ink p-1.5 rounded-lg"
                   aria-label="Close modal"
                 >
                   <span className="material-symbols-outlined text-[20px]">close</span>
@@ -901,12 +901,12 @@ export default function OrganizerTicketsPage() {
               <form onSubmit={handleSubmitForm} className="space-y-5 font-jakarta">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
                   Basic Information
                 </h3>
 
                 <div className="space-y-1">
-                  <label className="text-[13px] font-semibold text-[#17152B] block">
+                  <label className="text-[13px] font-semibold text-ds-ink block">
                     Ticket Name *
                   </label>
                   <input
@@ -915,12 +915,12 @@ export default function OrganizerTicketsPage() {
                     placeholder="e.g. Early Bird, General Admission, VIP"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC]"
+                    className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[13px] font-semibold text-[#17152B] block">
+                  <label className="text-[13px] font-semibold text-ds-ink block">
                     Description (Optional)
                   </label>
                   <textarea
@@ -928,14 +928,14 @@ export default function OrganizerTicketsPage() {
                     placeholder="What does this ticket include?"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC] resize-y"
+                    className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent resize-y"
                   />
                 </div>
               </div>
 
               {/* Pricing */}
-              <div className="space-y-4 pt-2 border-t border-[#E6E2F0]">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+              <div className="space-y-4 pt-2 border-t border-ds-line">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
                   Pricing (INR)
                 </h3>
 
@@ -945,8 +945,8 @@ export default function OrganizerTicketsPage() {
                     onClick={() => setFormData({ ...formData, ticket_type: 'paid' })}
                     className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
                       formData.ticket_type === 'paid'
-                        ? 'border-[#7C5CFC] bg-[#F6F1FF] text-[#17152B]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:border-[#7C5CFC]/40'
+                        ? 'border-ds-accent bg-ds-accent-soft text-ds-ink'
+                        : 'border-ds-line bg-white text-ds-muted hover:border-ds-accent/40'
                     }`}
                   >
                     <div>
@@ -954,7 +954,7 @@ export default function OrganizerTicketsPage() {
                       <div className="text-[11px]">Set custom price in INR</div>
                     </div>
                     {formData.ticket_type === 'paid' && (
-                      <span className="material-symbols-outlined text-[#7C5CFC] text-[18px]">check_circle</span>
+                      <span className="material-symbols-outlined text-ds-accent text-[18px]">check_circle</span>
                     )}
                   </button>
 
@@ -963,8 +963,8 @@ export default function OrganizerTicketsPage() {
                     onClick={() => setFormData({ ...formData, ticket_type: 'free', price_in_rupees: '0' })}
                     className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
                       formData.ticket_type === 'free'
-                        ? 'border-[#7C5CFC] bg-[#F6F1FF] text-[#17152B]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:border-[#7C5CFC]/40'
+                        ? 'border-ds-accent bg-ds-accent-soft text-ds-ink'
+                        : 'border-ds-line bg-white text-ds-muted hover:border-ds-accent/40'
                     }`}
                   >
                     <div>
@@ -972,18 +972,18 @@ export default function OrganizerTicketsPage() {
                       <div className="text-[11px]">₹0 (Complimentary pass)</div>
                     </div>
                     {formData.ticket_type === 'free' && (
-                      <span className="material-symbols-outlined text-[#7C5CFC] text-[18px]">check_circle</span>
+                      <span className="material-symbols-outlined text-ds-accent text-[18px]">check_circle</span>
                     )}
                   </button>
                 </div>
 
                 {formData.ticket_type === 'paid' && (
                   <div className="space-y-1">
-                    <label className="text-[13px] font-semibold text-[#17152B] block">
+                    <label className="text-[13px] font-semibold text-ds-ink block">
                       Price in INR (₹) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-bold text-[#77738A]">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono font-bold text-ds-muted">
                         ₹
                       </span>
                       <input
@@ -994,10 +994,10 @@ export default function OrganizerTicketsPage() {
                         placeholder="799"
                         value={formData.price_in_rupees}
                         onChange={(e) => setFormData({ ...formData, price_in_rupees: e.target.value })}
-                        className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] font-mono focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC]"
+                        className="w-full pl-8 pr-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                       />
                     </div>
-                    <p className="text-[11px] text-[#77738A]">
+                    <p className="text-[11px] text-ds-muted">
                       Stored with integer precision in paise ({rupeesToPaise(formData.price_in_rupees)} paise).
                     </p>
                   </div>
@@ -1005,14 +1005,14 @@ export default function OrganizerTicketsPage() {
               </div>
 
               {/* Inventory */}
-              <div className="space-y-4 pt-2 border-t border-[#E6E2F0]">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+              <div className="space-y-4 pt-2 border-t border-ds-line">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
                   Inventory
                 </h3>
 
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="text-[13px] font-semibold text-[#17152B] block">
+                    <label className="text-[13px] font-semibold text-ds-ink block">
                       Total Available Quantity *
                     </label>
                     {editingTicket && (editingTicket.quantity_sold || 0) > 0 && (
@@ -1028,52 +1028,52 @@ export default function OrganizerTicketsPage() {
                     placeholder="100"
                     value={formData.quantity_total}
                     onChange={(e) => setFormData({ ...formData, quantity_total: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E6E2F0] rounded-xl text-[14px] text-[#17152B] font-mono focus:outline-none focus:border-[#7C5CFC] focus:ring-1 focus:ring-[#7C5CFC]"
+                    className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                   />
                 </div>
               </div>
 
               {/* Sales Period */}
-              <div className="space-y-4 pt-2 border-t border-[#E6E2F0]">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+              <div className="space-y-4 pt-2 border-t border-ds-line">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
                   Sales Period (Optional)
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Sales Start
                     </label>
                     <input
                       type="datetime-local"
                       value={formData.sales_start_at}
                       onChange={(e) => setFormData({ ...formData, sales_start_at: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Sales End
                     </label>
                     <input
                       type="datetime-local"
                       value={formData.sales_end_at}
                       onChange={(e) => setFormData({ ...formData, sales_end_at: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Purchase Rules & Visibility */}
-              <div className="space-y-4 pt-2 border-t border-[#E6E2F0]">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+              <div className="space-y-4 pt-2 border-t border-ds-line">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
                   Purchase Rules &amp; Visibility
                 </h3>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Min Tickets / Order
                     </label>
                     <input
@@ -1082,11 +1082,11 @@ export default function OrganizerTicketsPage() {
                       required
                       value={formData.min_per_order}
                       onChange={(e) => setFormData({ ...formData, min_per_order: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] font-mono focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Max Tickets / Order
                     </label>
                     <input
@@ -1095,20 +1095,20 @@ export default function OrganizerTicketsPage() {
                       required
                       value={formData.max_per_order}
                       onChange={(e) => setFormData({ ...formData, max_per_order: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] font-mono focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Visibility
                     </label>
                     <select
                       value={formData.visibility}
                       onChange={(e) => setFormData({ ...formData, visibility: e.target.value as TicketVisibility })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     >
                       <option value="public">Public (Website &amp; Registration)</option>
                       <option value="hidden">Hidden (Internal Only)</option>
@@ -1116,13 +1116,13 @@ export default function OrganizerTicketsPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[12px] font-medium text-[#77738A] block">
+                    <label className="text-[12px] font-medium text-ds-muted block">
                       Status
                     </label>
                     <select
                       value={formData.is_active ? 'active' : 'inactive'}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'active' })}
-                      className="w-full px-3 py-2 bg-white border border-[#E6E2F0] rounded-xl text-[13px] text-[#17152B] focus:outline-none focus:border-[#7C5CFC]"
+                      className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     >
                       <option value="active">Active (Available for purchase)</option>
                       <option value="inactive">Inactive (Disabled)</option>
@@ -1132,18 +1132,18 @@ export default function OrganizerTicketsPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E6E2F0]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-ds-line">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E6E2F0] text-[#17152B] font-semibold text-[13px] hover:bg-[#FAF9FF]"
+                  className="px-4 py-2.5 rounded-xl border border-ds-line text-ds-ink font-semibold text-[13px] hover:bg-ds-subtle"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C5CFC] text-white font-semibold text-[13px] hover:bg-[#5B3FE8] transition-colors disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ds-accent text-white font-semibold text-[13px] hover:bg-ds-accent-strong transition-colors disabled:opacity-60"
                 >
                   {isSubmitting ? (
                     <>
@@ -1164,16 +1164,16 @@ export default function OrganizerTicketsPage() {
       {/* 6. Delete / Deactivate Confirmation Modal */}
       {deleteModalTicket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white border border-[#E6E2F0] rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-ds-line rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
               <span className="material-symbols-outlined text-[24px]">warning</span>
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-[18px] font-bold text-[#17152B] font-space">
+              <h3 className="text-[18px] font-bold text-ds-ink font-space">
                 {(deleteModalTicket.quantity_sold || 0) > 0 ? 'Deactivate Ticket Type?' : 'Delete Ticket Type?'}
               </h3>
-              <p className="text-[13px] text-[#77738A] font-jakarta leading-relaxed">
+              <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
                 {(deleteModalTicket.quantity_sold || 0) > 0 ? (
                   <>
                     This ticket type has <strong>{deleteModalTicket.quantity_sold} confirmed registration(s)</strong>. To preserve historical transaction data, it cannot be deleted. Instead, it will be safely <strong>deactivated</strong> and hidden from future sales.
@@ -1190,7 +1190,7 @@ export default function OrganizerTicketsPage() {
               <button
                 type="button"
                 onClick={() => setDeleteModalTicket(null)}
-                className="px-4 py-2 rounded-xl border border-[#E6E2F0] text-[#17152B] font-semibold text-[13px] hover:bg-[#FAF9FF]"
+                className="px-4 py-2 rounded-xl border border-ds-line text-ds-ink font-semibold text-[13px] hover:bg-ds-subtle"
               >
                 Cancel
               </button>

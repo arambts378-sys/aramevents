@@ -7,10 +7,10 @@ export function QuickActions() {
       title: 'Create with AI',
       description: 'Upload flyer, done',
       href: '/app/agent',
-      icon: 'smart_toy',
-      iconBg: 'bg-gradient-to-br from-[#7C5CFC]/15 to-[#6366F1]/15 text-[#7C5CFC]',
-      borderHover: 'hover:border-[#7C5CFC]/50',
-      badgeHover: 'group-hover:bg-gradient-to-br group-hover:from-[#7C5CFC] group-hover:to-[#6366F1] group-hover:text-white',
+      icon: 'auto_awesome',
+      iconBg: 'bg-ds-accent-soft text-ds-accent',
+      borderHover: 'hover:border-ds-accent/50',
+      badgeHover: 'group-hover:bg-ds-accent group-hover:text-white',
       badge: 'NEW',
     },
     {
@@ -54,10 +54,10 @@ export function QuickActions() {
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <h2 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A]">
+        <h2 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
           QUICK ACTIONS
         </h2>
-        <span className="text-[11px] text-[#77738A] font-medium hidden sm:inline">
+        <span className="text-[11px] text-ds-muted font-medium hidden sm:inline">
           Workspace shortcuts
         </span>
       </div>
@@ -67,31 +67,31 @@ export function QuickActions() {
           <Link
             key={idx}
             href={action.href}
-            className={`bg-white border rounded-xl p-3.5 flex items-center gap-3 transition-all text-left group shadow-xs hover:shadow-sm ${action.borderHover} ${
+            className={`bg-white border rounded-2xl p-3.5 flex items-center gap-3 transition-all duration-300 text-left group shadow-xs hover:shadow-md hover:-translate-y-1 ${action.borderHover} ${
               'badge' in action && action.badge
-                ? 'border-[#7C5CFC]/25 ring-1 ring-[#7C5CFC]/10'
-                : 'border-[#E6E2F0]'
+                ? 'border-ds-accent/35 ring-1 ring-ds-accent/15 bg-white'
+                : 'border-ds-line/80'
             }`}
           >
             <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all shadow-xs ${action.iconBg} ${action.badgeHover}`}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${action.iconBg} ${action.badgeHover}`}
             >
-              <span className="material-symbols-outlined text-[19px]">
+              <span className="material-symbols-outlined text-[20px]">
                 {action.icon}
               </span>
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className={`text-[13px] font-bold text-[#17152B] leading-tight font-jakarta truncate transition-colors ${'badge' in action && action.badge ? 'group-hover:text-[#7C5CFC]' : 'group-hover:text-[#6366F1]'}`}>
+                <span className={`text-[13px] font-bold text-ds-ink leading-tight font-jakarta truncate transition-colors ${'badge' in action && action.badge ? 'group-hover:text-ds-accent' : 'group-hover:text-[#6366F1]'}`}>
                   {action.title}
                 </span>
                 {'badge' in action && action.badge && (
-                  <span className="text-[8px] font-bold bg-gradient-to-r from-[#7C5CFC] to-[#6366F1] text-white rounded-full px-1.5 py-0.5 leading-none shrink-0">
+                  <span className="text-[8px] font-bold bg-ds-accent text-white rounded-full px-1.5 py-0.5 leading-none shrink-0 shadow-2xs">
                     {action.badge}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] text-[#77738A] mt-0.5 truncate font-normal">
+              <span className="text-[10px] text-ds-muted mt-0.5 truncate font-medium">
                 {action.description}
               </span>
             </div>

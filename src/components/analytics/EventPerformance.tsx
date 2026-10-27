@@ -43,18 +43,18 @@ export function EventPerformance({ events }: EventPerformanceProps) {
   });
 
   return (
-    <div className="bg-white border border-[#E6E2F0] rounded-2xl shadow-xs overflow-hidden flex flex-col">
+    <div className="bg-white border border-ds-line rounded-2xl shadow-xs overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="p-5 sm:p-6 border-b border-[#E6E2F0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="p-5 sm:p-6 border-b border-ds-line flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h2 className="text-base font-bold text-[#17152B] tracking-tight">
+          <h2 className="text-base font-bold text-ds-ink tracking-tight">
             Event Performance Portfolio
           </h2>
-          <p className="text-xs text-[#77738A] mt-0.5 font-normal">
+          <p className="text-xs text-ds-muted mt-0.5 font-normal">
             Comparative registration and validated participation rates across your workspace events.
           </p>
         </div>
-        <div className="text-xs text-[#77738A] font-semibold">
+        <div className="text-xs text-ds-muted font-semibold">
           Showing {events.length} event{events.length === 1 ? '' : 's'}
         </div>
       </div>
@@ -63,11 +63,11 @@ export function EventPerformance({ events }: EventPerformanceProps) {
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-[#FAFAFD] border-b border-[#E6E2F0] text-[#77738A] uppercase tracking-wider font-bold">
+            <tr className="bg-ds-subtle border-b border-ds-line text-ds-muted uppercase tracking-wider font-bold">
               <th
                 scope="col"
                 onClick={() => handleSort('name')}
-                className="py-3 px-4 sm:px-6 cursor-pointer hover:text-[#17152B] transition-colors select-none"
+                className="py-3 px-4 sm:px-6 cursor-pointer hover:text-ds-ink transition-colors select-none"
               >
                 <div className="flex items-center gap-1">
                   <span>Event</span>
@@ -82,7 +82,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
               <th
                 scope="col"
                 onClick={() => handleSort('registrations')}
-                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+                className="py-3 px-4 text-right cursor-pointer hover:text-ds-ink transition-colors select-none"
               >
                 <div className="flex items-center justify-end gap-1">
                   <span>Registrations</span>
@@ -94,7 +94,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
               <th
                 scope="col"
                 onClick={() => handleSort('checkins')}
-                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+                className="py-3 px-4 text-right cursor-pointer hover:text-ds-ink transition-colors select-none"
               >
                 <div className="flex items-center justify-end gap-1">
                   <span>Check-ins</span>
@@ -106,7 +106,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
               <th
                 scope="col"
                 onClick={() => handleSort('attendance')}
-                className="py-3 px-4 text-right cursor-pointer hover:text-[#17152B] transition-colors select-none"
+                className="py-3 px-4 text-right cursor-pointer hover:text-ds-ink transition-colors select-none"
               >
                 <div className="flex items-center justify-end gap-1">
                   <span>Attendance</span>
@@ -120,10 +120,10 @@ export function EventPerformance({ events }: EventPerformanceProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E6E2F0]">
+          <tbody className="divide-y divide-ds-line">
             {sortedEvents.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-[#77738A]">
+                <td colSpan={6} className="py-8 text-center text-ds-muted">
                   No events found in this scope.
                 </td>
               </tr>
@@ -131,21 +131,21 @@ export function EventPerformance({ events }: EventPerformanceProps) {
               sortedEvents.map((event) => (
                 <tr
                   key={event.id}
-                  className="hover:bg-[#F7F5FF]/50 transition-colors group"
+                  className="hover:bg-ds-canvas/50 transition-colors group"
                 >
                   <td className="py-3.5 px-4 sm:px-6">
                     <Link
                       href={`/app/events/${event.id}`}
-                      className="font-bold text-[#17152B] group-hover:text-[#7C5CFC] transition-colors flex flex-col"
+                      className="font-bold text-ds-ink group-hover:text-ds-accent transition-colors flex flex-col"
                     >
                       <span className="text-xs sm:text-sm">{event.name}</span>
-                      <span className="text-[11px] text-[#77738A] font-normal">
+                      <span className="text-[11px] text-ds-muted font-normal">
                         {event.startDate}
                       </span>
                     </Link>
                   </td>
-                  <td className="py-3.5 px-4 hidden md:table-cell text-[#77738A]">
-                    <span className="font-semibold text-[#17152B]">{event.type}</span>
+                  <td className="py-3.5 px-4 hidden md:table-cell text-ds-muted">
+                    <span className="font-semibold text-ds-ink">{event.type}</span>
                     <span className="text-[11px] block">{event.format}</span>
                   </td>
                   <td className="py-3.5 px-4 text-right font-bold text-[#6366F1] tabular-nums">
@@ -168,7 +168,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
                         {event.attendanceRate}%
                       </span>
                     ) : (
-                      <span className="text-[#77738A] font-bold">—</span>
+                      <span className="text-ds-muted font-bold">—</span>
                     )}
                   </td>
                   <td className="py-3.5 px-4 sm:px-6 text-center">
@@ -177,7 +177,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
                         event.status.toLowerCase() === 'published'
                           ? 'bg-[#10B981]/10 text-[#059669]'
                           : event.status.toLowerCase() === 'draft'
-                          ? 'bg-[#77738A]/10 text-[#6B7280]'
+                          ? 'bg-ds-muted/10 text-ds-muted'
                           : 'bg-[#6366F1]/10 text-[#4F46E5]'
                       }`}
                     >
@@ -186,7 +186,7 @@ export function EventPerformance({ events }: EventPerformanceProps) {
                           event.status.toLowerCase() === 'published'
                             ? 'bg-[#10B981]'
                             : event.status.toLowerCase() === 'draft'
-                            ? 'bg-[#9CA3AF]'
+                            ? 'bg-ds-muted'
                             : 'bg-[#6366F1]'
                         }`}
                       />

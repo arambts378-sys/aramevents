@@ -151,10 +151,10 @@ export default function TemplateGallery({
           {renderMiniHeader()}
           <div className="border border-black p-1 space-y-0.5" style={{ backgroundColor: surface }}>
             <div className="flex justify-between items-center">
-              <span className="text-[5px] font-mono uppercase font-black" style={{ color: pri }}>// MANIFESTO</span>
+              <span className="text-[5px] font-mono uppercase font-bold" style={{ color: pri }}>// MANIFESTO</span>
               <span className="text-[5px] font-mono">01</span>
             </div>
-            <span className="w-full h-2 rounded-none font-black block" style={{ backgroundColor: text }}></span>
+            <span className="w-full h-2 rounded-none font-bold block" style={{ backgroundColor: text }}></span>
             <span className="w-3/4 h-1 rounded-none block" style={{ backgroundColor: text, opacity: 0.6 }}></span>
           </div>
           <div className="grid grid-cols-3 gap-1">
@@ -176,15 +176,15 @@ export default function TemplateGallery({
           <div className="grid grid-cols-3 gap-0.5">
             <div className="p-0.5 rounded border text-center" style={{ backgroundColor: surface, borderColor: border }}>
               <span className="block text-[4px] font-bold">PASS A</span>
-              <span className="block text-[5px] font-black" style={{ color: pri }}>$199</span>
+              <span className="block text-[5px] font-bold" style={{ color: pri }}>$199</span>
             </div>
             <div className="p-0.5 rounded border text-center ring-1 ring-black/20" style={{ backgroundColor: surface, borderColor: pri }}>
               <span className="block text-[4px] font-bold">ALL ACCESS</span>
-              <span className="block text-[5px] font-black" style={{ color: pri }}>$399</span>
+              <span className="block text-[5px] font-bold" style={{ color: pri }}>$399</span>
             </div>
             <div className="p-0.5 rounded border text-center" style={{ backgroundColor: surface, borderColor: border }}>
               <span className="block text-[4px] font-bold">VIP</span>
-              <span className="block text-[5px] font-black" style={{ color: pri }}>$799</span>
+              <span className="block text-[5px] font-bold" style={{ color: pri }}>$799</span>
             </div>
           </div>
           <div className="flex justify-between gap-0.5">
@@ -263,12 +263,12 @@ export default function TemplateGallery({
         <div className="flex flex-col justify-between h-full space-y-1">
           {renderMiniHeader()}
           <div className="p-1 rounded border-2 border-black text-center space-y-0.5" style={{ backgroundColor: surface }}>
-            <span className="text-[7px] font-black uppercase tracking-tight block" style={{ color: text }}>HEADLINER 1 / HEADLINER 2</span>
+            <span className="text-[7px] font-bold uppercase tracking-tight block" style={{ color: text }}>HEADLINER 1 / HEADLINER 2</span>
             <span className="text-[5px] font-mono font-bold block" style={{ color: pri }}>ARTIST A · ARTIST B · ARTIST C</span>
           </div>
           <div className="grid grid-cols-2 gap-1">
-            <div className="p-1 rounded border border-black text-center text-[5px] font-black uppercase" style={{ backgroundColor: pri, color: '#fff' }}>STAGE 01</div>
-            <div className="p-1 rounded border border-black text-center text-[5px] font-black uppercase" style={{ backgroundColor: text, color: '#fff' }}>STAGE 02</div>
+            <div className="p-1 rounded border border-black text-center text-[5px] font-bold uppercase" style={{ backgroundColor: pri, color: '#fff' }}>STAGE 01</div>
+            <div className="p-1 rounded border border-black text-center text-[5px] font-bold uppercase" style={{ backgroundColor: text, color: '#fff' }}>STAGE 02</div>
           </div>
           <div className="h-2 rounded bg-black flex items-center justify-center text-[4px] text-white font-mono uppercase font-bold">WEEKEND PASSES</div>
         </div>
@@ -280,10 +280,10 @@ export default function TemplateGallery({
           {renderMiniHeader()}
           <div className="flex justify-between items-center py-0.5">
             <div className="space-y-0.5">
-              <span className="text-[5px] font-mono uppercase font-black text-red-600 block">RACE DAY TIMETABLE</span>
-              <span className="w-10 h-2 rounded block font-black" style={{ backgroundColor: text }}></span>
+              <span className="text-[5px] font-mono uppercase font-bold text-red-600 block">RACE DAY TIMETABLE</span>
+              <span className="w-10 h-2 rounded block font-bold" style={{ backgroundColor: text }}></span>
             </div>
-            <span className="px-2 py-0.5 rounded text-[5px] font-black text-white bg-red-600 uppercase">START LINE</span>
+            <span className="px-2 py-0.5 rounded text-[5px] font-bold text-white bg-red-600 uppercase">START LINE</span>
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center justify-between p-0.5 rounded border bg-white text-[4px] font-mono">
@@ -381,23 +381,23 @@ export default function TemplateGallery({
   return (
     <div className="w-full bg-white flex flex-col select-none overflow-hidden h-full">
       {/* 1. Header with Mode Tabs */}
-      <div className="p-4 border-b border-[#E6E2F0] shrink-0 space-y-3">
+      <div className="p-4 border-b border-ds-line shrink-0 space-y-3">
         <div>
-          <h2 className="text-[16px] font-bold text-[#17152B] font-space">Design &amp; Styling</h2>
-          <p className="text-[12px] text-[#77738A] font-jakarta">
+          <h2 className="text-[16px] font-bold text-ds-ink font-space">Design &amp; Styling</h2>
+          <p className="text-[12px] text-ds-muted font-jakarta">
             Customize template, palette, typography and layout
           </p>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-4 gap-1 p-0.5 bg-[#F6F1FF] rounded-lg border border-[#E6E2F0]">
+        <div className="grid grid-cols-4 gap-1 p-0.5 bg-ds-accent-soft rounded-lg border border-ds-line">
           <button
             type="button"
             onClick={() => setActiveTab('templates')}
             className={`py-1.5 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'templates'
-                ? 'bg-white text-[#7C5CFC] shadow-xs'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-white text-ds-accent shadow-xs'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             Templates
@@ -407,8 +407,8 @@ export default function TemplateGallery({
             onClick={() => setActiveTab('theme')}
             className={`py-1.5 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'theme'
-                ? 'bg-white text-[#7C5CFC] shadow-xs'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-white text-ds-accent shadow-xs'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             Theme
@@ -418,8 +418,8 @@ export default function TemplateGallery({
             onClick={() => setActiveTab('typography')}
             className={`py-1.5 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'typography'
-                ? 'bg-white text-[#7C5CFC] shadow-xs'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-white text-ds-accent shadow-xs'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             Type
@@ -429,8 +429,8 @@ export default function TemplateGallery({
             onClick={() => setActiveTab('layout')}
             className={`py-1.5 rounded-md text-[11px] font-semibold transition-all ${
               activeTab === 'layout'
-                ? 'bg-white text-[#7C5CFC] shadow-xs'
-                : 'text-[#77738A] hover:text-[#17152B]'
+                ? 'bg-white text-ds-accent shadow-xs'
+                : 'text-ds-muted hover:text-ds-ink'
             }`}
           >
             Layout
@@ -447,7 +447,7 @@ export default function TemplateGallery({
           <div className="space-y-4">
             {/* Search Bar */}
             <div className="relative">
-              <span className="material-symbols-outlined text-[16px] text-[#77738A] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <span className="material-symbols-outlined text-[16px] text-ds-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
                 search
               </span>
               <input
@@ -455,13 +455,13 @@ export default function TemplateGallery({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search 12 templates..."
-                className="w-full pl-9 pr-7 py-1.5 text-[12px] rounded-lg border border-[#E6E2F0] bg-white text-[#17152B] focus:border-[#7C5CFC] outline-none font-jakarta"
+                className="w-full pl-9 pr-7 py-1.5 text-[12px] rounded-lg border border-ds-line bg-white text-ds-ink focus:border-ds-accent outline-none font-jakarta"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#77738A] hover:text-[#17152B]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ds-muted hover:text-ds-ink"
                 >
                   <span className="material-symbols-outlined text-[14px]">close</span>
                 </button>
@@ -477,8 +477,8 @@ export default function TemplateGallery({
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-colors ${
                     selectedCategory === cat
-                      ? 'bg-[#7C5CFC] text-white shadow-2xs'
-                      : 'bg-[#F6F1FF] text-[#77738A] hover:text-[#17152B]'
+                      ? 'bg-ds-accent text-white shadow-2xs'
+                      : 'bg-ds-accent-soft text-ds-muted hover:text-ds-ink'
                   }`}
                 >
                   {cat}
@@ -498,8 +498,8 @@ export default function TemplateGallery({
                       onClick={() => onSelectTemplate(tpl.id)}
                       className={`rounded-xl p-3 cursor-pointer transition-all duration-150 ${
                         isActive
-                          ? 'border-2 border-[#7C5CFC] bg-white shadow-md ring-2 ring-[#7C5CFC]/20'
-                          : 'border border-[#E6E2F0] bg-white hover:border-[#7C5CFC]/50 hover:shadow-sm group'
+                          ? 'border-2 border-ds-accent bg-white shadow-md ring-2 ring-ds-accent/20'
+                          : 'border border-ds-line bg-white hover:border-ds-accent/50 hover:shadow-sm group'
                       }`}
                     >
                       {/* Thumbnail Preview */}
@@ -511,18 +511,18 @@ export default function TemplateGallery({
                           <h3
                             className={`text-[14px] font-bold font-space ${
                               isActive
-                                ? 'text-[#17152B]'
-                                : 'text-[#17152B] group-hover:text-[#7C5CFC] transition-colors'
+                                ? 'text-ds-ink'
+                                : 'text-ds-ink group-hover:text-ds-accent transition-colors'
                             }`}
                           >
                             {tpl.name}
                           </h3>
-                          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#F6F1FF] text-[#77738A]">
+                          <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-ds-accent-soft text-ds-muted">
                             {tpl.category}
                           </span>
                         </div>
                         {isActive && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-jakarta text-[#7C5CFC] font-semibold bg-[#F6F1FF] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-jakarta text-ds-accent font-semibold bg-ds-accent-soft px-2 py-0.5 rounded-full">
                             <span className="material-symbols-outlined text-[12px]">check</span>
                             <span>Active</span>
                           </span>
@@ -530,17 +530,17 @@ export default function TemplateGallery({
                       </div>
 
                       {/* Description */}
-                      <p className="text-[12px] text-[#77738A] font-jakarta leading-snug mb-2">
+                      <p className="text-[12px] text-ds-muted font-jakarta leading-snug mb-2">
                         {tpl.description}
                       </p>
 
                       {/* Structural Composition Tags */}
                       {tpl.tags && tpl.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-1 border-t border-[#E6E2F0]/60">
+                        <div className="flex flex-wrap gap-1 pt-1 border-t border-ds-line/60">
                           {tpl.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#F6F1FF] text-[#635B80] border border-[#E6E2F0]"
+                              className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-ds-accent-soft text-ds-body border border-ds-line"
                             >
                               {tag}
                             </span>
@@ -551,12 +551,12 @@ export default function TemplateGallery({
                   );
                 })
               ) : (
-                <div className="py-8 text-center border border-dashed border-[#E6E2F0] rounded-xl p-4 space-y-2">
-                  <span className="material-symbols-outlined text-[24px] text-[#77738A]">
+                <div className="py-8 text-center border border-dashed border-ds-line rounded-xl p-4 space-y-2">
+                  <span className="material-symbols-outlined text-[24px] text-ds-muted">
                     search_off
                   </span>
-                  <p className="text-[12px] font-semibold text-[#17152B]">No templates found</p>
-                  <p className="text-[11px] text-[#77738A]">
+                  <p className="text-[12px] font-semibold text-ds-ink">No templates found</p>
+                  <p className="text-[11px] text-ds-muted">
                     Try searching for another keyword or clear the category filter.
                   </p>
                 </div>
@@ -572,7 +572,7 @@ export default function TemplateGallery({
           <div className="space-y-6">
             {/* 1. Predefined Palettes */}
             <div className="space-y-3">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                 Predefined Palettes
               </h3>
               <div className="space-y-2">
@@ -588,12 +588,12 @@ export default function TemplateGallery({
                       onClick={() => onUpdateColors(pal.colors)}
                       className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all ${
                         isCurrent
-                          ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF]/40 shadow-xs'
-                          : 'border-[#E6E2F0] hover:border-[#7C5CFC]/40 bg-white'
+                          ? 'border-2 border-ds-accent bg-ds-accent-soft/40 shadow-xs'
+                          : 'border-ds-line hover:border-ds-accent/40 bg-white'
                       }`}
                     >
                       <div>
-                        <div className="text-[13px] font-semibold text-[#17152B] font-space">
+                        <div className="text-[13px] font-semibold text-ds-ink font-space">
                           {pal.name}
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">
@@ -620,7 +620,7 @@ export default function TemplateGallery({
                         </div>
                       </div>
                       {isCurrent && (
-                        <span className="material-symbols-outlined text-[18px] text-[#7C5CFC]">
+                        <span className="material-symbols-outlined text-[18px] text-ds-accent">
                           check_circle
                         </span>
                       )}
@@ -631,14 +631,14 @@ export default function TemplateGallery({
             </div>
 
             {/* 2. Custom Color Controls */}
-            <div className="pt-4 border-t border-[#E6E2F0] space-y-3">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+            <div className="pt-4 border-t border-ds-line space-y-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                 Custom Colors
               </h3>
 
               {/* Primary Color */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-[#E6E2F0] bg-white">
-                <label className="text-[12px] font-semibold text-[#17152B]">Primary</label>
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-ds-line bg-white">
+                <label className="text-[12px] font-semibold text-ds-ink">Primary</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -647,15 +647,15 @@ export default function TemplateGallery({
                     className="w-7 h-7 rounded border-0 cursor-pointer p-0 bg-transparent"
                     aria-label="Primary color picker"
                   />
-                  <span className="font-mono text-[11px] text-[#77738A] uppercase">
+                  <span className="font-mono text-[11px] text-ds-muted uppercase">
                     {activeColors.primary}
                   </span>
                 </div>
               </div>
 
               {/* Secondary Color */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-[#E6E2F0] bg-white">
-                <label className="text-[12px] font-semibold text-[#17152B]">Secondary</label>
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-ds-line bg-white">
+                <label className="text-[12px] font-semibold text-ds-ink">Secondary</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -664,15 +664,15 @@ export default function TemplateGallery({
                     className="w-7 h-7 rounded border-0 cursor-pointer p-0 bg-transparent"
                     aria-label="Secondary color picker"
                   />
-                  <span className="font-mono text-[11px] text-[#77738A] uppercase">
+                  <span className="font-mono text-[11px] text-ds-muted uppercase">
                     {activeColors.secondary}
                   </span>
                 </div>
               </div>
 
               {/* Background Color */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-[#E6E2F0] bg-white">
-                <label className="text-[12px] font-semibold text-[#17152B]">Background</label>
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-ds-line bg-white">
+                <label className="text-[12px] font-semibold text-ds-ink">Background</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -681,15 +681,15 @@ export default function TemplateGallery({
                     className="w-7 h-7 rounded border-0 cursor-pointer p-0 bg-transparent"
                     aria-label="Background color picker"
                   />
-                  <span className="font-mono text-[11px] text-[#77738A] uppercase">
+                  <span className="font-mono text-[11px] text-ds-muted uppercase">
                     {activeColors.background}
                   </span>
                 </div>
               </div>
 
               {/* Text Color */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-[#E6E2F0] bg-white">
-                <label className="text-[12px] font-semibold text-[#17152B]">Text</label>
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-ds-line bg-white">
+                <label className="text-[12px] font-semibold text-ds-ink">Text</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -698,15 +698,15 @@ export default function TemplateGallery({
                     className="w-7 h-7 rounded border-0 cursor-pointer p-0 bg-transparent"
                     aria-label="Text color picker"
                   />
-                  <span className="font-mono text-[11px] text-[#77738A] uppercase">
+                  <span className="font-mono text-[11px] text-ds-muted uppercase">
                     {activeColors.text}
                   </span>
                 </div>
               </div>
 
               {/* Accent Color */}
-              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-[#E6E2F0] bg-white">
-                <label className="text-[12px] font-semibold text-[#17152B]">Accent</label>
+              <div className="flex items-center justify-between gap-2 p-2 rounded-lg border border-ds-line bg-white">
+                <label className="text-[12px] font-semibold text-ds-ink">Accent</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -715,7 +715,7 @@ export default function TemplateGallery({
                     className="w-7 h-7 rounded border-0 cursor-pointer p-0 bg-transparent"
                     aria-label="Accent color picker"
                   />
-                  <span className="font-mono text-[11px] text-[#77738A] uppercase">
+                  <span className="font-mono text-[11px] text-ds-muted uppercase">
                     {activeColors.accent}
                   </span>
                 </div>
@@ -731,7 +731,7 @@ export default function TemplateGallery({
           <div className="space-y-6">
             {/* Font Pairings */}
             <div className="space-y-3">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                 Font Pairing Presets
               </h3>
               <div className="space-y-2">
@@ -753,20 +753,20 @@ export default function TemplateGallery({
                       }
                       className={`w-full p-3 rounded-xl border flex items-center justify-between text-left transition-all ${
                         isCurrent
-                          ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF]/40 shadow-xs'
-                          : 'border-[#E6E2F0] hover:border-[#7C5CFC]/40 bg-white'
+                          ? 'border-2 border-ds-accent bg-ds-accent-soft/40 shadow-xs'
+                          : 'border-ds-line hover:border-ds-accent/40 bg-white'
                       }`}
                     >
                       <div>
-                        <div className="text-[13px] font-bold text-[#17152B]">
+                        <div className="text-[13px] font-bold text-ds-ink">
                           {pair.name}
                         </div>
-                        <div className="text-[11px] text-[#77738A] mt-0.5">
+                        <div className="text-[11px] text-ds-muted mt-0.5">
                           {pair.headingFont} + {pair.bodyFont}
                         </div>
                       </div>
                       {isCurrent && (
-                        <span className="material-symbols-outlined text-[18px] text-[#7C5CFC]">
+                        <span className="material-symbols-outlined text-[18px] text-ds-accent">
                           check_circle
                         </span>
                       )}
@@ -777,17 +777,17 @@ export default function TemplateGallery({
             </div>
 
             {/* Typography Scale */}
-            <div className="pt-4 border-t border-[#E6E2F0] space-y-4">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#77738A] font-jakarta">
+            <div className="pt-4 border-t border-ds-line space-y-4">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted font-jakarta">
                 Typography Scale
               </h3>
 
               {/* Heading Scale */}
               <div className="space-y-1.5">
-                <label className="text-[12px] font-semibold text-[#17152B] block">
+                <label className="text-[12px] font-semibold text-ds-ink block">
                   Heading Size Scale
                 </label>
-                <div className="grid grid-cols-3 gap-1 bg-[#F6F1FF] p-1 rounded-lg border border-[#E6E2F0]">
+                <div className="grid grid-cols-3 gap-1 bg-ds-accent-soft p-1 rounded-lg border border-ds-line">
                   {(['compact', 'standard', 'large'] as const).map((s) => (
                     <button
                       key={s}
@@ -800,8 +800,8 @@ export default function TemplateGallery({
                       }
                       className={`py-1 rounded text-[11px] font-semibold capitalize transition-all ${
                         activeTypography.headingScale === s
-                          ? 'bg-white text-[#7C5CFC] shadow-2xs'
-                          : 'text-[#77738A] hover:text-[#17152B]'
+                          ? 'bg-white text-ds-accent shadow-2xs'
+                          : 'text-ds-muted hover:text-ds-ink'
                       }`}
                     >
                       {s}
@@ -812,10 +812,10 @@ export default function TemplateGallery({
 
               {/* Body Scale */}
               <div className="space-y-1.5">
-                <label className="text-[12px] font-semibold text-[#17152B] block">
+                <label className="text-[12px] font-semibold text-ds-ink block">
                   Body Size Scale
                 </label>
-                <div className="grid grid-cols-3 gap-1 bg-[#F6F1FF] p-1 rounded-lg border border-[#E6E2F0]">
+                <div className="grid grid-cols-3 gap-1 bg-ds-accent-soft p-1 rounded-lg border border-ds-line">
                   {(['compact', 'standard', 'large'] as const).map((s) => (
                     <button
                       key={s}
@@ -828,8 +828,8 @@ export default function TemplateGallery({
                       }
                       className={`py-1 rounded text-[11px] font-semibold capitalize transition-all ${
                         activeTypography.bodyScale === s
-                          ? 'bg-white text-[#7C5CFC] shadow-2xs'
-                          : 'text-[#77738A] hover:text-[#17152B]'
+                          ? 'bg-white text-ds-accent shadow-2xs'
+                          : 'text-ds-muted hover:text-ds-ink'
                       }`}
                     >
                       {s}
@@ -848,7 +848,7 @@ export default function TemplateGallery({
           <div className="space-y-6">
             {/* Content Width */}
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#17152B] block">
+              <label className="text-[12px] font-semibold text-ds-ink block">
                 Content Max Width
               </label>
               <div className="grid grid-cols-2 gap-1.5">
@@ -869,8 +869,8 @@ export default function TemplateGallery({
                     }
                     className={`p-2 rounded-lg border text-[11px] font-semibold transition-all text-center ${
                       activeLayout.contentWidth === w.id
-                        ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF] text-[#7C5CFC]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:text-[#17152B]'
+                        ? 'border-2 border-ds-accent bg-ds-accent-soft text-ds-accent'
+                        : 'border-ds-line bg-white text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     {w.label}
@@ -881,7 +881,7 @@ export default function TemplateGallery({
 
             {/* Button Style */}
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#17152B] block">
+              <label className="text-[12px] font-semibold text-ds-ink block">
                 Button Corner Style
               </label>
               <div className="grid grid-cols-3 gap-1.5">
@@ -901,8 +901,8 @@ export default function TemplateGallery({
                     }
                     className={`py-2 rounded-lg border text-[11px] font-semibold transition-all text-center ${
                       activeLayout.buttonStyle === b.id
-                        ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF] text-[#7C5CFC]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:text-[#17152B]'
+                        ? 'border-2 border-ds-accent bg-ds-accent-soft text-ds-accent'
+                        : 'border-ds-line bg-white text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     {b.label}
@@ -913,7 +913,7 @@ export default function TemplateGallery({
 
             {/* Card Style */}
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#17152B] block">
+              <label className="text-[12px] font-semibold text-ds-ink block">
                 Card Elevation Style
               </label>
               <div className="grid grid-cols-3 gap-1.5">
@@ -933,8 +933,8 @@ export default function TemplateGallery({
                     }
                     className={`py-2 rounded-lg border text-[11px] font-semibold transition-all text-center ${
                       activeLayout.cardStyle === c.id
-                        ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF] text-[#7C5CFC]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:text-[#17152B]'
+                        ? 'border-2 border-ds-accent bg-ds-accent-soft text-ds-accent'
+                        : 'border-ds-line bg-white text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     {c.label}
@@ -945,7 +945,7 @@ export default function TemplateGallery({
 
             {/* Spacing Density */}
             <div className="space-y-1.5">
-              <label className="text-[12px] font-semibold text-[#17152B] block">
+              <label className="text-[12px] font-semibold text-ds-ink block">
                 Section Spacing Density
               </label>
               <div className="grid grid-cols-3 gap-1.5">
@@ -965,8 +965,8 @@ export default function TemplateGallery({
                     }
                     className={`py-2 rounded-lg border text-[11px] font-semibold transition-all text-center ${
                       activeLayout.density === d.id
-                        ? 'border-2 border-[#7C5CFC] bg-[#F6F1FF] text-[#7C5CFC]'
-                        : 'border-[#E6E2F0] bg-white text-[#77738A] hover:text-[#17152B]'
+                        ? 'border-2 border-ds-accent bg-ds-accent-soft text-ds-accent'
+                        : 'border-ds-line bg-white text-ds-muted hover:text-ds-ink'
                     }`}
                   >
                     {d.label}
