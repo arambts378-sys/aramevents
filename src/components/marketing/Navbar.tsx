@@ -33,7 +33,7 @@ export function Navbar() {
         <Link
           href="/"
           onClick={closeMobileMenu}
-          aria-label="Aram Events home"
+          aria-label="Aram home"
           className="flex items-end gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
         >
           <AramLogo priority />

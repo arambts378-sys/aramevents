@@ -129,7 +129,7 @@ export function ConnectedPlatformSection() {
 
                 {/* Center Core */}
                 <div className="w-48 h-48 rounded-full bg-ds-ink text-white flex flex-col items-center justify-center p-6 text-center shadow-2xl border border-white/20 animate-float-subtle">
-                  <AramLogo size="sm" tone="light" className="mb-1" />
+                  <AramLogo size="sm" className="mb-1" />
                   <span className="font-jakarta text-[10px] text-[#C4B5FD] uppercase tracking-wider mt-0.5 font-semibold">
                     Core Telemetry
                   </span>
