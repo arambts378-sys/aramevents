@@ -238,10 +238,6 @@ export default function LoginPage() {
 
       {/* Minimal Footer with Security Trust */}
       <footer className="mt-8 text-center text-xs text-ds-muted flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 text-[11px] font-medium text-ds-muted/80 bg-white px-3 py-1 rounded-full border border-ds-line/60 shadow-2xs">
-          <span className="material-symbols-outlined text-[14px] text-[#10B981]">verified_user</span>
-          <span>Bank-grade 256-bit SSL • Real-time zero-trust auth</span>
-        </div>
         <span>&copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.</span>
       </footer>
     </div>
