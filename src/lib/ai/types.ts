@@ -31,7 +31,13 @@ export interface ExtractedEventDetails {
   name?: string;
   description?: string;
   category?: string;
+  /** One of the event creation form's types, e.g. Conference, Walkathon */
+  eventType?: string;
+  /** In-person, Virtual or Hybrid */
+  format?: string;
   date?: string;          // ISO-8601 date string e.g. "2026-12-15"
+  /** Same as `date`; the name the model returns */
+  startDate?: string;
   endDate?: string;
   startTime?: string;     // "HH:MM" 24-h
   endTime?: string;

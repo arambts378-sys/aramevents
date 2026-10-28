@@ -8,12 +8,13 @@ import React, {
   useTransition,
 } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
-import { mockAIAdapter } from '@/lib/ai/mockAdapter';
+import { buildDefaultWebsite, buildEventSlug } from '@/lib/events/defaultWebsite';
+import type { AgentTurn } from '@/lib/ai/eventDraft';
 import type {
   ChatMessage,
-  ConversationContext,
   ConversationStage,
   ExtractedEventDetails,
 } from '@/lib/ai/types';
@@ -46,6 +47,58 @@ function getGreeting() {
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
   return 'Good evening';
+}
+
+/** Sends the conversation to the server route, which calls the model and returns a reply plus the full draft. */
+async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | null, image: string | null) {
+  const res = await fetch('/api/agent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: history.map((m) => ({ role: m.role, content: m.content })),
+      draft,
+      image,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(json.error || 'The assistant is unavailable right now. Try again in a few minutes.');
+    (err as Error & { code?: string }).code = json.code;
+    throw err;
+  }
+  return json as AgentTurn;
+}
+
+/** Model output uses null for unknown fields; the UI uses undefined. */
+function toDetails(d: AgentTurn['details']): ExtractedEventDetails {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(d)) if (v !== null) out[k] = v;
+  return out as unknown as ExtractedEventDetails;
+}
+
+const hasDraft = (d: ExtractedEventDetails) => !!(d.name || d.startDate || d.date || d.venue || d.eventType);
+
+/** What createEvent needs that the draft is still missing, in the form's own words. */
+function missingForCreate(d: ExtractedEventDetails) {
+  const missing: string[] = [];
+  if (!d.name?.trim()) missing.push('event name');
+  if (!d.eventType) missing.push('event type');
+  if (!d.format) missing.push('format');
+  if (!(d.startDate || d.date)) missing.push('start date');
+  if (!d.startTime) missing.push('start time');
+  if (!d.endTime) missing.push('end time');
+  if (d.format !== 'Virtual' && !d.venue?.trim()) missing.push('venue');
+  return missing;
+}
+
+async function uploadFlyer(dataUri: string) {
+  const blob = await (await fetch(dataUri)).blob();
+  const form = new FormData();
+  form.append('file', blob, `flyer.${blob.type.split('/')[1] || 'png'}`);
+  const res = await fetch('/api/events/flyer-upload', { method: 'POST', body: form });
+  const json = await res.json().catch(() => ({}));
+  return res.ok && json.url ? (json.url as string) : undefined;
 }
 
 const SUGGESTIONS = [
@@ -194,12 +247,15 @@ function ExtractionCard({
   details,
   onEdit,
   onConfirm,
+  creating,
 }: {
   details: ExtractedEventDetails;
   onEdit: (field: keyof ExtractedEventDetails, value: string) => void;
   onConfirm: () => void;
+  creating?: boolean;
 }) {
-  const conf = Math.round(details.confidence * 100);
+  const missing = missingForCreate(details);
+  const conf = Math.round((details.confidence ?? 0) * 100);
   const confClass =
     conf >= 80
       ? 'bg-ds-success-soft text-ds-success'
@@ -210,8 +266,9 @@ function ExtractionCard({
 
   const rows: { label: string; field: keyof ExtractedEventDetails; value?: string }[] = [
     { label: 'Event name', field: 'name', value: details.name },
-    { label: 'Category', field: 'category', value: details.category },
-    { label: 'Date', field: 'date', value: details.date },
+    { label: 'Event type', field: 'eventType', value: details.eventType },
+    { label: 'Format', field: 'format', value: details.format },
+    { label: 'Start date', field: 'startDate', value: details.startDate ?? details.date },
     { label: 'End date', field: 'endDate', value: details.endDate },
     { label: 'Start time', field: 'startTime', value: details.startTime },
     { label: 'End time', field: 'endTime', value: details.endTime },
@@ -225,19 +282,20 @@ function ExtractionCard({
   return (
     <div className="ds-card overflow-hidden">
       <div className="px-4 py-3 border-b border-ds-line flex items-center justify-between gap-3">
-        <span className="text-[14px] font-medium text-ds-ink">Extracted event details</span>
+        <span className="text-[14px] font-medium text-ds-ink">Event draft</span>
         <span className={`text-[12px] font-medium rounded-md px-2 py-0.5 ${confClass}`}>{conf}% confidence</span>
       </div>
 
       <div className="flex flex-col">
         {rows.map((row) => (
-          <ExtractionRow key={row.field} {...row} uncertain={isUncertain(row.field)} onEdit={onEdit} />
+          // keyed on the value so a row resets when the assistant updates that field
+          <ExtractionRow key={`${row.field}:${row.value ?? ''}`} {...row} uncertain={isUncertain(row.field)} onEdit={onEdit} />
         ))}
       </div>
 
       {details.ticketTypes && details.ticketTypes.length > 0 && (
         <div className="border-t border-ds-line px-4 py-3">
-          <p className="text-[13px] text-ds-muted mb-2">Ticket types</p>
+          <p className="text-[13px] text-ds-muted mb-2">Ticket types (add them on the Tickets page of the event after creating it)</p>
           <div className="flex flex-col gap-1.5">
             {details.ticketTypes.map((t, i) => (
               <div key={i} className="flex items-center justify-between rounded-lg bg-ds-subtle px-3 py-2">
@@ -261,9 +319,11 @@ function ExtractionCard({
       )}
 
       <div className="border-t border-ds-line px-4 py-3 flex items-center justify-between gap-3">
-        <p className="text-[13px] text-ds-muted">Review before creating the event.</p>
-        <button type="button" onClick={onConfirm} className="ds-btn ds-btn-primary ds-btn-sm">
-          Create event
+        <p className="text-[13px] text-ds-muted">
+          {missing.length ? `Still needed: ${missing.join(', ')}.` : 'Review, then create the event as a draft.'}
+        </p>
+        <button type="button" onClick={onConfirm} disabled={missing.length > 0 || creating} className="ds-btn ds-btn-primary ds-btn-sm shrink-0">
+          {creating ? 'Creating…' : 'Create event'}
         </button>
       </div>
     </div>
@@ -294,10 +354,12 @@ function Message({
   message,
   onEdit,
   onConfirm,
+  creating,
 }: {
   message: UiMessage;
   onEdit: (field: keyof ExtractedEventDetails, value: string) => void;
   onConfirm: () => void;
+  creating?: boolean;
 }) {
   if (message.role === 'user') {
     return (
@@ -333,7 +395,7 @@ function Message({
         </div>
         {message.extraction && (
           <div className="mt-4">
-            <ExtractionCard details={message.extraction} onEdit={onEdit} onConfirm={onConfirm} />
+            <ExtractionCard details={message.extraction} onEdit={onEdit} onConfirm={onConfirm} creating={creating} />
           </div>
         )}
         <div className="mt-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
@@ -347,7 +409,9 @@ function Message({
 /* ─────────────────────────── main page ───────────────────────── */
 
 export default function AgentPage() {
-  const { currentUser } = useAppContext();
+  const { currentUser, createEvent, activeWorkspace } = useAppContext();
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [messages, setMessages] = useState<UiMessage[]>([]);
@@ -385,17 +449,49 @@ export default function AgentPage() {
     });
   }, []);
 
-  const buildCtx = useCallback((): ConversationContext => ({
-    messages,
-    extractedDetails: extractedDetails ?? undefined,
-    flyerDataUri: flyerDataUri ?? undefined,
-    stage,
-  }), [messages, extractedDetails, flyerDataUri, stage]);
+  /** Runs one assistant turn and shows the reply; the draft card follows the newest reply only. */
+  const runTurn = useCallback(
+    async (history: UiMessage[], image: string | null) => {
+      setIsTyping(true);
+      try {
+        const turn = await askAgent(history, extractedDetails, image);
+        const details = toDetails(turn.details);
+        const showCard = hasDraft(details);
+        if (showCard) {
+          setExtractedDetails(details);
+          setStage('reviewing_extraction');
+        }
+        startTransition(() => {
+          setMessages((prev) => [
+            ...prev.map((m) => (m.extraction ? { ...m, extraction: undefined } : m)),
+            assistantMsg(turn.reply, showCard ? { extraction: details } : undefined),
+          ]);
+        });
+      } catch (err) {
+        const e = err as Error & { code?: string };
+        push(
+          assistantMsg(
+            e.code === 'not_configured'
+              ? `${e.message}\n\nUse the **classic builder** (top right) to create your event now.`
+              : e.message,
+          ),
+        );
+        setStage((current) => (current === 'extracting' ? 'idle' : current));
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [extractedDetails, push],
+  );
 
   /* Handle flyer upload */
   const handleFlyerFile = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
-      push(assistantMsg('I can only read image flyers right now. Please upload a PNG or JPG.'));
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)) {
+      push(assistantMsg('I can read PNG, JPG, WEBP or GIF flyers. Upload one of those, or describe the event in a message.'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      push(assistantMsg('That flyer is larger than 5 MB. Upload a smaller image.'));
       return;
     }
     const reader = new FileReader();
@@ -403,57 +499,26 @@ export default function AgentPage() {
       const dataUri = e.target?.result as string;
       setFlyerDataUri(dataUri);
       setFlyerPreview({ name: file.name, url: dataUri });
-
-      push(userMsg(`Uploaded flyer: ${file.name}`, { attachment: { name: file.name, url: dataUri } }));
-      setIsTyping(true);
       setStage('extracting');
 
-      try {
-        const ctx = buildCtx();
-        const result = await mockAIAdapter.extractEventDetails(dataUri, '', ctx);
-        setExtractedDetails(result);
-        setStage('reviewing_extraction');
-
-        const fieldCount = Object.keys(result).filter(
-          (k) => result[k as keyof typeof result] && k !== 'confidence' && k !== 'uncertainFields',
-        ).length;
-        push(
-          assistantMsg(
-            `I pulled **${fieldCount} fields** from your flyer with **${Math.round(result.confidence * 100)}% confidence**.\n\nReview the details below. Click any field to edit it, then choose **Create event** when you're ready.`,
-            { extraction: result },
-          ),
-        );
-      } catch {
-        push(assistantMsg("I couldn't read that flyer. Try a clearer image, or describe the event in a message instead."));
-        setStage('idle');
-      } finally {
-        setIsTyping(false);
-      }
+      const msg = userMsg(`Here is the flyer for my event (${file.name}). Fill in the draft from it.`, {
+        attachment: { name: file.name, url: dataUri },
+      });
+      push(msg);
+      await runTurn([...messages, msg], dataUri);
     };
     reader.readAsDataURL(file);
-  }, [push, buildCtx]);
+  }, [push, messages, runTurn]);
 
   /* Handle text send */
   const handleSend = useCallback(async () => {
     const text = input.trim();
     if (!text || isTyping) return;
     setInput('');
-    push(userMsg(text));
-    setIsTyping(true);
-
-    try {
-      const ctx = buildCtx();
-      const { reply, updatedDetails } = await mockAIAdapter.continueEventConversation(text, ctx);
-      if (updatedDetails && extractedDetails) {
-        setExtractedDetails((prev) => prev ? { ...prev, ...updatedDetails } : prev);
-      }
-      push(assistantMsg(reply));
-    } catch {
-      push(assistantMsg('Sorry, something went wrong. Please try again.'));
-    } finally {
-      setIsTyping(false);
-    }
-  }, [input, isTyping, push, buildCtx, extractedDetails]);
+    const msg = userMsg(text);
+    push(msg);
+    await runTurn([...messages, msg], flyerDataUri);
+  }, [input, isTyping, push, messages, runTurn, flyerDataUri]);
 
   /* Handle inline field edit */
   const handleFieldEdit = useCallback((field: keyof ExtractedEventDetails, value: string) => {
@@ -468,18 +533,65 @@ export default function AgentPage() {
     );
   }, []);
 
-  /* Handle confirm / create event */
-  const handleConfirm = useCallback(() => {
-    setStage('done');
-    push(
-      assistantMsg(
-        "Your event is ready to create. In a live workspace this would add it to your Aram Events events.\n\n**This is mock mode, so no record was created.** Once a real AI provider is connected, this button will run the full event creation workflow.\n\nWant to start another event or refine this one?",
-      ),
-    );
-    setExtractedDetails(null);
-    setFlyerPreview(null);
-    setFlyerDataUri(null);
-  }, [push]);
+  /* Create the event from the reviewed draft, the same way the classic builder does */
+  const handleConfirm = useCallback(async () => {
+    const d = extractedDetails;
+    if (!d || creating) return;
+    const missing = missingForCreate(d);
+    if (missing.length) {
+      push(assistantMsg(`Before I can create it, the draft still needs: ${missing.join(', ')}. Tell me, or click a field to fill it in.`));
+      return;
+    }
+    if (activeWorkspace?.is_suspended) {
+      push(assistantMsg('This workspace is suspended, so new events cannot be created. Contact support to reactivate it.'));
+      return;
+    }
+    setCreating(true);
+    setStage('creating_event');
+    try {
+      const startDate = (d.startDate || d.date)!;
+      const endDate = d.endDate || startDate;
+      if (endDate < startDate || (endDate === startDate && d.endTime! <= d.startTime!)) {
+        throw new Error('The end is before the start. Fix the end date or time, then try again.');
+      }
+      const flyer = flyerDataUri ? await uploadFlyer(flyerDataUri) : undefined;
+      const location = [d.venue, d.city].filter(Boolean).join(', ');
+      const created = await createEvent({
+        name: d.name!.trim(),
+        slug: buildEventSlug(d.name!),
+        type: d.eventType!,
+        format: d.format!,
+        startDate,
+        endDate,
+        startTime: d.startTime!,
+        endTime: d.endTime!,
+        timezone: d.timezone || 'Asia/Kolkata',
+        location: d.format === 'Virtual' ? '' : location,
+        description: d.description?.trim() || '',
+        status: 'draft',
+        flyer,
+        website: buildDefaultWebsite({ flyerUrl: flyer, format: d.format! }),
+      });
+      setStage('done');
+      setMessages((prev) => prev.map((m) => (m.extraction ? { ...m, extraction: undefined } : m)));
+      push(
+        assistantMsg(
+          `**${created.name}** is created as a draft${flyer ? ' with your flyer as the website banner' : ''}. Opening the event workspace, where you can add tickets and publish the website.`,
+        ),
+      );
+      setExtractedDetails(null);
+      setFlyerPreview(null);
+      setFlyerDataUri(null);
+      router.push(`/app/events/${created.id}`);
+    } catch (err) {
+      const raw = (err as Error)?.message || '';
+      const internal = /supabase|postgres|sql|relation|foreign key|syntax error|uuid|column|table|database/i.test(raw);
+      push(assistantMsg(internal || !raw ? 'The event could not be created. Check the details and try again.' : raw));
+      setStage('reviewing_extraction');
+    } finally {
+      setCreating(false);
+    }
+  }, [extractedDetails, creating, push, activeWorkspace, flyerDataUri, createEvent, router]);
 
   const handleNewChat = () => {
     setMessages([]);
@@ -550,7 +662,7 @@ export default function AgentPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-[12px] text-ds-muted">Event Agent · Mock</span>
+            <span className="hidden sm:inline text-[12px] text-ds-muted">Event assistant</span>
             <button
               type="button"
               id="agent-send-message"
@@ -567,7 +679,7 @@ export default function AgentPage() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp,image/gif"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -605,9 +717,6 @@ export default function AgentPage() {
             </button>
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <h1 className="text-[15px] font-medium text-ds-ink truncate">AI Event Agent</h1>
-              <span className="text-[11px] text-ds-muted border border-ds-line rounded-md px-1.5 py-0.5 shrink-0">
-                Mock
-              </span>
             </div>
             <Link href="/app/events/new" className="ds-btn ds-btn-ghost ds-btn-sm hidden sm:inline-flex">
               Classic builder
@@ -664,6 +773,7 @@ export default function AgentPage() {
                       message={msg}
                       onEdit={handleFieldEdit}
                       onConfirm={handleConfirm}
+                      creating={creating}
                     />
                   ))}
                   {isTyping && <ThinkingIndicator />}
@@ -676,7 +786,7 @@ export default function AgentPage() {
                 <div className="mx-auto w-full max-w-3xl">
                   {composer}
                   <p className="text-[11px] text-ds-muted mt-2 text-center">
-                    Mock mode: responses are simulated and nothing is saved.
+                    The assistant can misread flyers. Check every field before creating the event.
                   </p>
                 </div>
               </div>
@@ -699,7 +809,7 @@ export default function AgentPage() {
               <div className="pointer-events-none flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-ds-accent/50 bg-ds-accent-soft px-12 py-10 text-center">
                 <span className="material-symbols-outlined text-[32px] text-ds-accent">upload_file</span>
                 <p className="text-[15px] font-medium text-ds-ink">Drop your flyer to analyze it</p>
-                <p className="text-[13px] text-ds-muted">PNG or JPG</p>
+                <p className="text-[13px] text-ds-muted">PNG, JPG or WEBP, up to 5 MB</p>
               </div>
             </div>
           )}
