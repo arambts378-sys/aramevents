@@ -1,297 +1,142 @@
-import { PageHeader } from '@/components/ui';
 import React from 'react';
-import { getPlatformAnalytics, getPlatformOverview } from '@/services/superAdminPortal.server';
+import { EmptyPanel, PageHeader, Panel } from '@/components/ui';
+import { getAnalytics } from '@/services/superAdminLive.server';
 
-export default async function SuperAdminAnalyticsPage() {
-  const [analyticsResult, overviewResult] = await Promise.all([
-    getPlatformAnalytics(),
-    getPlatformOverview(),
-  ]);
+function monthLabel(key: string) {
+  const [y, m] = key.split('-').map(Number);
+  return new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, 1)));
+}
 
-  const analytics = analyticsResult.ok
-    ? analyticsResult.data
-    : {
-        workspacesGrowth: [],
-        eventsGrowth: [],
-        registrationsGrowth: [],
-        eventsByStatus: [],
-        eventsByType: [],
-        planDistribution: [],
-      };
-
-  const summary = overviewResult.ok
-    ? overviewResult.data.summary
-    : {
-        totalWorkspaces: 0,
-        suspendedWorkspaces: 0,
-        totalOrganizers: 0,
-        totalEvents: 0,
-        draftEvents: 0,
-        publishedEvents: 0,
-        archivedEvents: 0,
-        liveEvents: 0,
-        moderatedEvents: 0,
-        totalRegistrations: 0,
-      };
-
-  const maxWorkspacesCount = Math.max(
-    1,
-    ...analytics.workspacesGrowth.map((w) => w.count),
-  );
-  const maxEventsCount = Math.max(1, ...analytics.eventsGrowth.map((e) => e.count));
-  const maxRegistrationsCount = Math.max(
-    1,
-    ...analytics.registrationsGrowth.map((r) => r.count),
-  );
-
+/** Paired monthly columns: a primary series with an optional overlaid secondary one. */
+function MonthlyBars({
+  months,
+  primary,
+  secondary,
+  primaryLabel,
+  secondaryLabel,
+}: {
+  months: string[];
+  primary: number[];
+  secondary?: number[];
+  primaryLabel: string;
+  secondaryLabel?: string;
+}) {
+  const max = Math.max(1, ...primary, ...(secondary ?? []));
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow="Platform Intelligence"
-        title="Platform Analytics & Growth"
-        description="Real-time aggregated indicators across workspace adoption, event publication, and attendee volume."
-      />
-
-      {/* Top Level Summary Cards */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          {
-            label: 'Total Organizations',
-            val: summary.totalWorkspaces,
-            sub: `${summary.suspendedWorkspaces} suspended`,
-            icon: 'corporate_fare',
-            color: 'text-ds-accent',
-          },
-          {
-            label: 'Total Events Hosted',
-            val: summary.totalEvents,
-            sub: `${summary.publishedEvents} published`,
-            icon: 'calendar_today',
-            color: 'text-[#6366F1]',
-          },
-          {
-            label: 'Attendee Registrations',
-            val: summary.totalRegistrations,
-            sub: 'Across all workspaces',
-            icon: 'how_to_reg',
-            color: 'text-[#0284C7]',
-          },
-          {
-            label: 'Active Organizers',
-            val: summary.totalOrganizers,
-            sub: 'Platform account owners',
-            icon: 'groups',
-            color: 'text-[#10B981]',
-          },
-        ].map((item) => (
-          <div
-            key={item.label}
-            className="ds-card p-4 sm:p-5"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-ds-muted">{item.label}</span>
-              <span className={`material-symbols-outlined text-[20px] ${item.color}`}>
-                {item.icon}
-              </span>
+    <figure>
+      <div className="flex h-44 items-end gap-1.5 sm:gap-2" role="img" aria-label={`${primaryLabel} per month, last 12 months`}>
+        {months.map((m, i) => (
+          <div key={m} className="group relative flex h-full flex-1 flex-col justify-end" title={`${monthLabel(m)}: ${primary[i]} ${primaryLabel.toLowerCase()}${secondary ? `, ${secondary[i]} ${secondaryLabel?.toLowerCase()}` : ''}`}>
+            <div className="relative w-full rounded-t-[3px] bg-ds-accent/25" style={{ height: `${(primary[i] / max) * 100}%`, minHeight: primary[i] ? 3 : 0 }}>
+              {secondary && (
+                <div className="absolute inset-x-0 bottom-0 rounded-t-[3px] bg-ds-accent" style={{ height: primary[i] ? `${Math.min(100, (secondary[i] / Math.max(1, primary[i])) * 100)}%` : 0 }} />
+              )}
             </div>
-            <p className="font-space text-2xl font-bold text-ds-ink mt-2 tabular-nums">
-              {item.val.toLocaleString()}
-            </p>
-            <p className="text-[11px] text-ds-muted mt-0.5">{item.sub}</p>
+            <span className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 text-[11px] tabular-nums text-ds-ink opacity-0 group-hover:opacity-100">{primary[i]}</span>
           </div>
         ))}
+      </div>
+      <div className="mt-1.5 flex gap-1.5 sm:gap-2">
+        {months.map((m) => (
+          <span key={m} className="flex-1 text-center text-[11px] text-ds-muted">{monthLabel(m)}</span>
+        ))}
+      </div>
+      <figcaption className="mt-3 flex flex-wrap gap-4 text-[12px] text-ds-muted">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-ds-accent/25" aria-hidden="true" />{primaryLabel}</span>
+        {secondaryLabel && <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-ds-accent" aria-hidden="true" />{secondaryLabel}</span>}
+      </figcaption>
+    </figure>
+  );
+}
+
+function Breakdown({ rows }: { rows: Array<{ label: string; count: number }> }) {
+  const total = Math.max(1, rows.reduce((s, r) => s + r.count, 0));
+  if (rows.length === 0) return <p className="text-[13px] text-ds-muted">No events yet.</p>;
+  return (
+    <ul className="space-y-3">
+      {rows.map((r) => (
+        <li key={r.label}>
+          <div className="flex justify-between text-[13px]">
+            <span className="capitalize text-ds-ink">{r.label.replace(/_/g, ' ')}</span>
+            <span className="tabular-nums text-ds-muted">{r.count} ({Math.round((r.count / total) * 100)}%)</span>
+          </div>
+          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-ds-line">
+            <div className="h-full rounded-full bg-ds-accent" style={{ width: `${(r.count / total) * 100}%` }} />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default async function AnalyticsPage() {
+  const result = await getAnalytics();
+  if (!result.ok) {
+    return <div className="ds-card"><EmptyPanel icon="error" title="Couldn’t load analytics" description={result.message} /></div>;
+  }
+  const { months, eventsByType, eventsByStatus, topEvents, totals } = result.data;
+  const keys = months.map((m) => m.month);
+  const sum = (k: 'organizers' | 'events' | 'registrations' | 'checkIns') => months.reduce((s, m) => s + m[k], 0);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Analytics" description="Growth and attendance across the whole platform over the last 12 months." />
+
+      <section className="ds-card overflow-hidden" aria-label="12-month totals">
+        <dl className="grid grid-cols-2 gap-px bg-ds-line lg:grid-cols-4">
+          {[
+            { label: 'New organizers', value: sum('organizers') },
+            { label: 'Events created', value: sum('events') },
+            { label: 'Registrations', value: sum('registrations') },
+            {
+              label: 'Attendance',
+              value: totals.attendanceRate === null ? '—' : `${Math.round(totals.attendanceRate * 100)}%`,
+              note: `${totals.checkIns.toLocaleString('en')} of ${totals.registrations.toLocaleString('en')} registrations checked in`,
+            },
+          ].map((f) => (
+            <div key={f.label} className="bg-ds-surface px-5 py-4">
+              <dt className="text-[13px] text-ds-muted">{f.label}</dt>
+              <dd className="mt-1.5 text-[28px] font-semibold leading-none tracking-tight tabular-nums text-ds-ink">
+                {typeof f.value === 'number' ? f.value.toLocaleString('en') : f.value}
+              </dd>
+              {'note' in f && f.note && <dd className="mt-2 text-[12px] text-ds-muted">{f.note}</dd>}
+            </div>
+          ))}
+        </dl>
       </section>
 
-      {/* Growth Trends Charts (Workspaces & Events) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Workspace Growth */}
-        <div className="ds-card p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-ds-line">
-              <h2 className="font-space text-base font-bold text-ds-ink">
-                Workspace Registrations (Last 12 Months)
-              </h2>
-              <span className="text-xs font-semibold text-ds-accent">Tenant Growth</span>
-            </div>
-
-            {analytics.workspacesGrowth.length === 0 ? (
-              <div className="py-12 text-center text-xs text-ds-muted">
-                No historical workspace growth data available yet.
-              </div>
-            ) : (
-              <div className="mt-6 flex items-end gap-3 h-44 pt-4 px-2">
-                {analytics.workspacesGrowth.map((item) => {
-                  const heightPercent = Math.max(12, Math.round((item.count / maxWorkspacesCount) * 100));
-                  return (
-                    <div key={item.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                      <span className="text-[10px] font-bold text-ds-accent opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.count}
-                      </span>
-                      <div
-                        style={{ height: `${heightPercent}%` }}
-                        className="w-full rounded-t-lg bg-ds-accent hover:brightness-110 transition-all cursor-pointer"
-                        title={`${item.month}: ${item.count} workspaces`}
-                      />
-                      <span className="text-[10px] text-ds-muted font-mono whitespace-nowrap">
-                        {item.month.slice(5)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <p className="mt-4 text-[11px] text-ds-muted border-t border-ds-line pt-2">
-            Displays new workspace creation events aggregated monthly from PostgreSQL.
-          </p>
-        </div>
-
-        {/* Events Growth */}
-        <div className="ds-card p-5 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-ds-line">
-              <h2 className="font-space text-base font-bold text-ds-ink">
-                Events Created (Last 12 Months)
-              </h2>
-              <span className="text-xs font-semibold text-[#0284C7]">Activity Volume</span>
-            </div>
-
-            {analytics.eventsGrowth.length === 0 ? (
-              <div className="py-12 text-center text-xs text-ds-muted">
-                No historical event creation data available yet.
-              </div>
-            ) : (
-              <div className="mt-6 flex items-end gap-3 h-44 pt-4 px-2">
-                {analytics.eventsGrowth.map((item) => {
-                  const heightPercent = Math.max(12, Math.round((item.count / maxEventsCount) * 100));
-                  return (
-                    <div key={item.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                      <span className="text-[10px] font-bold text-[#0284C7] opacity-0 group-hover:opacity-100 transition-opacity">
-                        {item.count}
-                      </span>
-                      <div
-                        style={{ height: `${heightPercent}%` }}
-                        className="w-full rounded-t-lg bg-gradient-to-t from-[#0284C7] to-[#38BDF8] hover:brightness-110 transition-all cursor-pointer"
-                        title={`${item.month}: ${item.count} events`}
-                      />
-                      <span className="text-[10px] text-ds-muted font-mono whitespace-nowrap">
-                        {item.month.slice(5)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          <p className="mt-4 text-[11px] text-ds-muted border-t border-ds-line pt-2">
-            Tracks total events scheduled across all workspaces by month.
-          </p>
-        </div>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <Panel title="Registrations and check-ins" description="Dark fill shows how many registrations were checked in that month.">
+          <MonthlyBars months={keys} primary={months.map((m) => m.registrations)} secondary={months.map((m) => m.checkIns)} primaryLabel="Registrations" secondaryLabel="Checked in" />
+        </Panel>
+        <Panel title="Organizer sign-ups and new events">
+          <MonthlyBars months={keys} primary={months.map((m) => m.organizers)} secondary={months.map((m) => m.events)} primaryLabel="Organizer sign-ups" secondaryLabel="Events created" />
+        </Panel>
       </div>
 
-      {/* Distribution Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Events By Status */}
-        <div className="ds-card p-5">
-          <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
-            Lifecycle Status Distribution
-          </h2>
-          <div className="mt-4 space-y-3">
-            {[
-              { label: 'Published', count: summary.publishedEvents, color: 'bg-[#10B981]' },
-              { label: 'Draft', count: summary.draftEvents, color: 'bg-ds-accent' },
-              { label: 'Archived', count: summary.archivedEvents, color: 'bg-ds-muted' },
-            ].map((st) => {
-              const total = Math.max(1, summary.totalEvents);
-              const pct = Math.round((st.count / total) * 100);
-              return (
-                <div key={st.label}>
-                  <div className="flex justify-between text-xs font-semibold mb-1">
-                    <span className="text-ds-ink">{st.label}</span>
-                    <span className="text-ds-muted">
-                      {st.count.toLocaleString()} ({pct}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-ds-line rounded-full h-2 overflow-hidden">
-                    <div
-                      style={{ width: `${pct}%` }}
-                      className={`h-full rounded-full ${st.color}`}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Plan Distribution */}
-        <div className="ds-card p-5">
-          <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
-            Subscription Tier Distribution
-          </h2>
-          <div className="mt-4 space-y-3">
-            {analytics.planDistribution.length === 0 ? (
-              <p className="text-xs text-ds-muted py-4 text-center">
-                All workspaces currently on default Free tier.
-              </p>
-            ) : (
-              analytics.planDistribution.map((p) => {
-                const total = Math.max(1, summary.totalWorkspaces);
-                const pct = Math.round((p.count / total) * 100);
-                return (
-                  <div key={p.plan}>
-                    <div className="flex justify-between text-xs font-semibold mb-1">
-                      <span className="text-ds-ink uppercase">{p.plan}</span>
-                      <span className="text-ds-muted">
-                        {p.count.toLocaleString()} ({pct}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-ds-line rounded-full h-2 overflow-hidden">
-                      <div
-                        style={{ width: `${pct}%` }}
-                        className="h-full rounded-full bg-ds-accent"
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Operational Security Integrity */}
-        <div className="ds-card p-5 flex flex-col justify-between">
-          <div>
-            <h2 className="font-space text-sm font-bold text-ds-ink pb-3 border-b border-ds-line">
-              Operational Diagnostics
-            </h2>
-            <div className="mt-4 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-ds-muted">Suspended Workspaces:</span>
-                <span className="font-bold text-ds-ink tabular-nums">
-                  {summary.suspendedWorkspaces}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-ds-muted">Moderated Events:</span>
-                <span className="font-bold text-ds-ink tabular-nums">
-                  {summary.moderatedEvents}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-ds-muted">Row Level Security:</span>
-                <span className="text-[#10B981] font-bold">Enforced (Active)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-ds-muted">Audit Logs:</span>
-                <span className="text-[#10B981] font-bold">Append-Only</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 p-2.5 rounded-xl bg-ds-accent-soft text-[11px] text-ds-accent font-medium">
-            Cross-tenant boundaries verified. No direct write operations exposed.
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Panel title="Events by type"><Breakdown rows={eventsByType.map((r) => ({ label: r.type, count: r.count }))} /></Panel>
+        <Panel title="Events by status"><Breakdown rows={eventsByStatus.map((r) => ({ label: r.status === 'published' ? 'live' : r.status, count: r.count }))} /></Panel>
+        <Panel title="Biggest events" description="By registrations, all time." flush>
+          {topEvents.length === 0 ? (
+            <p className="px-5 py-6 text-[13px] text-ds-muted">No registrations yet.</p>
+          ) : (
+            <ol className="divide-y divide-ds-line">
+              {topEvents.map((e) => (
+                <li key={e.id} className="flex items-baseline justify-between gap-3 px-4 py-2.5 text-[13px] sm:px-5">
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-ds-ink">{e.name}</span>
+                    <span className="block truncate text-[12px] text-ds-muted">{e.workspaceName}</span>
+                  </span>
+                  <span className="shrink-0 text-right tabular-nums">
+                    {e.registrations.toLocaleString('en')}
+                    <span className="block text-[12px] text-ds-muted">{e.checkIns.toLocaleString('en')} in</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
       </div>
     </div>
   );

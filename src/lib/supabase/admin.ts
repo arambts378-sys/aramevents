@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createRecordingFetch, sourceFromRequestHeaders } from '@/lib/monitoring/dbCallRecorder';
 
 /**
  * Creates a Supabase client with the SERVICE_ROLE_KEY.
@@ -20,7 +21,8 @@ export function createAdminClient() {
       auth: {
         autoRefreshToken: false,
         persistSession: false
-      }
+      },
+      global: { fetch: createRecordingFetch(sourceFromRequestHeaders) }
     }
   );
 }

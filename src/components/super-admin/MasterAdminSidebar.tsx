@@ -10,13 +10,31 @@ interface MasterAdminSidebarProps {
   adminEmail: string;
 }
 
-const navItems = [
-  { href: '/super-admin', label: 'Overview', icon: 'dashboard', exact: true },
-  { href: '/super-admin/organizers', label: 'Organizers', icon: 'corporate_fare', exact: false },
-  { href: '/super-admin/events', label: 'Global Events', icon: 'calendar_month', exact: false },
-  { href: '/super-admin/analytics', label: 'Analytics', icon: 'monitoring', exact: false },
-  { href: '/super-admin/activity', label: 'Activity Feed', icon: 'history', exact: false },
-  { href: '/super-admin/audit-logs', label: 'Audit Logs', icon: 'security', exact: false },
+const navGroups = [
+  {
+    label: null,
+    items: [{ href: '/super-admin', label: 'Overview', icon: 'dashboard', exact: true }],
+  },
+  {
+    label: 'Platform',
+    items: [
+      { href: '/super-admin/organizers', label: 'Organizers', icon: 'group', exact: false },
+      { href: '/super-admin/events', label: 'Events', icon: 'calendar_month', exact: false },
+      { href: '/super-admin/analytics', label: 'Analytics', icon: 'bar_chart', exact: false },
+    ],
+  },
+  {
+    label: 'Oversight',
+    items: [
+      { href: '/super-admin/activity', label: 'Activity', icon: 'bolt', exact: false },
+      { href: '/super-admin/audit-logs', label: 'Audit log', icon: 'history', exact: false },
+      { href: '/super-admin/monitoring', label: 'Monitoring', icon: 'database', exact: false },
+    ],
+  },
+  {
+    label: 'You',
+    items: [{ href: '/super-admin/settings', label: 'Settings', icon: 'settings', exact: false }],
+  },
 ];
 
 export function MasterAdminSidebar({ adminEmail }: MasterAdminSidebarProps) {
@@ -92,36 +110,43 @@ export function MasterAdminSidebar({ adminEmail }: MasterAdminSidebarProps) {
 
           {/* Nav links */}
           <nav className="space-y-0.5 overflow-y-auto flex-1">
-            {navItems.map((item) => {
-              const isActive = item.exact
-                ? pathname === item.href
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            {navGroups.map((group) => (
+              <div key={group.label ?? 'top'} className={group.label ? 'pt-4' : ''}>
+                {group.label && (
+                  <p className="px-2.5 pb-1 text-[12px] font-medium text-ds-muted">{group.label}</p>
+                )}
+                {group.items.map((item) => {
+                  const isActive = item.exact
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`flex min-h-9 items-center gap-2.5 px-2.5 rounded-lg text-[14px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-ds-accent ${
-                    isActive
-                      ? 'bg-ds-ink/[0.06] text-ds-ink font-medium'
-                      : 'text-ds-body hover:text-ds-ink hover:bg-ds-ink/[0.04]'
-                  }`}
-                >
-                  <span
-                    className={`material-symbols-outlined text-[19px] ${
-                      isActive ? 'text-ds-ink' : 'text-ds-muted'
-                    }`}
-                    style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
-                    aria-hidden="true"
-                  >
-                    {item.icon}
-                  </span>
-                  <span className="flex-1 truncate">{item.label}</span>
-                </Link>
-              );
-            })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`flex min-h-9 items-center gap-2.5 px-2.5 rounded-lg text-[14px] transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-ds-accent ${
+                        isActive
+                          ? 'bg-ds-ink/[0.06] text-ds-ink font-medium'
+                          : 'text-ds-body hover:text-ds-ink hover:bg-ds-ink/[0.04]'
+                      }`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[19px] ${
+                          isActive ? 'text-ds-ink' : 'text-ds-muted'
+                        }`}
+                        style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
+                        aria-hidden="true"
+                      >
+                        {item.icon}
+                      </span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </nav>
         </div>
 

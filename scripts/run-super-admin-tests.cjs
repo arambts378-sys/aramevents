@@ -13,6 +13,7 @@ const result = spawnSync(
     'src/lib/super-admin/__tests__/customerDirectory.test.ts',
     'src/lib/super-admin/__tests__/activity.test.ts',
     'src/lib/super-admin/__tests__/masterAdminPortal.test.ts',
+    'src/lib/monitoring/__tests__/dbCallRecorder.test.ts',
   ],
   {
     stdio: 'inherit',

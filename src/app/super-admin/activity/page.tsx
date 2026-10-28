@@ -1,180 +1,103 @@
+import React from 'react';
 import Link from 'next/link';
-import { PageHeader } from '@/components/ui';
-import {
-  ACTIVITY_ACTIONS,
-  ACTIVITY_CATEGORIES,
-  ACTIVITY_OUTCOMES,
-  ACTIVITY_SEVERITIES,
-  parseActivityDirectoryQuery,
-} from '@/lib/super-admin/activity';
-import { getPlatformActivity } from '@/services/superAdminActivity.server';
+import { EmptyPanel, PageHeader } from '@/components/ui';
+import { FilterTabs } from '@/components/super-admin/Pager';
+import { fmtAgo } from '@/components/super-admin/fmt';
+import { listActivity, type ActivityItem } from '@/services/superAdminLive.server';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? 'Unavailable'
-    : new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+const KIND: Record<ActivityItem['kind'], { icon: string; className: string }> = {
+  signup: { icon: 'person_add', className: 'bg-ds-accent-soft text-ds-accent-strong' },
+  workspace: { icon: 'domain_add', className: 'bg-ds-accent-soft text-ds-accent-strong' },
+  event: { icon: 'event', className: 'bg-ds-info-soft text-ds-info' },
+  registration: { icon: 'confirmation_number', className: 'bg-ds-success-soft text-ds-success' },
+  check_in: { icon: 'qr_code_scanner', className: 'bg-ds-success-soft text-ds-success' },
+  check_in_denied: { icon: 'gpp_bad', className: 'bg-ds-danger-soft text-ds-danger' },
+};
+
+function dayLabel(iso: string) {
+  const d = iso.slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  if (d === today) return 'Today';
+  if (d === yesterday) return 'Yesterday';
+  return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(iso));
 }
 
-function pageHref(params: SearchParams, page: number): string {
-  const query = new URLSearchParams();
-  for (const key of ['workspace', 'category', 'action', 'outcome', 'severity', 'from', 'to', 'correlation', 'q']) {
-    const value = params[key];
-    if (typeof value === 'string' && value) query.set(key, value);
+export default async function ActivityPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const raw = await searchParams;
+  const kind = typeof raw.kind === 'string' ? raw.kind : 'all';
+  const result = await listActivity(kind);
+
+  const days = new Map<string, ActivityItem[]>();
+  if (result.ok) {
+    for (const item of result.data) {
+      const label = dayLabel(item.at);
+      days.set(label, [...(days.get(label) ?? []), item]);
+    }
   }
-  if (page > 1) query.set('page', String(page));
-  return `/super-admin/activity${query.size ? `?${query.toString()}` : ''}`;
-}
-
-function label(value: string): string {
-  return value.replaceAll('_', ' ');
-}
-
-export default async function SuperAdminActivityPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const params = await searchParams;
-  const query = parseActivityDirectoryQuery(params);
-  const result = await getPlatformActivity(query);
-
-  if (!result.ok) {
-    return (
-      <section className="ds-card p-5 sm:p-8" role="alert">
-        <h1 className="font-space text-2xl font-bold">Activity diagnostics</h1>
-        <p className="mt-3 text-sm text-ds-muted">{result.message}</p>
-      </section>
-    );
-  }
-
-  const { data } = result;
-  const pageCount = Math.max(1, Math.ceil(data.totalCount / data.pageSize));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        eyebrow="Platform diagnostics"
         title="Activity"
-        description="Review operational events and sanitized failures. No credentials, attendee details, or raw error payloads are shown."
+        description="Sign-ups, new events, registrations and check-ins across every workspace in the last 30 days."
       />
 
-      <section aria-label="Recent activity summary" className="grid gap-3 sm:grid-cols-2">
-        <div className="ds-card p-4 sm:p-5">
-          <p className="text-sm font-medium text-ds-muted">Events in the last 24 hours</p>
-          <p className="mt-2 font-space text-2xl font-bold tabular-nums">{data.summary.recentCount.toLocaleString()}</p>
-        </div>
-        <div className="ds-card p-4 sm:p-5">
-          <p className="text-sm font-medium text-ds-muted">Failures in the last 24 hours</p>
-          <p className="mt-2 font-space text-2xl font-bold tabular-nums text-[#B42318]">{data.summary.errorCount.toLocaleString()}</p>
-        </div>
-      </section>
+      <FilterTabs
+        base="/super-admin/activity"
+        params={{ kind: kind === 'all' ? undefined : kind }}
+        name="kind"
+        active={kind}
+        options={[
+          { value: 'all', label: 'Everything' },
+          { value: 'signup', label: 'Sign-ups' },
+          { value: 'event', label: 'Events' },
+          { value: 'registration', label: 'Registrations' },
+          { value: 'check_in', label: 'Check-ins' },
+        ]}
+      />
 
-      <section className="ds-card p-4 sm:p-5">
-        <form action="/super-admin/activity" method="get" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="sm:col-span-2">
-            <label htmlFor="activity-search" className="mb-1.5 block text-sm font-semibold">Search safe message or code</label>
-            <input id="activity-search" name="q" type="search" maxLength={100} defaultValue={query.search ?? ''} className="ds-input" />
-          </div>
-          <div>
-            <label htmlFor="activity-correlation" className="mb-1.5 block text-sm font-semibold">Correlation ID</label>
-            <input id="activity-correlation" name="correlation" type="text" maxLength={36} defaultValue={query.correlationId ?? ''} placeholder="UUID lookup" className="ds-input font-mono text-xs" />
-          </div>
-          <div>
-            <label htmlFor="activity-workspace" className="mb-1.5 block text-sm font-semibold">Workspace ID</label>
-            <input id="activity-workspace" name="workspace" type="text" maxLength={36} defaultValue={query.workspaceId ?? ''} placeholder="Exact workspace UUID" className="ds-input font-mono text-xs" />
-          </div>
-          <div>
-            <label htmlFor="activity-category" className="mb-1.5 block text-sm font-semibold">Category</label>
-            <select id="activity-category" name="category" defaultValue={query.category ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm">
-              <option value="">All categories</option>
-              {ACTIVITY_CATEGORIES.map((item) => <option key={item} value={item}>{label(item)}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="activity-action" className="mb-1.5 block text-sm font-semibold">Action</label>
-            <select id="activity-action" name="action" defaultValue={query.action ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm">
-              <option value="">All actions</option>
-              {ACTIVITY_ACTIONS.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="activity-outcome" className="mb-1.5 block text-sm font-semibold">Outcome</label>
-            <select id="activity-outcome" name="outcome" defaultValue={query.outcome ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm">
-              <option value="">All outcomes</option>
-              {ACTIVITY_OUTCOMES.map((item) => <option key={item} value={item}>{label(item)}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="activity-severity" className="mb-1.5 block text-sm font-semibold">Severity</label>
-            <select id="activity-severity" name="severity" defaultValue={query.severity ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm">
-              <option value="">All severities</option>
-              {ACTIVITY_SEVERITIES.map((item) => <option key={item} value={item}>{label(item)}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="activity-from" className="mb-1.5 block text-sm font-semibold">From</label>
-            <input id="activity-from" name="from" type="date" defaultValue={query.from ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm" />
-          </div>
-          <div>
-            <label htmlFor="activity-to" className="mb-1.5 block text-sm font-semibold">To</label>
-            <input id="activity-to" name="to" type="date" defaultValue={query.to ?? ''} className="h-11 w-full rounded-lg border border-ds-line-strong bg-white px-3 text-sm" />
-          </div>
-          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
-            <button type="submit" className="h-11 rounded-lg bg-ds-accent px-5 text-sm font-semibold text-white hover:bg-ds-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-2">Apply filters</button>
-            <Link href="/super-admin/activity" className="rounded-lg px-4 py-3 text-sm font-semibold text-ds-accent-strong hover:bg-ds-accent-soft">Clear</Link>
-          </div>
-        </form>
-      </section>
-
-      {data.items.length === 0 ? (
-        <section className="ds-card px-5 py-12 text-center">
-          <h2 className="font-space text-lg font-bold">No activity found</h2>
-          <p className="mt-2 text-sm text-ds-muted">Try changing or clearing the filters.</p>
-        </section>
+      {!result.ok ? (
+        <div className="ds-card"><EmptyPanel icon="error" title="Couldn’t load activity" description={result.message} /></div>
+      ) : result.data.length === 0 ? (
+        <div className="ds-card"><EmptyPanel icon="bolt" title="Nothing in the last 30 days" description="New sign-ups, events, registrations and check-ins appear here as they happen." /></div>
       ) : (
-        <section aria-label="Activity events" className="space-y-3">
-          {data.items.map((item) => (
-            <article key={item.id} className="min-w-0 ds-card p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="break-all text-sm font-bold">{item.action}</h2>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.outcome === 'failure' ? 'bg-red-50 text-red-700' : item.outcome === 'warning' ? 'bg-amber-50 text-amber-800' : 'bg-ds-accent-soft text-ds-accent-strong'}`}>
-                      {label(item.outcome)} · {label(item.severity)}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm text-ds-body">{item.message}</p>
-                  {item.errorCode && <p className="mt-1 font-mono text-xs text-ds-muted">Code: {item.errorCode}</p>}
-                </div>
-                <time className="shrink-0 text-xs text-ds-muted" dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
-              </div>
-
-              <details className="mt-4 border-t border-ds-line pt-3">
-                <summary className="cursor-pointer text-sm font-semibold text-ds-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent">Sanitized event details</summary>
-                <dl className="mt-3 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
-                  <div><dt className="font-semibold text-ds-muted">Event ID</dt><dd className="mt-1 break-all font-mono">{item.id}</dd></div>
-                  <div><dt className="font-semibold text-ds-muted">Correlation ID</dt><dd className="mt-1 break-all font-mono">{item.correlationId}</dd></div>
-                  <div><dt className="font-semibold text-ds-muted">Workspace</dt><dd className="mt-1 break-all font-mono">{item.workspaceId ?? 'Not available'}{item.workspaceId && <Link href={`/super-admin/customers/${item.workspaceId}`} className="ml-2 font-sans font-semibold text-ds-accent-strong hover:underline">View customer</Link>}</dd></div>
-                  <div><dt className="font-semibold text-ds-muted">Actor ID</dt><dd className="mt-1 break-all font-mono">{item.actorUserId ?? 'System or anonymous operation'}</dd></div>
-                  <div><dt className="font-semibold text-ds-muted">Resource</dt><dd className="mt-1 break-all font-mono">{item.resourceType ? `${item.resourceType}: ${item.resourceId ?? 'not available'}` : 'Not available'}</dd></div>
-                  {Object.entries(item.metadata).map(([key, value]) => <div key={key}><dt className="font-semibold text-ds-muted">{label(key)}</dt><dd className="mt-1 break-all font-mono">{value}</dd></div>)}
-                </dl>
-              </details>
-            </article>
+        <div className="space-y-6">
+          {[...days.entries()].map(([day, items]) => (
+            <section key={day} aria-label={day}>
+              <h2 className="mb-2 text-[13px] font-semibold text-ds-ink">{day}</h2>
+              <ol className="ds-card divide-y divide-ds-line">
+                {items.map((item) => {
+                  const k = KIND[item.kind];
+                  const body = (
+                    <>
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${k.className}`}>
+                        <span className="material-symbols-outlined text-[17px]" aria-hidden="true">{k.icon}</span>
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[14px] text-ds-ink">{item.title}</span>
+                        <span className="block truncate text-[13px] text-ds-muted">{item.detail}</span>
+                      </span>
+                      <time dateTime={item.at} className="shrink-0 text-[12px] text-ds-muted">{fmtAgo(item.at)}</time>
+                    </>
+                  );
+                  return (
+                    <li key={item.id}>
+                      {item.href ? (
+                        <Link href={item.href} className="flex items-center gap-3 px-4 py-3 hover:bg-ds-subtle sm:px-5">{body}</Link>
+                      ) : (
+                        <div className="flex items-center gap-3 px-4 py-3 sm:px-5">{body}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
           ))}
-        </section>
-      )}
-
-      <nav aria-label="Activity pagination" className="flex items-center justify-between gap-3 ds-card p-4">
-        <p className="text-xs text-ds-muted">Page {data.page} of {pageCount} · {data.totalCount.toLocaleString()} events</p>
-        <div className="flex gap-2">
-          <Link aria-disabled={data.page <= 1} tabIndex={data.page <= 1 ? -1 : undefined} href={pageHref(params, data.page - 1)} className={`rounded-lg border border-ds-line-strong px-3 py-2 text-sm font-semibold ${data.page <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-ds-subtle'}`}>Previous</Link>
-          <Link aria-disabled={data.page >= pageCount} tabIndex={data.page >= pageCount ? -1 : undefined} href={pageHref(params, data.page + 1)} className={`rounded-lg border border-ds-line-strong px-3 py-2 text-sm font-semibold ${data.page >= pageCount ? 'pointer-events-none opacity-50' : 'hover:bg-ds-subtle'}`}>Next</Link>
         </div>
-      </nav>
+      )}
     </div>
   );
 }
