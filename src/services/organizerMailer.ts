@@ -254,3 +254,37 @@ If this wasn't you, you can safely ignore this email.
   });
   return { success: true, messageId: info.messageId };
 }
+
+/** Sends a plain platform email (team invitations, contact form). Throws if SMTP is not configured. */
+export async function sendPlatformEmail(message: {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+  replyTo?: string;
+}) {
+  const smtp = await resolvePlatformSmtpConfig();
+  if (!smtp) {
+    throw new Error('Platform SMTP is not configured.');
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: {
+      user: smtp.user,
+      pass: smtp.pass,
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
+    to: message.to,
+    replyTo: message.replyTo,
+    subject: message.subject,
+    text: message.text,
+    html: message.html,
+  });
+  return { success: true, messageId: info.messageId };
+}

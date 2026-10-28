@@ -460,3 +460,59 @@ textarea {
   .ds-btn, .ds-card-hover { transition: none; }
 }
 }
+
+/* ==========================================================================
+   Public website (aram.events). Scoped to the (marketing) route group.
+   Aubergine ink on a cool lavender paper, brand violet, deep indigo bands,
+   and one "admitted" green used only for the checked-in state.
+   ========================================================================== */
+@theme {
+  --color-mk-ink: #1C1633;
+  --color-mk-body: #4A4560;
+  --color-mk-muted: #6E6987;
+  --color-mk-paper: #FAF9FF;
+  --color-mk-lilac: #ECE8FF;
+  --color-mk-line: #E3DFF2;
+  --color-mk-violet: #6D50F5;
+  --color-mk-violet-strong: #5536D9;
+  --color-mk-indigo: #241B5E;
+  --color-mk-indigo-soft: #3A2F86;
+  --color-mk-admit: #18946B;
+}
+
+/* inline: --font-bricolage only exists inside the marketing layout, not on :root */
+@theme inline {
+  --font-display: var(--font-bricolage), var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+.mk-focus:focus-visible {
+  outline: 2px solid var(--color-mk-violet);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* Hero pass: one orchestrated load sequence (register -> ticket -> admitted). */
+@keyframes mk-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes mk-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes mk-scan { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(132px); opacity: 0; } }
+@keyframes mk-stamp { 0% { opacity: 0; transform: rotate(-8deg) scale(1.6); } 60% { opacity: 1; transform: rotate(-8deg) scale(0.94); } 100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
+
+.mk-rise { opacity: 0; animation: mk-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.mk-type { animation: mk-type 0.9s steps(18, end) both; }
+.mk-scan { animation: mk-scan 1.1s ease-in-out both; }
+.mk-stamp { opacity: 0; animation: mk-stamp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-rise, .mk-stamp { opacity: 1; animation: none; }
+  .mk-type, .mk-scan { animation: none; }
+  .mk-scan { display: none; }
+}
+
+/* Fluid public-site container: margins grow with the viewport, content is only
+   capped on ultra-wide screens, so wide monitors are not left mostly empty. */
+.mk-container {
+  width: 100%;
+  max-width: 1680px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 6rem);
+}

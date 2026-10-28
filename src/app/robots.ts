@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { SITE_HOST, SITE_URL } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -16,7 +17,10 @@ export default function robots(): MetadataRoute.Robots {
         '/invite',
         '/check-in',
         '/volunteer/',
+        '/super-admin',
       ],
     },
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_HOST,
   };
 }

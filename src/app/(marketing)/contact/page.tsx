@@ -1,30 +1,50 @@
-import React from 'react';
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ContactForm } from '@/components/marketing/site/ContactForm';
+import { Container } from '@/components/marketing/site/primitives';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Contact information for Aram Events will be published here once confirmed.',
+  description: 'Ask about plans, getting started or support for Aram Events.',
+  alternates: { canonical: '/contact' },
 };
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
+  const { topic } = await searchParams;
   return (
-    <div className="mx-auto flex min-h-[65vh] max-w-3xl flex-col justify-center px-5 py-20 text-center sm:px-8">
-      <p className="text-sm font-bold uppercase tracking-[0.14em] text-ds-accent-strong">Contact</p>
-      <h1 className="mt-4 text-4xl font-bold tracking-tight text-ds-ink sm:text-5xl">
-        We are preparing our contact information.
-      </h1>
-      <p className="mx-auto mt-5 max-w-xl leading-7 text-ds-muted">
-        Contact details will be published here once they are confirmed.
-      </p>
-      <div className="mt-8 flex justify-center">
-        <Link
-          href="/"
-          className="inline-flex min-h-12 items-center justify-center rounded-lg border border-ds-line bg-white px-6 text-sm font-semibold text-ds-ink hover:bg-ds-subtle"
-        >
-          Back to home
-        </Link>
-      </div>
-    </div>
+    <section className="bg-mk-paper pb-24 pt-16 sm:pt-24">
+      <Container className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+        <div>
+          <h1 className="font-display text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.03em] text-mk-ink text-balance sm:text-[3.25rem]">
+            Talk to the people who build it.
+          </h1>
+          <p className="mt-5 max-w-[30rem] text-[1.0625rem] leading-[1.65] text-mk-body">
+            Questions about plans, a large event, or moving over from spreadsheets: send a message and we will reply by email.
+          </p>
+          <dl className="mt-10 grid gap-6 border-t border-mk-line pt-8">
+            <div>
+              <dt className="font-display text-[1.0625rem] font-semibold text-mk-ink">Already have an account?</dt>
+              <dd className="mt-1 text-[0.9375rem] text-mk-body">
+                <Link href="/login" className="mk-focus font-semibold text-mk-violet-strong hover:underline">
+                  Log in
+                </Link>{' '}
+                to reach your workspace.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-display text-[1.0625rem] font-semibold text-mk-ink">Want to try it first?</dt>
+              <dd className="mt-1 text-[0.9375rem] text-mk-body">
+                The{' '}
+                <Link href="/organizer/register" className="mk-focus font-semibold text-mk-violet-strong hover:underline">
+                  Free plan
+                </Link>{' '}
+                takes a few minutes to set up.
+              </dd>
+            </div>
+          </dl>
+        </div>
+        <ContactForm initialTopic={topic} />
+      </Container>
+    </section>
   );
 }

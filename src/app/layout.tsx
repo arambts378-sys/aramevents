@@ -36,8 +36,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Aram Events — Event Operating System",
-  description: "One platform. Every event. Unified Event Management Platform",
+  title: "Aram Events",
+  description: "Event websites, registration and tickets, QR check-in and attendee management for event teams.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

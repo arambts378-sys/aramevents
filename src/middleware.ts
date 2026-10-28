@@ -1,7 +1,17 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createRecordingFetch } from '@/lib/monitoring/dbCallRecorder'
+import { classifySurface } from '@/lib/monitoring/surfaces'
+import { REDIRECT_HOSTS, SITE_URL } from '@/lib/site'
 
 export async function middleware(request: NextRequest) {
+  // One canonical host for SEO and auth cookies: www.aram.events -> aram.events.
+  const host = (request.headers.get('host') || '').toLowerCase().split(':')[0];
+  if (REDIRECT_HOSTS.includes(host)) {
+    const canonical = new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL);
+    return NextResponse.redirect(canonical, 308);
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
@@ -15,6 +25,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      global: { fetch: createRecordingFetch(() => classifySurface(request.nextUrl.pathname)) },
       cookies: {
         getAll() {
           return request.cookies.getAll()
