@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
 import Link from 'next/link';
 import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
@@ -26,6 +27,10 @@ export default function PeopleDirectoryPage() {
   const [selectedEventId, setSelectedEventId] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedDateRange, setSelectedDateRange] = useState<'all' | '7d' | '30d' | '90d'>('all');
+  // Query the database once typing pauses, not on every keystroke
+  const [debouncedSearch] = useDebounce(searchQuery, 300);
+  // Bumped to refetch with the same filters (retry, after saving a person)
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Data fetching state
   const [people, setPeople] = useState<WorkspacePersonRow[] | null>(null);
@@ -45,36 +50,38 @@ export default function PeopleDirectoryPage() {
     );
   }, [searchQuery, selectedEventId, selectedStatus, selectedDateRange]);
 
-  const loadPeople = useCallback(async () => {
-    if (!activeWorkspace?.id) return;
+  const workspaceId = activeWorkspace?.id;
+  const loadPeople = () => setReloadKey((k) => k + 1);
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await fetchWorkspacePeople({
-        workspaceId: activeWorkspace.id,
-        searchQuery: searchQuery.trim() || undefined,
-        eventId: selectedEventId,
-        status: selectedStatus,
-        dateRange: selectedDateRange,
-      });
-
-      setPeople(data);
-    } catch (err: any) {
-      console.error('Failed to load workspace people:', err);
-      setError(err?.message || 'Unable to load people for this workspace.');
-    } finally {
-      setLoading(false);
-    }
-  }, [activeWorkspace?.id, searchQuery, selectedEventId, selectedStatus, selectedDateRange]);
-
-  // Load when active workspace or filters change
+  // Load when the workspace or filters change. A newer request cancels an older
+  // one, so a slow earlier response can never overwrite newer results.
   useEffect(() => {
-    if (isHydrated && activeWorkspace?.id) {
-      loadPeople();
-    }
-  }, [isHydrated, activeWorkspace?.id, loadPeople]);
+    if (!isHydrated || !workspaceId) return;
+    let cancelled = false;
+    fetchWorkspacePeople({
+      workspaceId,
+      searchQuery: debouncedSearch.trim() || undefined,
+      eventId: selectedEventId,
+      status: selectedStatus,
+      dateRange: selectedDateRange,
+    })
+      .then((data) => {
+        if (cancelled) return;
+        setPeople(data);
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        console.error('Failed to load workspace people:', err);
+        setError((err as Error)?.message || 'Unable to load people for this workspace.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isHydrated, workspaceId, debouncedSearch, selectedEventId, selectedStatus, selectedDateRange, reloadKey]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -143,7 +150,7 @@ export default function PeopleDirectoryPage() {
           />
 
           {/* Directory Content States */}
-          {!isHydrated || (loading && !people) ? (
+          {!isHydrated || (loading && !people && !!workspaceId) ? (
             <PeopleSkeleton variant="directory" />
           ) : error ? (
             <PeopleErrorState message={error} onRetry={loadPeople} />

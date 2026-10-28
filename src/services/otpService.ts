@@ -99,11 +99,9 @@ export async function createChallenge(
 
   let encryptedPayload: string | null = null;
   if (pendingPayload) {
-    try {
-      encryptedPayload = encryptSecret(JSON.stringify(pendingPayload));
-    } catch {
-      encryptedPayload = JSON.stringify(pendingPayload);
-    }
+    // The payload carries the registrant's password: never store it unencrypted.
+    // Without ENCRYPTION_KEY this throws and registration fails instead.
+    encryptedPayload = encryptSecret(JSON.stringify(pendingPayload));
   }
 
   const adminClient = createAdminClient();
@@ -208,11 +206,7 @@ export async function verifyOtpChallenge(
           try {
             parsedPayload = JSON.parse(decryptSecret(pending_payload));
           } catch {
-            try {
-              parsedPayload = JSON.parse(pending_payload);
-            } catch {
-              parsedPayload = null;
-            }
+            parsedPayload = null;
           }
         }
 

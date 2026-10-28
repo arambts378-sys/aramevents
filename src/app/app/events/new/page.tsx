@@ -4,14 +4,15 @@ import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
-import { Event, WebsiteConfig } from '@/types';
+import { Event } from '@/types';
+import { buildDefaultWebsite, buildEventSlug } from '@/lib/events/defaultWebsite';
 import { createClient } from '@/lib/supabase/client';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 
 export default function CreateEventPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { createEvent, currentUser, userPreferences, activeWorkspace } = useAppContext();
+  const { createEvent, deleteEvent, currentUser, userPreferences, activeWorkspace } = useAppContext();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,7 +45,11 @@ export default function CreateEventPage() {
           ...prev,
           type: prev.type || userPreferences.default_event_type || prev.type,
           format: nextFormat,
-          timezone: prev.timezone || userPreferences.default_timezone || prev.timezone,
+          // The field starts on IST, so only an untouched value takes the saved default.
+          timezone:
+            prev.timezone === 'Asia/Kolkata' && userPreferences.default_timezone
+              ? userPreferences.default_timezone
+              : prev.timezone,
           location: shouldSetLocation ? (userPreferences.default_location as string) : prev.location,
         };
       });
@@ -67,6 +72,13 @@ export default function CreateEventPage() {
     const newDistances = [...walkathonDistances];
     newDistances[index] = { ...newDistances[index], [field]: value };
     setWalkathonDistances(newDistances);
+    if (fieldErrors.walkathon) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.walkathon;
+        return next;
+      });
+    }
   };
 
   const handleChange = (
@@ -90,6 +102,11 @@ export default function CreateEventPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        setError('Flyer must be a JPG, PNG or WEBP image.');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         setError('Flyer file size exceeds 5MB limit. Please choose a smaller file.');
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -126,6 +143,31 @@ export default function CreateEventPage() {
 
     if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
       newErrors.endDate = 'End date cannot be earlier than start date';
+    } else if (
+      formData.startDate &&
+      formData.startDate === formData.endDate &&
+      formData.startTime &&
+      formData.endTime &&
+      formData.endTime <= formData.startTime
+    ) {
+      newErrors.endTime = 'End time must be after the start time';
+    }
+
+    if (formData.type === 'Walkathon') {
+      const active = walkathonDistances.filter((d) => d.is_active);
+      if (active.length === 0) {
+        newErrors.walkathon = 'Keep at least one distance active';
+      } else if (
+        active.some(
+          (d) =>
+            !(d.distance_km > 0) ||
+            !d.name.trim() ||
+            (d.capacity !== '' && !(Number.isInteger(Number(d.capacity)) && Number(d.capacity) > 0))
+        )
+      ) {
+        newErrors.walkathon =
+          'Each active distance needs a distance above 0 km, a name, and a whole-number capacity (or leave capacity empty)';
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -141,12 +183,13 @@ export default function CreateEventPage() {
             case 'endDate': return 'End Date';
             case 'endTime': return 'End Time';
             case 'location': return 'Location';
+            case 'walkathon': return 'Walkathon distances';
             default: return k;
           }
         })
         .join(', ');
 
-      const summaryMessage = `Please fill in all required fields: ${missingFields}.`;
+      const summaryMessage = `Check these fields: ${missingFields}.`;
       setError(summaryMessage);
 
       // Scroll to the first invalid field or error banner with smooth behavior
@@ -169,13 +212,13 @@ export default function CreateEventPage() {
     setFieldErrors({});
     setError('');
 
+    if (activeWorkspace?.is_suspended) {
+      setError('This workspace is suspended, so new events cannot be created. Contact support to reactivate it.');
+      return;
+    }
+
     const eventId = Math.random().toString(36).substring(2, 10);
-    const slug =
-      formData.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-') +
-      '-' +
-      eventId.substring(0, 4);
+    const slug = buildEventSlug(formData.name);
 
     try {
       setIsSubmitting(true);
@@ -187,7 +230,7 @@ export default function CreateEventPage() {
         const file = fileInputRef.current.files[0];
 
         try {
-          // Attempt upload through server API route
+          // Upload only through the server route, which verifies the file really is an image.
           const uploadFormData = new FormData();
           uploadFormData.append('file', file);
 
@@ -195,33 +238,11 @@ export default function CreateEventPage() {
             method: 'POST',
             body: uploadFormData,
           });
-
-          if (res.ok) {
-            const data = await res.json();
-            uploadedFlyerUrl = data.url;
-          } else {
-            // Fallback: direct Supabase Storage upload
-            const supabase = createClient();
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) throw new Error('Please sign in again before uploading.');
-            const fileExt = file.name.split('.').pop() || 'png';
-            const storedFileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-            const filePath = `${user.id}/website_flyers/${storedFileName}`;
-
-            const { error: directErr } = await supabase.storage
-              .from('event-flyers')
-              .upload(filePath, file);
-
-            if (!directErr) {
-              const { data } = supabase.storage
-                .from('event-flyers')
-                .getPublicUrl(filePath);
-              uploadedFlyerUrl = data.publicUrl;
-            } else {
-              const resJson = await res.json().catch(() => ({}));
-              throw new Error(resJson.error || directErr.message || 'Failed to upload flyer');
-            }
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.url) {
+            throw new Error(data.error || 'Failed to upload flyer');
           }
+          uploadedFlyerUrl = data.url;
         } catch (uploadErr: any) {
           console.error('Flyer upload error:', uploadErr);
           setError(`Flyer upload failed: ${uploadErr.message || 'Please check file format and size (<5MB).'}`);
@@ -237,41 +258,7 @@ export default function CreateEventPage() {
 
       setSubmittingStep('Creating event in workspace...');
 
-      const defaultWebsite: WebsiteConfig = {
-        status: 'draft',
-        draft: {
-          templateId: 'minimal',
-          status: 'draft',
-          theme: {},
-          sections: [
-            { id: 'header', type: 'header', visible: true, order: 0 },
-            {
-              id: 'hero',
-              type: 'hero',
-              visible: true,
-              order: 1,
-              content: uploadedFlyerUrl
-                ? {
-                    image: uploadedFlyerUrl,
-                    layout: 'banner',
-                    showEventInfo: false,
-                  }
-                : {},
-            },
-            { id: 'event_info', type: 'event_info', visible: true, order: 2 },
-            { id: 'about', type: 'about', visible: true, order: 3 },
-            { id: 'speakers', type: 'speakers', visible: false, order: 4 },
-            { id: 'agenda', type: 'agenda', visible: false, order: 5 },
-            { id: 'register', type: 'register', visible: true, order: 6 },
-            { id: 'venue', type: 'venue', visible: formData.format !== 'Virtual', order: 7 },
-            { id: 'sponsors', type: 'sponsors', visible: false, order: 8 },
-            { id: 'exhibitors', type: 'exhibitors', visible: false, order: 9 },
-            { id: 'contact', type: 'contact', visible: true, order: 10 },
-            { id: 'final_cta', type: 'final_cta', visible: true, order: 11 },
-            { id: 'footer', type: 'footer', visible: true, order: 12 },
-          ],
-        },
-      };
+      const defaultWebsite = buildDefaultWebsite({ flyerUrl: uploadedFlyerUrl, format: formData.format });
 
       const newEvent: Event = {
         id: eventId,
@@ -302,7 +289,7 @@ export default function CreateEventPage() {
         const distanceInserts = walkathonDistances.map((d) => ({
           event_id: createdEvent.id,
           distance_km: d.distance_km,
-          name: d.name,
+          name: d.name.trim(),
           capacity: d.capacity ? parseInt(d.capacity as string, 10) : null,
           is_active: d.is_active,
         }));
@@ -313,7 +300,10 @@ export default function CreateEventPage() {
             .insert(distanceInserts);
 
           if (distanceError) {
+            // Distances can't be added after creation, so undo the event and let the organizer retry.
             console.error('Failed to create walkathon distances:', distanceError);
+            await deleteEvent(createdEvent.id).catch(() => undefined);
+            throw new Error('Walkathon distances could not be saved, so the event was not created. Please try again.');
           }
         }
       }
@@ -571,7 +561,7 @@ export default function CreateEventPage() {
                   {/* SCHEDULE START */}
                   <div className="space-y-1.5">
                     <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
-                      Schedule Start <span className="text-ds-danger">*</span>
+                      Starts <span className="text-ds-danger">*</span>
                     </label>
                     <div className="grid grid-cols-1 min-[380px]:grid-cols-7 gap-2">
                       <div className="min-[380px]:col-span-4">
@@ -622,7 +612,7 @@ export default function CreateEventPage() {
                   {/* SCHEDULE CONCLUSION */}
                   <div className="space-y-1.5">
                     <label className="block text-[13px] font-semibold text-ds-ink font-jakarta">
-                      Schedule Conclusion <span className="text-ds-danger">*</span>
+                      Ends <span className="text-ds-danger">*</span>
                     </label>
                     <div className="grid grid-cols-1 min-[380px]:grid-cols-7 gap-2">
                       <div className="min-[380px]:col-span-4">
@@ -894,6 +884,11 @@ export default function CreateEventPage() {
                       </div>
                     ))}
                   </div>
+                  {fieldErrors.walkathon && (
+                    <p id="walkathon" tabIndex={-1} className="text-red-600 text-[12px] font-medium font-jakarta">
+                      {fieldErrors.walkathon}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -956,13 +951,13 @@ export default function CreateEventPage() {
                       Upload Event Flyer
                     </div>
                     <p className="text-[12px] text-ds-muted font-jakarta">
-                      JPG, PNG or PDF · <span className="font-mono text-ds-muted">Optional</span>
+                      JPG, PNG or WEBP, up to 5MB · <span className="font-mono text-ds-muted">Optional</span>
                     </p>
                     <input
                       type="file"
                       ref={fileInputRef}
                       onChange={handleFileChange}
-                      accept=".jpg,.jpeg,.png,.pdf"
+                      accept=".jpg,.jpeg,.png,.webp"
                       className="hidden"
                       disabled={isSubmitting}
                     />
@@ -1002,7 +997,7 @@ export default function CreateEventPage() {
                         type="file"
                         ref={fileInputRef}
                         onChange={handleFileChange}
-                        accept=".jpg,.jpeg,.png,.pdf"
+                        accept=".jpg,.jpeg,.png,.webp"
                         className="hidden"
                         disabled={isSubmitting}
                       />

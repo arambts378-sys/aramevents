@@ -58,28 +58,81 @@ export function validateOrganizationName(name: unknown): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Mobile number (India)
+// Mobile number
 // ---------------------------------------------------------------------------
-export const PHONE_FORMAT_HINT = 'Enter a valid 10-digit Indian mobile number, e.g. +91 98765 43210.';
+export const PHONE_FORMAT_HINT = 'Enter a valid mobile number for the selected country, e.g. 98765 43210 for India.';
 
 export interface PhoneResult {
   valid: boolean;
-  /** Canonical E.164 value (+91XXXXXXXXXX). Only set when valid. */
+  /** Canonical E.164 value (+<country code><number>). Only set when valid. */
   e164?: string;
   error?: string;
 }
 
+export interface PhoneCountry {
+  /** ISO 3166-1 alpha-2, used as the select value */
+  iso: string;
+  name: string;
+  dial: string;
+  /** Allowed national number lengths (digits after the country code, no trunk 0) */
+  lengths: [number, number];
+  /** Optional rule for the national number, e.g. the mobile range's first digit */
+  pattern?: RegExp;
+  example: string;
+}
+
 /**
- * Validates and normalizes an Indian mobile number.
+ * Countries offered in the sign-up form. Rules are format checks for mobile
+ * numbers, not a full numbering plan. India comes first and is the default.
+ */
+export const PHONE_COUNTRIES: readonly PhoneCountry[] = [
+  { iso: 'IN', name: 'India', dial: '91', lengths: [10, 10], pattern: /^[6-9]/, example: '98765 43210' },
+  { iso: 'AE', name: 'United Arab Emirates', dial: '971', lengths: [9, 9], pattern: /^5/, example: '50 123 4567' },
+  { iso: 'SA', name: 'Saudi Arabia', dial: '966', lengths: [9, 9], pattern: /^5/, example: '51 234 5678' },
+  { iso: 'QA', name: 'Qatar', dial: '974', lengths: [8, 8], pattern: /^[3567]/, example: '3312 3456' },
+  { iso: 'KW', name: 'Kuwait', dial: '965', lengths: [8, 8], pattern: /^[569]/, example: '5012 3456' },
+  { iso: 'OM', name: 'Oman', dial: '968', lengths: [8, 8], pattern: /^[79]/, example: '9212 3456' },
+  { iso: 'BH', name: 'Bahrain', dial: '973', lengths: [8, 8], pattern: /^3/, example: '3600 1234' },
+  { iso: 'US', name: 'United States / Canada', dial: '1', lengths: [10, 10], pattern: /^[2-9]/, example: '415 555 2671' },
+  { iso: 'GB', name: 'United Kingdom', dial: '44', lengths: [10, 10], pattern: /^7/, example: '7400 123456' },
+  { iso: 'SG', name: 'Singapore', dial: '65', lengths: [8, 8], pattern: /^[89]/, example: '8123 4567' },
+  { iso: 'MY', name: 'Malaysia', dial: '60', lengths: [9, 10], pattern: /^1/, example: '12 345 6789' },
+  { iso: 'LK', name: 'Sri Lanka', dial: '94', lengths: [9, 9], pattern: /^7/, example: '71 234 5678' },
+  { iso: 'NP', name: 'Nepal', dial: '977', lengths: [10, 10], pattern: /^9/, example: '984 1234567' },
+  { iso: 'BD', name: 'Bangladesh', dial: '880', lengths: [10, 10], pattern: /^1/, example: '1812 345678' },
+  { iso: 'AU', name: 'Australia', dial: '61', lengths: [9, 9], pattern: /^4/, example: '412 345 678' },
+  { iso: 'NZ', name: 'New Zealand', dial: '64', lengths: [8, 10], pattern: /^2/, example: '21 123 4567' },
+  { iso: 'DE', name: 'Germany', dial: '49', lengths: [10, 11], pattern: /^1/, example: '1512 3456789' },
+  { iso: 'FR', name: 'France', dial: '33', lengths: [9, 9], pattern: /^[67]/, example: '6 12 34 56 78' },
+  { iso: 'ZA', name: 'South Africa', dial: '27', lengths: [9, 9], pattern: /^[678]/, example: '71 123 4567' },
+  { iso: 'KE', name: 'Kenya', dial: '254', lengths: [9, 9], pattern: /^[17]/, example: '712 345678' },
+  { iso: 'NG', name: 'Nigeria', dial: '234', lengths: [10, 10], pattern: /^[789]/, example: '802 123 4567' },
+];
+
+export const DEFAULT_PHONE_COUNTRY = 'IN';
+
+export function getPhoneCountry(iso: string | undefined | null): PhoneCountry {
+  return PHONE_COUNTRIES.find((c) => c.iso === iso) || PHONE_COUNTRIES[0];
+}
+
+/** Longest matching dial code wins, so +971 is not read as +97x. */
+function countryFromE164Digits(digits: string) {
+  return [...PHONE_COUNTRIES]
+    .sort((a, b) => b.dial.length - a.dial.length)
+    .find((c) => digits.startsWith(c.dial));
+}
+
+/**
+ * Validates and normalizes a mobile number to E.164.
  *
- * Accepted input forms (spaces and hyphens are allowed only as separators):
- *   9876543210 | 09876543210 | 919876543210 | +919876543210 | +91 98765-43210
- * Rules: 10-digit national number whose first digit is 6-9 (TRAI mobile ranges).
- * Letters and any other characters are rejected. The result is stored as +91XXXXXXXXXX.
+ * - With a leading "+", the country is read from the number itself (any listed country).
+ * - Without one, the number is read as a national number of `countryIso` (default India);
+ *   a leading trunk "0" and a repeated country code are tolerated.
+ * Spaces and hyphens are allowed only as separators. Letters and other characters are rejected.
  *
  * NOTE: this validates format only. The number is NOT verified (no SMS/OTP flow exists).
  */
-export function normalizeIndianMobile(input: unknown): PhoneResult {
+export function normalizeMobile(input: unknown, countryIso: string = DEFAULT_PHONE_COUNTRY): PhoneResult {
   if (typeof input !== 'string' || !input.trim()) {
     return { valid: false, error: 'Mobile number is required.' };
   }
@@ -90,33 +143,43 @@ export function normalizeIndianMobile(input: unknown): PhoneResult {
   }
 
   // Only digits, one optional leading "+", spaces and hyphens are permitted.
-  if (!/^\+?[0-9][0-9 \-]*$/.test(raw)) {
-    return { valid: false, error: PHONE_FORMAT_HINT };
-  }
-  // "+" is only meaningful as the country-code prefix.
-  if (raw.indexOf('+') > 0) {
+  if (!/^\+?[0-9][0-9 \-]*$/.test(raw) || raw.indexOf('+') > 0) {
     return { valid: false, error: PHONE_FORMAT_HINT };
   }
 
-  const hasPlus = raw.startsWith('+');
   let digits = raw.replace(/[^0-9]/g, '');
+  let country: PhoneCountry | undefined;
 
-  if (hasPlus) {
-    if (!digits.startsWith('91')) {
-      return { valid: false, error: 'Only Indian mobile numbers (+91) are supported.' };
+  if (raw.startsWith('+')) {
+    country = countryFromE164Digits(digits);
+    if (!country) {
+      return { valid: false, error: 'This country code is not supported yet. Choose a country from the list.' };
     }
-    digits = digits.slice(2);
-  } else if (digits.length === 12 && digits.startsWith('91')) {
-    digits = digits.slice(2);
-  } else if (digits.length === 11 && digits.startsWith('0')) {
-    digits = digits.slice(1);
+    digits = digits.slice(country.dial.length);
+  } else {
+    country = getPhoneCountry(countryIso);
+    const [, max] = country.lengths;
+    if (digits.length > max && digits.startsWith(country.dial) && digits.length - country.dial.length <= max) {
+      digits = digits.slice(country.dial.length);
+    } else if (digits.length === max + 1 && digits.startsWith('0')) {
+      digits = digits.slice(1);
+    }
   }
 
-  if (!/^[6-9][0-9]{9}$/.test(digits)) {
-    return { valid: false, error: PHONE_FORMAT_HINT };
+  const [min, max] = country.lengths;
+  if (digits.length < min || digits.length > max || (country.pattern && !country.pattern.test(digits))) {
+    return { valid: false, error: `Enter a valid ${country.name} mobile number, e.g. ${country.example}.` };
   }
 
-  return { valid: true, e164: `+91${digits}` };
+  return { valid: true, e164: `+${country.dial}${digits}` };
+}
+
+/** Indian-only variant kept for existing callers; same rules as normalizeMobile with India. */
+export function normalizeIndianMobile(input: unknown): PhoneResult {
+  if (typeof input === 'string' && input.trim().startsWith('+') && !input.replace(/[^0-9+]/g, '').startsWith('+91')) {
+    return { valid: false, error: 'Only Indian mobile numbers (+91) are supported.' };
+  }
+  return normalizeMobile(input, 'IN');
 }
 
 // ---------------------------------------------------------------------------
@@ -167,6 +230,8 @@ export interface RegistrationInput {
   organizationName: unknown;
   email: unknown;
   phoneNumber: unknown;
+  /** Country for a number typed without +code (ISO code, default India). */
+  phoneCountry?: string;
   password: unknown;
   confirmPassword: unknown;
 }
@@ -206,7 +271,7 @@ export function validateRegistration(input: RegistrationInput): RegistrationVali
   const emailError = validateEmail(input.email);
   if (emailError) fieldErrors.email = emailError;
 
-  const phone = normalizeIndianMobile(input.phoneNumber);
+  const phone = normalizeMobile(input.phoneNumber, input.phoneCountry);
   if (!phone.valid) fieldErrors.phoneNumber = phone.error;
 
   const passwordError = validatePassword(input.password);

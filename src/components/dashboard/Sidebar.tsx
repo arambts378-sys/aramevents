@@ -224,7 +224,7 @@ export function Sidebar({ currentUser, mobileOpen = false, onClose }: SidebarPro
         {/* Bottom Profile Block */}
         <div className="border-t border-ds-line flex flex-col gap-0.5 p-3">
           <Link
-            href="/app/profile"
+            href="/app/settings#account"
             onClick={onClose}
             title={collapsed ? displayName : undefined}
             className={`flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-ds-ink/[0.04] transition-colors ${

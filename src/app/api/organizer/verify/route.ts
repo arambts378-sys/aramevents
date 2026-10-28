@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
 import { OtpRateLimitError, verifyOtpChallenge } from '@/services/otpService';
 import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
-import { normalizeEmail, normalizeIndianMobile, validateEmail } from '@/lib/validation/auth';
+import { normalizeEmail, normalizeMobile, validateEmail } from '@/lib/validation/auth';
 import { getActivityCorrelationId, recordPlatformActivity } from '@/services/platformActivity.server';
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -44,7 +44,7 @@ async function ensureProvisioned(
     updated_at: new Date().toISOString(),
   };
   if (typeof metadata.phone === 'string' && metadata.phone.length > 0) {
-    const phone = normalizeIndianMobile(metadata.phone);
+    const phone = normalizeMobile(metadata.phone);
     if (!phone.valid || !phone.e164) throw new ProvisioningError('phone');
     profile.phone = phone.e164;
   }

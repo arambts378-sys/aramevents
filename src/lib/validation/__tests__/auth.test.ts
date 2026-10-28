@@ -12,6 +12,7 @@ import {
   mapLoginError,
   normalizeEmail,
   normalizeIndianMobile,
+  normalizeMobile,
   validateConfirmPassword,
   validateLogin,
   validatePassword,
@@ -233,5 +234,33 @@ describe('login validation and error mapping', () => {
       kind: 'error',
       failure: { kind: 'invalid_credentials', message: 'Invalid email or password.' },
     });
+  });
+});
+
+describe('registration: international mobile numbers', () => {
+  test('a +code number is read in its own country, whatever is selected', () => {
+    assert.equal(normalizeMobile('+971 50 123 4567').e164, '+971501234567');
+    assert.equal(normalizeMobile('+44 7400 123456', 'IN').e164, '+447400123456');
+    assert.equal(normalizeMobile('+1 415 555 2671').e164, '+14155552671');
+  });
+
+  test('a national number uses the selected country, with trunk 0 or repeated code tolerated', () => {
+    assert.equal(normalizeMobile('50 123 4567', 'AE').e164, '+971501234567');
+    assert.equal(normalizeMobile('07400 123456', 'GB').e164, '+447400123456');
+    assert.equal(normalizeMobile('971501234567', 'AE').e164, '+971501234567');
+    assert.equal(normalizeMobile('98765 43210').e164, '+919876543210');
+  });
+
+  test('wrong length, wrong mobile range or unsupported code is rejected', () => {
+    assert.equal(normalizeMobile('50 123 456', 'AE').valid, false);
+    assert.equal(normalizeMobile('20 7946 0958', 'GB').valid, false);
+    assert.match(normalizeMobile('+999 1234 5678').error as string, /not supported/);
+    assert.match(normalizeMobile('12345', 'SG').error as string, /Singapore/);
+  });
+
+  test('validateRegistration honours the selected country', () => {
+    const r = validateRegistration({ ...VALID, phoneNumber: '8123 4567', phoneCountry: 'SG' });
+    assert.equal(r.valid, true);
+    assert.equal(r.values?.phone, '+6581234567');
   });
 });

@@ -7,10 +7,13 @@ import {
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   PASSWORD_MISMATCH_MESSAGE,
+  DEFAULT_PHONE_COUNTRY,
+  PHONE_COUNTRIES,
   PHONE_FORMAT_HINT,
   getConfirmPasswordState,
+  getPhoneCountry,
   normalizeEmail,
-  normalizeIndianMobile,
+  normalizeMobile,
   validateRegistration,
   type RegistrationField,
   type RegistrationFieldErrors,
@@ -43,6 +46,7 @@ export default function OrganizerRegisterPage() {
   const [organizationName, setOrganizationName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_PHONE_COUNTRY);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -118,6 +122,7 @@ export default function OrganizerRegisterPage() {
       organizationName,
       email,
       phoneNumber,
+      phoneCountry,
       password,
       confirmPassword,
     });
@@ -175,7 +180,8 @@ export default function OrganizerRegisterPage() {
     }
   };
 
-  const phoneCheck = phoneNumber.trim() ? normalizeIndianMobile(phoneNumber) : null;
+  const phoneCheck = phoneNumber.trim() ? normalizeMobile(phoneNumber, phoneCountry) : null;
+  const selectedCountry = getPhoneCountry(phoneCountry);
 
   return (
     <div className="relative min-h-screen bg-ds-subtle flex flex-col justify-between items-center py-10 px-4 selection:bg-ds-accent/20 selection:text-ds-accent overflow-hidden">
@@ -301,26 +307,54 @@ export default function OrganizerRegisterPage() {
             <label htmlFor="phoneNumber" className="text-xs font-semibold text-ds-ink">
               Mobile Number <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
-            <input
-              id="phoneNumber"
-              name="tel"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              required
-              aria-required="true"
-              aria-invalid={!!errors.phoneNumber}
-              aria-describedby={describedBy('phoneNumber', 'phoneNumber-hint')}
-              value={phoneNumber}
-              onChange={(e) => {
-                setPhoneNumber(e.target.value);
-                clearFieldFeedback('phoneNumber');
-              }}
-              onBlur={() => touch('phoneNumber')}
-              placeholder="+91 98765 43210"
-              maxLength={25}
-              className={inputClass(!!errors.phoneNumber)}
-            />
+            <div className="flex gap-2">
+              <div className="relative w-[108px] shrink-0">
+                <select
+                  id="phoneCountry"
+                  aria-label="Country code"
+                  autoComplete="tel-country-code"
+                  value={phoneCountry}
+                  onChange={(e) => {
+                    setPhoneCountry(e.target.value);
+                    clearFieldFeedback('phoneNumber');
+                  }}
+                  disabled={loading}
+                  className={inputClass(false, 'appearance-none pl-3 pr-7 cursor-pointer')}
+                >
+                  {PHONE_COUNTRIES.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {`${c.iso} +${c.dial}`}{c.iso === phoneCountry ? '' : ` ${c.name}`}
+                    </option>
+                  ))}
+                </select>
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[18px] text-ds-muted"
+                >
+                  expand_more
+                </span>
+              </div>
+              <input
+                id="phoneNumber"
+                name="tel-national"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                required
+                aria-required="true"
+                aria-invalid={!!errors.phoneNumber}
+                aria-describedby={describedBy('phoneNumber', 'phoneNumber-hint')}
+                value={phoneNumber}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                  clearFieldFeedback('phoneNumber');
+                }}
+                onBlur={() => touch('phoneNumber')}
+                placeholder={selectedCountry.example}
+                maxLength={25}
+                className={inputClass(!!errors.phoneNumber, 'min-w-0 flex-1')}
+              />
+            </div>
             <FieldError id="phoneNumber-error" message={errors.phoneNumber} />
             {!errors.phoneNumber && (
               <p id="phoneNumber-hint" className="text-[11px] text-ds-muted flex items-center gap-1">
@@ -330,7 +364,7 @@ export default function OrganizerRegisterPage() {
                     <span>We&apos;ll save this as {phoneCheck.e164}</span>
                   </>
                 ) : (
-                  <span>Indian mobile number (10 digits). Country code +91 is optional.</span>
+                  <span>{selectedCountry.name} mobile number. Pick a different country code if needed.</span>
                 )}
               </p>
             )}
