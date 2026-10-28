@@ -74,9 +74,9 @@ function InviteRedemption() {
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-surface-container-lowest text-center">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-outline-variant shadow-sm">
           <span className="material-symbols-outlined text-[64px] text-green-600 mb-4">check_circle</span>
-          <h1 className="text-headline-md font-bold mb-2">Access Granted</h1>
+          <h1 className="text-headline-md font-bold mb-2">You have joined the team</h1>
           <p className="text-body-md text-on-surface-variant mb-8">
-            You have successfully redeemed your invitation. You now have access to the assigned checkpoints.
+            Your invitation is accepted. You can now open the workspace with the role you were given.
           </p>
           <button 
             onClick={() => {
@@ -94,7 +94,7 @@ function InviteRedemption() {
             }}
             className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
           >
-            Open Scanner
+            {eventId ? 'Open check-in' : 'Open workspace'}
           </button>
         </div>
       </div>
@@ -105,7 +105,7 @@ function InviteRedemption() {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-surface-container-lowest text-center">
       <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-outline-variant shadow-sm">
         <span className="material-symbols-outlined text-[48px] text-primary mb-4">mail</span>
-        <h1 className="text-headline-sm font-bold mb-4">Event Access Invitation</h1>
+        <h1 className="text-headline-sm font-bold mb-4">Team invitation</h1>
         
         {error ? (
           <div className="bg-error-container text-on-error-container p-4 rounded-xl mb-6 font-medium">
@@ -113,7 +113,7 @@ function InviteRedemption() {
           </div>
         ) : (
           <p className="text-body-md text-on-surface-variant mb-8">
-            You have been invited to join an event's operational team.
+            You have been invited to join a workspace on Aram Events. Sign in with the email address the invitation was sent to.
           </p>
         )}
 

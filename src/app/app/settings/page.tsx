@@ -9,8 +9,9 @@ import { EventDefaultsSettings } from '@/components/settings/EventDefaultsSettin
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
 import { PlanBillingSettings } from '@/components/settings/PlanBillingSettings';
+import { TeamSettings } from '@/components/settings/TeamSettings';
 
-type SettingsTab = 'account' | 'organization' | 'defaults' | 'notifications' | 'security' | 'billing';
+type SettingsTab = 'account' | 'organization' | 'team' | 'defaults' | 'notifications' | 'security' | 'billing';
 
 interface TabItem {
   id: SettingsTab;
@@ -32,6 +33,7 @@ const GROUPS: { label: string; tabs: TabItem[] }[] = [
     label: 'Workspace',
     tabs: [
       { id: 'organization', label: 'Organization', icon: 'domain', description: 'Name, logo and contact details for your organization.' },
+      { id: 'team', label: 'Team', icon: 'group', description: 'Invite people, set their roles and remove access.' },
       { id: 'defaults', label: 'Event defaults', icon: 'tune', description: 'Values pre-filled when you create a new event.' },
       { id: 'billing', label: 'Plan & billing', icon: 'credit_card', description: 'Your current plan and what it includes.' },
     ],
@@ -161,6 +163,7 @@ export default function SettingsPage() {
                 </div>
                 {activeTab === 'account' && <AccountSettings />}
                 {activeTab === 'organization' && <OrganizationSettings />}
+                {activeTab === 'team' && <TeamSettings />}
                 {activeTab === 'defaults' && <EventDefaultsSettings />}
                 {activeTab === 'notifications' && <NotificationSettings />}
                 {activeTab === 'security' && <SecuritySettings />}

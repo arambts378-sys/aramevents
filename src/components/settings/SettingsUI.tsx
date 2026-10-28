@@ -167,6 +167,7 @@ export function SaveButton({
   type = 'submit',
   onClick,
   id,
+  form,
 }: {
   saving?: boolean;
   disabled?: boolean;
@@ -175,10 +176,13 @@ export function SaveButton({
   type?: 'submit' | 'button';
   onClick?: () => void;
   id?: string;
+  /** Associates the button with a form it sits outside of (e.g. in a card footer). */
+  form?: string;
 }) {
   return (
     <button
       id={id}
+      form={form}
       type={type}
       onClick={onClick}
       disabled={disabled || saving}
