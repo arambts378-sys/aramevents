@@ -1,80 +1,38 @@
 import type { Metadata } from 'next';
-import { PLAN_DEFINITIONS, PLAN_ORDER } from '@/config/plans';
-import { formatPlanPrice } from '@/services/planService';
-import { ButtonLink, Check } from '@/components/marketing/site/primitives';
-import { CtaBand, FaqList, PageHero, Section, SectionIntro } from '@/components/marketing/site/sections';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'Aram Events plans: start free with two active events and three team members, and upgrade when you need more.',
-  alternates: { canonical: '/pricing' },
+  description: 'Public Aram Events pricing and purchase terms have not been confirmed for this page.',
 };
-
-const limit = (n: number | null, unit: string) => (n === null ? `Unlimited ${unit}` : `${n} ${unit}`);
 
 export default function PricingPage() {
   return (
-    <>
-      <PageHero
-        title="Start free. Upgrade when your events grow."
-        lead="Plans differ by how many events and team members you can have at once. Every plan includes registration, QR check-in and analytics."
-      />
-      <Section tone="white">
-        <div className="grid gap-5 lg:grid-cols-3">
-          {PLAN_ORDER.map((id) => {
-            const plan = PLAN_DEFINITIONS[id];
-            const featured = id === 'professional';
-            // Paid prices in plans.ts are still proposals, so they are not quoted publicly yet.
-            const price =
-              plan.price.kind === 'fixed' && !plan.price.proposed ? formatPlanPrice(plan) : plan.price.kind === 'custom' ? 'Custom' : 'Price on request';
-            return (
-              <article
-                key={id}
-                className={`flex flex-col rounded-[22px] p-7 sm:p-8 ${
-                  featured ? 'bg-mk-indigo text-white' : 'border border-mk-line bg-mk-paper text-mk-ink'
-                }`}
-              >
-                <h2 className="font-display text-[1.5rem] font-semibold">{plan.name}</h2>
-                <p className={`mt-2 text-[0.9375rem] ${featured ? 'text-[#CFC8F5]' : 'text-mk-body'}`}>{plan.tagline}</p>
-                <p className="mt-6 font-display text-[2.5rem] font-semibold leading-none tracking-[-0.02em]">
-                  {price}
-                  {price === '₹0' && <span className={`ml-2 text-[1rem] font-medium ${featured ? 'text-[#CFC8F5]' : 'text-mk-muted'}`}>forever</span>}
-                </p>
-                <p className={`mt-4 text-[0.9375rem] font-semibold ${featured ? 'text-white' : 'text-mk-ink'}`}>
-                  {plan.allowsOverrides
-                    ? 'Event and team limits set for your organization'
-                    : `${limit(plan.entitlements.maxActiveEvents, 'active events')}, ${limit(plan.entitlements.maxTeamMembers, 'team members').toLowerCase()}`}
-                </p>
-                <ul className="mt-6 flex-1 space-y-3">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex gap-3 text-[0.9375rem] leading-[1.5]">
-                      <Check className={`mt-[3px] ${featured ? 'text-[#B9B0EE]' : 'text-mk-violet'}`} />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <ButtonLink
-                  href={id === 'free' ? '/organizer/register' : '/contact'}
-                  variant={featured ? 'onDark' : id === 'free' ? 'primary' : 'secondary'}
-                  className="mt-8"
-                >
-                  {id === 'free' ? 'Create free account' : 'Contact us'}
-                </ButtonLink>
-              </article>
-            );
-          })}
-        </div>
-        <p className="mt-6 text-[0.875rem] text-mk-muted">
-          Online payment collection for paid tickets is not available yet. Archived and cancelled events do not count toward your active events.
-        </p>
-      </Section>
-      <Section>
-        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-          <SectionIntro title="Before you choose a plan." />
-          <FaqList />
-        </div>
-      </Section>
-      <CtaBand />
-    </>
+    <div className="mx-auto flex min-h-[65vh] max-w-3xl flex-col justify-center px-5 py-20 text-center sm:px-8">
+      <p className="text-sm font-bold uppercase tracking-[0.14em] text-ds-accent-strong">
+        Aram Events
+      </p>
+      <h1 className="mt-4 text-4xl font-bold tracking-tight text-ds-ink sm:text-5xl">
+        Pricing details are being prepared.
+      </h1>
+      <p className="mx-auto mt-5 max-w-xl leading-7 text-ds-muted">
+        This page does not quote plan prices or purchase terms. Confirm current pricing before
+        making a purchase decision.
+      </p>
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link
+          href="/organizer/register"
+          className="inline-flex min-h-12 items-center justify-center rounded-lg bg-ds-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-ds-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent-strong focus-visible:ring-offset-2"
+        >
+          Create account
+        </Link>
+        <Link
+          href="/"
+          className="inline-flex min-h-12 items-center justify-center rounded-lg border border-ds-line bg-white px-6 text-sm font-semibold text-ds-ink hover:bg-ds-subtle"
+        >
+          Back to home
+        </Link>
+      </div>
+    </div>
   );
 }

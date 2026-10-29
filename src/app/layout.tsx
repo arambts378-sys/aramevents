@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, JetBrains_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Inter, JetBrains_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
 import "./globals.css";
 
@@ -7,6 +7,12 @@ import "./globals.css";
 // can pick them for their public event websites (see EventWebsiteRenderer).
 const geist = Geist({
   variable: "--font-geist",
+  subsets: ["latin"],
+});
+
+// Display face for the public marketing site.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
 });
 
@@ -36,15 +42,15 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Aram Events",
-  description: "Event websites, registration and tickets, QR check-in and attendee management for event teams.",
+  title: "Aram Events — Event Operating System",
+  description: "One platform. Every event. Unified Event Management Platform",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${plusJakartaSans.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${geist.variable} ${bricolage.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${plusJakartaSans.variable} ${spaceGrotesk.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
