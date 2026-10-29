@@ -16,16 +16,23 @@ export interface SmtpOptions {
  * platform environment configuration. Under NO circumstances should signup verification
  * OTPs fall back to tenant/customer event_integrations records.
  */
+/** Pasted secrets often carry a trailing space or newline, or wrapping quotes. */
+function cleanEnv(value: string | undefined): string | undefined {
+  const cleaned = value?.trim().replace(/^(['"])(.*)$/, '$2').trim();
+  return cleaned || undefined;
+}
+
 export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
-  const host = process.env.PLATFORM_SMTP_HOST || process.env.SMTP_HOST;
-  const user = process.env.PLATFORM_SMTP_USER || process.env.SMTP_USER;
-  const pass = process.env.PLATFORM_SMTP_PASS || process.env.SMTP_PASS;
+  const host = cleanEnv(process.env.PLATFORM_SMTP_HOST) || cleanEnv(process.env.SMTP_HOST);
+  const user = cleanEnv(process.env.PLATFORM_SMTP_USER) || cleanEnv(process.env.SMTP_USER);
+  const pass = cleanEnv(process.env.PLATFORM_SMTP_PASS) || cleanEnv(process.env.SMTP_PASS);
 
   if (host && user && pass) {
-    const rawPort = process.env.PLATFORM_SMTP_PORT || process.env.SMTP_PORT || '587';
+    const rawPort = cleanEnv(process.env.PLATFORM_SMTP_PORT) || cleanEnv(process.env.SMTP_PORT) || '587';
     const port = parseInt(rawPort, 10);
-    const fromEmail = process.env.PLATFORM_SMTP_FROM || process.env.SMTP_FROM || user;
-    const fromName = process.env.PLATFORM_SMTP_FROM_NAME || process.env.SMTP_FROM_NAME || 'Aram Events';
+    const fromEmail = cleanEnv(process.env.PLATFORM_SMTP_FROM) || cleanEnv(process.env.SMTP_FROM) || user;
+    const fromName =
+      cleanEnv(process.env.PLATFORM_SMTP_FROM_NAME) || cleanEnv(process.env.SMTP_FROM_NAME) || 'Aram Events';
 
     return {
       host,
@@ -39,6 +46,12 @@ export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
   }
 
   return null;
+}
+
+/** Host and port only (never credentials), so a misconfigured value shows up in the logs. */
+export async function describePlatformSmtp(): Promise<string> {
+  const smtp = await resolvePlatformSmtpConfig();
+  return smtp ? `host=${JSON.stringify(smtp.host)} port=${smtp.port} secure=${smtp.secure}` : 'not configured';
 }
 
 /** Simulated delivery is only allowed in tests, `next dev`, or when explicitly opted in. */

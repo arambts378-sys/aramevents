@@ -7,6 +7,7 @@ import {
 } from '@/services/otpService';
 import {
   sendExistingAccountNoticeEmail,
+  describePlatformSmtp,
   sendOrganizerVerificationEmail,
 } from '@/services/organizerMailer';
 import {
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
         });
         logAuthError('email delivery failed', mailErr);
         // SMTP errors carry no credentials and are the only clue to misconfiguration.
-        console.error('[organizer/register] email delivery error:', (mailErr as Error)?.message);
+        console.error('[organizer/register] email delivery error:', (mailErr as Error)?.message, await describePlatformSmtp());
         return NextResponse.json(
           { error: 'We could not send the verification email. Please try again.' },
           { status: 500 }

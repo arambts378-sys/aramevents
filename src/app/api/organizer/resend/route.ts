@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { OtpRateLimitError, maskEmail, resendChallengeOtp } from '@/services/otpService';
 import {
   sendExistingAccountNoticeEmail,
+  describePlatformSmtp,
   sendOrganizerVerificationEmail,
 } from '@/services/organizerMailer';
 import { findAuthUserByEmail } from '@/lib/auth/adminUsers';
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
         name: e?.name,
         code: e?.code,
         message: (mailErr as Error)?.message,
+        smtp: await describePlatformSmtp(),
       });
       return NextResponse.json(
         { error: 'We could not send the verification email. Please try again.' },
