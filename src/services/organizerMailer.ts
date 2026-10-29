@@ -41,6 +41,15 @@ export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
   return null;
 }
 
+/** Simulated delivery is only allowed in tests, `next dev`, or when explicitly opted in. */
+function canSimulateEmail(): boolean {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    process.env.NODE_ENV === 'development' ||
+    process.env.ALLOW_SIMULATED_EMAIL === 'true'
+  );
+}
+
 export async function sendOrganizerVerificationEmail(
   toEmail: string,
   otpCode: string,
@@ -50,7 +59,11 @@ export async function sendOrganizerVerificationEmail(
 
   if (!smtp) {
     // In automated tests or local development without platform credentials, allow explicit mock or simulation
-    if (process.env.NODE_ENV === 'test' || process.env.ALLOW_SIMULATED_EMAIL === 'true') {
+    if (canSimulateEmail()) {
+      if (process.env.NODE_ENV !== 'production') {
+        // Without SMTP there is no other way to read the code locally.
+        console.info(`[organizerMailer] SMTP not configured; simulated verification code for ${toEmail}: ${otpCode}`);
+      }
       return { success: true, messageId: 'simulated-dev-id' };
     }
     // Fail closed in production / live environments
@@ -194,7 +207,7 @@ export async function sendExistingAccountNoticeEmail(
   const subject = 'You already have an Aram Events account';
 
   if (!smtp) {
-    if (process.env.NODE_ENV === 'test' || process.env.ALLOW_SIMULATED_EMAIL === 'true') {
+    if (canSimulateEmail()) {
       return { success: true, messageId: 'simulated-dev-id' };
     }
     throw new Error('Platform email delivery service is not configured. Please contact support.');

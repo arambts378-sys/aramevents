@@ -162,6 +162,8 @@ export async function POST(req: NextRequest) {
           correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
         });
         logAuthError('email delivery failed', mailErr);
+        // SMTP errors carry no credentials and are the only clue to misconfiguration.
+        console.error('[organizer/register] email delivery error:', (mailErr as Error)?.message);
         return NextResponse.json(
           { error: 'We could not send the verification email. Please try again.' },
           { status: 500 }

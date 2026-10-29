@@ -43,7 +43,11 @@ export async function POST(req: NextRequest) {
       // No account: send nothing (prevents using this endpoint to spam arbitrary addresses).
     } catch (mailErr) {
       const e = mailErr as { name?: string; code?: string } | null;
-      console.error('[organizer/resend] email delivery failed', { name: e?.name, code: e?.code });
+      console.error('[organizer/resend] email delivery failed', {
+        name: e?.name,
+        code: e?.code,
+        message: (mailErr as Error)?.message,
+      });
       return NextResponse.json(
         { error: 'We could not send the verification email. Please try again.' },
         { status: 500 }
