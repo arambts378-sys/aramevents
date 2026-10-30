@@ -6,15 +6,15 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { authenticateWithEmailPassword } from '@/lib/auth/login';
 import {
-  normalizeEmail,
   validateLogin,
   mapLoginError,
   type LoginFailureKind,
 } from '@/lib/validation/auth';
+import Image from 'next/image';
 import { AramLogo } from '@/components/brand/AramLogo';
 
 const INPUT_BASE =
-  'w-full px-4 py-3 bg-white border rounded-xl text-xs font-semibold text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
+  'w-full px-4 py-3 bg-white border rounded-xl text-[14px] font-medium text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
 const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 focus:bg-white';
 const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-2 focus:ring-ds-danger/20';
 
@@ -82,24 +82,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-ds-subtle flex flex-col justify-between items-center py-12 px-4 selection:bg-ds-accent/20 selection:text-ds-accent overflow-hidden">
-      <div className="absolute inset-0 hairline-grid opacity-30 pointer-events-none -z-0" />
+    <div className="relative min-h-dvh overflow-hidden bg-stage-night selection:bg-ds-accent/20 selection:text-ds-accent">
+      {/* Conference hall behind a centred card */}
+      <Image
+        src="/login-background.webp"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="pointer-events-none object-cover object-[30%_center]"
+      />
+      {/* An even dim, a little deeper at the edges, so the stage lights show but never compete with the card */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-stage-night/45" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(18,10,38,0.65)_100%)]" />
 
-      {/* Top Spacer for Vertical Balance */}
-      <div />
-
-      {/* Main Centered Frosted Glass Login Card */}
-      <div className="relative z-10 w-full max-w-[420px] bg-white rounded-3xl p-8 sm:p-10 border border-ds-line shadow-sm flex flex-col items-center">
-        {/* Brand Logo & Header */}
-        <Link href="/" className="flex flex-col items-center gap-2.5 group mb-6">
-          <AramLogo size="lg" priority />
-        </Link>
-
-        {/* Welcome Heading */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-ds-ink tracking-tight">Welcome back</h1>
-          <p className="text-xs text-ds-muted mt-1 font-normal">Sign in to manage your events and live telemetry.</p>
-        </div>
+      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-5 py-10">
+        <div className="w-full max-w-[440px] rounded-[28px] bg-white p-8 shadow-[0_40px_100px_-30px_rgba(10,6,30,0.75)] ring-1 ring-white/40 sm:p-10">
+          <div className="mb-7 flex flex-col items-center text-center">
+            <Link href="/" aria-label="Aram home" className="mb-6 inline-flex">
+              <AramLogo size="lg" priority />
+            </Link>
+            <h1 className="font-display text-[28px] font-bold tracking-[0.01em] text-ds-ink">Welcome back</h1>
+            <p className="mt-1.5 text-[14px] text-ds-muted">Sign in to manage your events.</p>
+          </div>
 
         {/* Authentication Form */}
         <form onSubmit={handleLogin} className="w-full flex flex-col gap-4" noValidate>
@@ -117,7 +122,7 @@ export default function LoginPage() {
 
           {/* Email Address Field */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-ds-body">
+            <label htmlFor="email" className="text-[13px] font-medium text-ds-body">
               Email address
             </label>
             <input
@@ -146,12 +151,12 @@ export default function LoginPage() {
           {/* Password Field */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-xs font-semibold text-ds-body">
+              <label htmlFor="password" className="text-[13px] font-medium text-ds-body">
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs font-semibold text-ds-accent hover:text-ds-accent-strong transition-colors"
+                className="text-[13px] font-medium text-ds-accent hover:text-ds-accent-strong transition-colors"
               >
                 Forgot password?
               </Link>
@@ -196,7 +201,7 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             aria-busy={loading}
-            className="w-full h-12 mt-2 bg-ds-accent text-white font-bold text-sm rounded-xl transition-all shadow-sm shadow-sm hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+            className="w-full h-12 mt-2 bg-stage-night text-white font-semibold text-[15px] rounded-xl transition-colors hover:bg-ds-accent active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-2"
           >
             {loading ? (
               <>
@@ -205,7 +210,7 @@ export default function LoginPage() {
               </>
             ) : (
               <span className="flex items-center gap-2">
-                <span>Sign In</span>
+                <span>Sign in</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </span>
             )}
@@ -215,31 +220,30 @@ export default function LoginPage() {
         {failureKind === 'email_not_confirmed' && (
           <div className="w-full mt-3 text-center">
             <Link
-              href={`/organizer/verify?email=${encodeURIComponent(normalizeEmail(email))}&sent=0`}
+              href="/organizer/register"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-ds-accent hover:text-ds-accent-strong bg-ds-accent/10 hover:bg-ds-accent/15 py-2 px-3 rounded-lg transition-colors"
             >
-              <span>Verify email now</span>
+              <span>Finish creating your account</span>
               <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </Link>
           </div>
         )}
 
-        {/* Organizer Account Registration Link */}
-        <div className="mt-6 text-center text-xs text-ds-muted">
-          Don&apos;t have an account?{' '}
-          <Link
-            href="/organizer/register"
-            className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
-          >
-            Create organizer account
-          </Link>
-        </div>
-      </div>
+            <div className="mt-7 border-t border-ds-line pt-6 text-center text-[13.5px] text-ds-muted">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/organizer/register"
+                className="font-semibold text-ds-accent underline-offset-2 transition-colors hover:text-ds-accent-strong hover:underline"
+              >
+                Create organizer account
+              </Link>
+            </div>
+          </div>
 
-      {/* Minimal Footer with Security Trust */}
-      <footer className="mt-8 text-center text-xs text-ds-muted flex flex-col items-center gap-2">
-        <span>&copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.</span>
-      </footer>
+          <p className="mt-6 w-full max-w-[440px] text-center text-[12px] text-white/55">
+            &copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.
+          </p>
+      </div>
     </div>
   );
 }

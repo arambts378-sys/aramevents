@@ -5,7 +5,7 @@ import { AramLogo } from '@/components/brand/AramLogo';
 export function Footer() {
   return (
     <footer className="border-t border-ds-line bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-8 sm:px-8 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12 xl:px-16 md:flex-row md:items-center md:justify-between">
         <div className="text-center md:text-left">
           <Link href="/" aria-label="Aram home" className="inline-flex">
             <AramLogo size="sm" />
@@ -22,8 +22,8 @@ export function Footer() {
           <Link href="/#features" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Features
           </Link>
-          <Link href="/#event-day" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
-            Event day
+          <Link href="/live-events" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
+            Live events
           </Link>
           <Link href="/pricing" className="py-1 text-sm text-ds-muted hover:text-ds-ink">
             Pricing

@@ -4,7 +4,7 @@ const { spawnSync } = require('node:child_process');
 
 const result = spawnSync(
   process.execPath,
-  ['--no-experimental-strip-types', '--require', 'ts-node/register', '--test', 'src/lib/ai/__tests__/validateFlyerDraft.test.ts', 'src/lib/flyer/__tests__/parseEventText.test.ts'],
+  ['--no-experimental-strip-types', '--require', 'ts-node/register', '--test', 'src/lib/ai/__tests__/validateFlyerDraft.test.ts', 'src/lib/ai/__tests__/conversationHistory.test.ts', 'src/lib/flyer/__tests__/parseEventText.test.ts'],
   {
     stdio: 'inherit',
     env: {

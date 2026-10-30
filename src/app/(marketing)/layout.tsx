@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Footer } from "@/components/marketing/Footer";
+import { SiteChatbot } from "@/components/marketing/SiteChatbot";
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <SiteChatbot />
     </div>
   );
 }

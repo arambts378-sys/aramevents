@@ -14,6 +14,7 @@
     "test:security": "node scripts/run-security-tests.cjs",
     "test:remediation": "node scripts/run-remediation-tests.cjs",
     "test:agent": "node scripts/run-agent-tests.cjs",
+    "test:assistant": "node scripts/run-assistant-tests.cjs",
     "test:import": "node scripts/run-attendee-import-tests.cjs",
     "check:smtp": "node scripts/check-smtp.cjs",
     "test:super-admin": "node scripts/run-super-admin-tests.cjs",

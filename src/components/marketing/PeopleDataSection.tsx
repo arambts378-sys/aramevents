@@ -1,158 +1,119 @@
 'use client';
 
 import React from 'react';
-import { useInView, AnimatedCounter } from './useScrollReveal';
+import { useInView } from './useScrollReveal';
 
-const reveal = (isInView: boolean) =>
-  `transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-    isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-  }`;
-
-const JOURNEY = [
-  { icon: 'celebration', title: 'Event', body: 'Keynotes, workshops and sessions' },
-  { icon: 'qr_code_2', title: 'Check-ins', body: 'Every ticket scanned at the door' },
-  { icon: 'badge', title: 'Attendees', body: 'One record for every person' },
-  { icon: 'insights', title: 'Reports', body: 'Turnout, sales and arrivals' },
-  { icon: 'event_repeat', title: 'Next event', body: 'Invite the people who came' },
-];
-
-const OUTCOMES = [
+const POINTS = [
   {
-    icon: 'fact_check',
     title: 'Attendance you can trust',
-    body: 'Know exactly who registered, who turned up and when they arrived, because every ticket is scanned.',
+    body: 'Every ticket is scanned, so you know exactly who came and when they arrived.',
   },
   {
-    icon: 'download',
-    title: 'Attendee lists, ready to export',
-    body: 'Download attendees with their ticket type and check-in time for your team, sponsors or CRM.',
+    title: 'Attendee lists, ready to download',
+    body: 'Export names, tickets and check-in times for your team, sponsors or CRM.',
   },
   {
-    icon: 'forward_to_inbox',
     title: 'Follow up the same week',
-    body: 'Email the people who attended with thanks, session recordings or your next event.',
+    body: 'Thank the people who came, share recordings, and invite them to the next one.',
   },
 ];
+
+const ROWS = [
+  { name: 'Ananya Rao', ticket: 'General', arrived: '9:12 am' },
+  { name: 'Farhan Ali', ticket: 'VIP', arrived: '9:26 am' },
+  { name: 'Meera Iyer', ticket: 'Speaker', arrived: '8:40 am' },
+  { name: 'Karthik Menon', ticket: 'General', arrived: null },
+  { name: 'Sneha Kulkarni', ticket: 'General', arrived: '10:03 am' },
+];
+
+const ATTENDED = 1812;
+const REGISTERED = 2140;
+const TURNOUT = Math.round((ATTENDED / REGISTERED) * 100);
 
 export function PeopleDataSection() {
-  const { ref, isInView } = useInView({ threshold: 0.15 });
+  const { ref, isInView } = useInView({ threshold: 0.2 });
 
   return (
-    <section ref={ref} id="resources" className="relative bg-stage-paper py-24 select-none">
-      <div className="mx-auto max-w-7xl px-6 lg:px-12">
-        {/* Section Header */}
-        <div className="mx-auto mb-14 max-w-3xl text-center">
-          <div className={`mb-4 inline-flex items-center gap-2 rounded-full border border-stage-violet/20 bg-white px-3.5 py-1 ${reveal(isInView)}`}>
-            <span className="h-1.5 w-1.5 rounded-full bg-stage-violet" />
-            <span className="text-[12px] font-semibold text-stage-violet">After the event</span>
-          </div>
+    <section ref={ref} id="resources" className="relative bg-stage-paper py-20 sm:py-24 lg:py-28">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 xl:gap-28 xl:px-16">
+        {/* The report */}
+        <figure className="order-2 lg:order-1">
+          <div className="rounded-2xl bg-white p-6 shadow-[0_40px_80px_-48px_rgba(27,16,53,0.45)] ring-1 ring-stage-ink/[0.06] sm:p-8">
+            <p className="text-[13px] text-stage-ink/55">Attendance report</p>
+            <p className="font-display mt-1 text-[19px] font-bold text-stage-ink">Chennai Product Summit</p>
 
-          <h2 className={`font-display mb-4 text-3xl font-bold tracking-tight text-stage-ink sm:text-4xl lg:text-[42px] lg:leading-[1.1] ${reveal(isInView)} delay-100`}>
-            Events are about people. Data makes them better.
-          </h2>
-
-          <p className={`text-[16px] leading-relaxed text-stage-ink/70 ${reveal(isInView)} delay-200`}>
-            Every registration and check-in builds a clear picture of who came, so the next event is easier to plan.
-          </p>
-        </div>
-
-        {/* Journey strip */}
-        <ol
-          className={`relative mb-14 grid grid-cols-2 gap-6 rounded-[1.75rem] bg-white p-6 shadow-[0_20px_50px_-30px_rgba(27,16,53,0.35)] md:grid-cols-5 md:gap-4 lg:p-8 transition-all duration-700 delay-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-          }`}
-        >
-          <div aria-hidden="true" className="absolute left-[10%] right-[10%] top-[3.25rem] hidden border-t-2 border-dashed border-stage-violet/20 md:block lg:top-[3.75rem]" />
-          {JOURNEY.map(({ icon, title, body }, i) => {
-            const last = i === JOURNEY.length - 1;
-            return (
-              <li key={title} className={`relative text-center ${last ? 'col-span-2 md:col-span-1' : ''}`}>
-                <span
-                  className={`relative mx-auto flex h-14 w-14 items-center justify-center rounded-full ring-8 ring-white ${
-                    last ? 'bg-stage-lamp text-stage-ink' : 'bg-stage-night text-white'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[24px]" aria-hidden="true">{icon}</span>
-                </span>
-                <p className="font-display mt-3 text-[17px] font-bold tracking-tight text-stage-ink">{title}</p>
-                <p className="mt-0.5 text-[13px] text-stage-ink/60">{body}</p>
-              </li>
-            );
-          })}
-        </ol>
-
-        {/* Photos + outcomes */}
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12 lg:gap-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-7">
-            <Photo
-              isInView={isInView}
-              delay={350}
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuCsZoLRYOhlrKNJuk61SjvtgyJbvQ8uj58GdFn5I9LTU_JigRu_DnT7oiFrRAYdxJOmIiW2rBQNnvVGFboJ72q7uMzI6nCrByRPiyUh9JGsNVk49PWdqkw3Fb0xWDmbJhtcY-8mVuuDGPJL9wAI-A_lrVFfmi9DoXl361kyerqDNneJgqTakT9OsGc0RbaHVK7jkjSVm0_samG-uZ1eKwX6Gei6I3nkvdXAAXj3Zbz88DgF4_8Ua74xww"
-              stat={<><AnimatedCounter end={85} suffix="%" /> turnout</>}
-              caption="1,812 of 2,140 registered guests attended"
-            />
-            <Photo
-              isInView={isInView}
-              delay={450}
-              image="https://lh3.googleusercontent.com/aida-public/AB6AXuA6zDqnivjGaBz6TTJykfF9-BMPjRPWAP03WCVKxC3d7shtR2-wj1BOQ9PHBWad8lhH3LOU9f_1LxBi2NXqPfQ-53x-W2OBFBTfVCpUEtN7NNLVoDHUo4-b7rRXxZzvyflfCecm_gKA7_rdVX4Ffh5zcuwTdffEDAaJCuZCOAG1_Hh1WpwCsHdDr5dbNd1JrJD0Ff_IxtesmwS5Y7YX9Pfa-bquum7vS9k06W7vGc-U4YKSmW9soAle2Q"
-              stat={<><AnimatedCounter end={640} /> workshop seats</>}
-              caption="Filled across 12 sessions"
-            />
-          </div>
-
-          <div className="flex flex-col gap-4 lg:col-span-5">
-            {OUTCOMES.map(({ icon, title, body }, i) => (
+            <div className="mt-6 flex items-end justify-between gap-4">
+              <p className="font-display text-[56px] font-bold leading-none tracking-[0.01em] text-stage-ink">{TURNOUT}%</p>
+              <p className="pb-1 text-right text-[13.5px] leading-snug text-stage-ink/60">
+                {ATTENDED.toLocaleString('en-IN')} of {REGISTERED.toLocaleString('en-IN')}
+                <br />
+                registered guests came
+              </p>
+            </div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-stage-paper">
               <div
-                key={title}
-                className={`flex flex-1 gap-4 rounded-2xl border border-stage-ink/[0.08] bg-white p-5 transition-all duration-500 hover:border-stage-violet/40 ${
-                  isInView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
-                }`}
-                style={{ transitionDelay: `${400 + i * 100}ms` }}
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-stage-violet/10 text-stage-violet">
-                  <span className="material-symbols-outlined text-[22px]" aria-hidden="true">{icon}</span>
-                </span>
-                <div>
-                  <h3 className="font-display text-[17px] font-bold tracking-tight text-stage-ink">{title}</h3>
-                  <p className="mt-1 text-[14px] leading-relaxed text-stage-ink/65">{body}</p>
-                </div>
+                className="h-full rounded-full bg-stage-violet transition-[width] duration-[1200ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                style={{ width: isInView ? `${TURNOUT}%` : '0%' }}
+              />
+            </div>
+
+            <table className="mt-7 w-full text-left text-[14px]">
+              <thead>
+                <tr className="text-[12.5px] text-stage-ink/50">
+                  <th className="pb-2.5 font-medium">Guest</th>
+                  <th className="hidden pb-2.5 font-medium sm:table-cell">Ticket</th>
+                  <th className="pb-2.5 text-right font-medium">Arrived</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ROWS.map((r, i) => (
+                  <tr
+                    key={r.name}
+                    className={`border-t border-stage-ink/[0.07] transition-[opacity,transform] duration-500 motion-reduce:transition-none ${
+                      isInView ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0'
+                    }`}
+                    style={{ transitionDelay: isInView ? `${300 + i * 90}ms` : '0ms' }}
+                  >
+                    <td className="py-3 font-medium text-stage-ink">{r.name}</td>
+                    <td className="hidden py-3 text-stage-ink/60 sm:table-cell">{r.ticket}</td>
+                    <td className={`py-3 text-right tabular-nums ${r.arrived ? 'text-stage-ink/70' : 'text-stage-ink/35'}`}>
+                      {r.arrived ?? 'Did not attend'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-stage-ink/[0.07] pt-5">
+              <span className="whitespace-nowrap text-[13px] text-stage-ink/55">Showing 5 of {REGISTERED.toLocaleString('en-IN')}</span>
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-stage-night px-3.5 py-2 text-[13px] font-semibold text-white">
+                <span className="material-symbols-outlined text-[17px]" aria-hidden="true">download</span>
+                <span className="sm:hidden">Download list</span>
+                <span className="hidden sm:inline">Download attendee list</span>
+              </span>
+            </div>
+          </div>
+        </figure>
+
+        {/* Words */}
+        <div className="order-1 lg:order-2">
+          <h2 className="font-display text-3xl font-bold tracking-[0.01em] text-stage-ink sm:text-4xl lg:text-[44px] lg:leading-[1.08]">
+            Events are about people. Know who came.
+          </h2>
+          <p className="mt-5 max-w-md text-[17px] leading-relaxed text-stage-ink/65">
+            Every registration and check-in adds up to a clear record, so the next event is easier to plan.
+          </p>
+
+          <dl className="mt-10 space-y-7">
+            {POINTS.map((p) => (
+              <div key={p.title} className="border-l border-stage-ink/15 pl-5">
+                <dt className="font-display text-[18px] font-semibold text-stage-ink">{p.title}</dt>
+                <dd className="mt-1.5 max-w-md text-[15px] leading-relaxed text-stage-ink/60">{p.body}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </div>
     </section>
-  );
-}
-
-function Photo({
-  isInView,
-  delay,
-  image,
-  stat,
-  caption,
-}: {
-  isInView: boolean;
-  delay: number;
-  image: string;
-  stat: React.ReactNode;
-  caption: string;
-}) {
-  return (
-    <div
-      className={`group relative h-80 overflow-hidden rounded-[1.5rem] shadow-[0_30px_60px_-35px_rgba(27,16,53,0.6)] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98]'
-      }`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-        style={{ backgroundImage: `url('${image}')` }}
-      />
-      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-stage-night/90 via-stage-night/10 to-transparent p-5">
-        <span className="font-display text-[22px] font-bold tracking-tight text-white">{stat}</span>
-        <span className="text-[13px] text-white/75">{caption}</span>
-      </div>
-    </div>
   );
 }

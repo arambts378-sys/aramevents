@@ -21,6 +21,22 @@ import type {
   ConversationStage,
   ExtractedEventDetails,
 } from '@/lib/ai/types';
+import { AgentHistoryPanel } from '@/components/agent/AgentHistoryPanel';
+import { agentConversationsService, isHistoryUnavailable } from '@/services/agentConversations';
+import {
+  conversationTitle,
+  fromStored,
+  toStored,
+  type ConversationSummary,
+} from '@/lib/ai/conversationHistory';
+
+const SAVE_DELAY_MS = 800;
+
+/** Keeps the open chat in the address bar (?c=id), so it can be reloaded or shared with yourself. */
+function setChatUrl(id: string | null) {
+  const url = id ? `/app/agent?c=${id}` : '/app/agent';
+  if (window.location.pathname + window.location.search !== url) window.history.replaceState(null, '', url);
+}
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
@@ -64,7 +80,13 @@ type FlyerInput = {
 } | null;
 
 /** Sends the conversation to the server route, which calls the model and returns a reply plus the full draft. */
-async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | null, flyer: FlyerInput) {
+async function askAgent(
+  history: UiMessage[],
+  draft: ExtractedEventDetails | null,
+  flyer: FlyerInput,
+  /** The flyer's transcription when the image itself is not at hand (a chat reopened from history) */
+  savedFlyerText: string | null = null,
+) {
   const res = await fetch('/api/agent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -74,7 +96,7 @@ async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | nul
       image: flyer?.images.main ?? null,
       crops: flyer?.extract ? flyer.images.crops : undefined,
       extract: flyer?.extract ?? false,
-      flyerText: flyer?.text ?? undefined,
+      flyerText: flyer?.text ?? savedFlyerText ?? undefined,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
@@ -162,13 +184,33 @@ function missingForCreate(d: ExtractedEventDetails) {
   return missing;
 }
 
+/**
+ * Decodes a base64 data URI in memory. Not `fetch(dataUri)`: the CSP's connect-src does not
+ * allow data: URLs, so the browser rejects that with "Failed to fetch".
+ */
+function dataUriToBlob(dataUri: string) {
+  const match = /^data:([^;,]+);base64,(.*)$/.exec(dataUri);
+  if (!match) throw new Error('The flyer image could not be read.');
+  const bytes = atob(match[2]);
+  const buf = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i);
+  return new Blob([buf], { type: match[1] });
+}
+
+/** Uploads the flyer for the website banner. Returns undefined on failure: the event is still created without it. */
 async function uploadFlyer(dataUri: string) {
-  const blob = await (await fetch(dataUri)).blob();
-  const form = new FormData();
-  form.append('file', blob, `flyer.${blob.type.split('/')[1] || 'png'}`);
-  const res = await fetch('/api/events/flyer-upload', { method: 'POST', body: form });
-  const json = await res.json().catch(() => ({}));
-  return res.ok && json.url ? (json.url as string) : undefined;
+  try {
+    const blob = dataUriToBlob(dataUri);
+    const form = new FormData();
+    form.append('file', blob, `flyer.${blob.type.split('/')[1] || 'png'}`);
+    const res = await fetch('/api/events/flyer-upload', { method: 'POST', body: form });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) console.warn('Flyer upload failed:', json.error || res.status);
+    return res.ok && json.url ? (json.url as string) : undefined;
+  } catch (err) {
+    console.warn('Flyer upload failed:', err);
+    return undefined;
+  }
 }
 
 const SUGGESTIONS = [
@@ -438,12 +480,19 @@ function Message({
       <div className="flex flex-col items-end gap-2" title={formatTime(message.timestamp)}>
         {message.attachment ? (
           <div className="flex items-center gap-3 rounded-xl border border-ds-line bg-white p-2 pr-4 shadow-ds-card max-w-[85%]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={message.attachment.url}
-              alt="Uploaded event flyer"
-              className="w-12 h-12 rounded-lg object-cover border border-ds-line"
-            />
+            {message.attachment.url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={message.attachment.url}
+                alt="Uploaded event flyer"
+                className="w-12 h-12 rounded-lg object-cover border border-ds-line"
+              />
+            ) : (
+              // Reopened from history: the image itself is not stored, only its name.
+              <span className="w-12 h-12 shrink-0 rounded-lg border border-ds-line bg-ds-subtle flex items-center justify-center text-ds-muted">
+                <span className="material-symbols-outlined text-[22px]" aria-hidden="true">image</span>
+              </span>
+            )}
             <div className="min-w-0">
               <p className="text-[13px] font-medium text-ds-ink truncate">{message.attachment.name}</p>
               <p className="text-[12px] text-ds-muted">Event flyer</p>
@@ -507,8 +556,87 @@ export default function AgentPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /* ── Chat history ── */
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [history, setHistory] = useState<ConversationSummary[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyUnavailable, setHistoryUnavailable] = useState(false);
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(false);
+  /** Mirrors conversationId for async saves, so a slow save never targets a chat you have left */
+  const conversationRef = useRef<string | null>(null);
+  /** Set when a chat is loaded, so restoring it does not count as an edit to save */
+  const skipSaveRef = useRef(false);
+  const saveChain = useRef<Promise<unknown>>(Promise.resolve());
+  /** Bumped on every switch to another chat; a queued save from an earlier chat sees the change and stops */
+  const chatEpoch = useRef(0);
+  /** Lets the mount effect open a chat with the handler defined further down */
+  const openChatRef = useRef<(id: string) => void>(() => {});
+
   const firstName = currentUser?.name?.trim().split(/\s+/)[0];
-  const isEmpty = messages.length === 0 && !isTyping;
+  const isEmpty = messages.length === 0 && !isTyping && !loadingChat;
+
+  const upsertSummary = useCallback((s: ConversationSummary) => {
+    setHistory((prev) => [s, ...prev.filter((c) => c.id !== s.id)]);
+  }, []);
+
+  const historyFailed = useCallback((err: unknown) => {
+    if (isHistoryUnavailable(err)) setHistoryUnavailable(true);
+    else console.warn('Chat history error:', err);
+  }, []);
+
+  // Load the list, and the chat named in the address bar if any.
+  useEffect(() => {
+    let cancelled = false;
+    agentConversationsService
+      .list()
+      .then((items) => !cancelled && setHistory(items))
+      .catch(historyFailed)
+      .finally(() => !cancelled && setHistoryLoading(false));
+    const id = new URLSearchParams(window.location.search).get('c');
+    if (id) openChatRef.current(id);
+    return () => {
+      cancelled = true;
+    };
+  }, [historyFailed]);
+
+  // Save a moment after the chat changes. The first save creates the row; later ones update it.
+  useEffect(() => {
+    if (skipSaveRef.current) {
+      skipSaveRef.current = false;
+      return;
+    }
+    if (historyUnavailable || isTyping || !messages.length) return;
+    const t = window.setTimeout(() => {
+      const epoch = chatEpoch.current;
+      const payload = {
+        title: conversationTitle(messages, extractedDetails),
+        messages: toStored(messages),
+        draft: extractedDetails,
+        flyer_text: flyerText,
+      };
+      saveChain.current = saveChain.current
+        .then(async () => {
+          // Switched to another chat (or a new one) while this was queued.
+          if (chatEpoch.current !== epoch) return;
+          // Read the id now, not when queued: an earlier save in the chain may have just created the row.
+          const id = conversationRef.current;
+          if (id) {
+            upsertSummary(await agentConversationsService.update(id, payload));
+          } else {
+            const created = await agentConversationsService.create({ ...payload, workspace_id: activeWorkspace?.id ?? null });
+            if (chatEpoch.current !== epoch) return;
+            conversationRef.current = created.id;
+            setConversationId(created.id);
+            setChatUrl(created.id);
+            upsertSummary(created);
+          }
+        })
+        .catch(historyFailed);
+    }, SAVE_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [messages, extractedDetails, flyerText, isTyping, historyUnavailable, activeWorkspace?.id, upsertSummary, historyFailed]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -555,7 +683,7 @@ export default function AgentPage() {
           turn = await runLocally();
         } else {
           try {
-            turn = await askAgent(history, extractedDetails, flyer);
+            turn = await askAgent(history, extractedDetails, flyer, flyerText);
           } catch (err) {
             if ((err as Error & { code?: string }).code !== 'not_configured') throw err;
             setLocalMode(true);
@@ -583,7 +711,7 @@ export default function AgentPage() {
         setIsTyping(false);
       }
     },
-    [extractedDetails, push, localMode],
+    [extractedDetails, push, localMode, flyerText],
   );
 
   /* Handle flyer upload */
@@ -711,10 +839,19 @@ export default function AgentPage() {
         website: buildDefaultWebsite({ flyerUrl: flyer, format: d.format! }),
       });
       setStage('done');
+      const chatId = conversationRef.current;
+      if (chatId) {
+        agentConversationsService
+          .update(chatId, { created_event_id: created.id })
+          .then(upsertSummary)
+          .catch(historyFailed);
+      }
       setMessages((prev) => prev.map((m) => (m.extraction ? { ...m, extraction: undefined } : m)));
       push(
         assistantMsg(
-          `**${created.name}** is created as a draft${flyer ? ' with your flyer as the website banner' : ''}. Opening the event workspace, where you can add tickets and publish the website.`,
+          `**${created.name}** is created as a draft${
+            flyer ? ' with your flyer as the website banner' : flyerDataUri ? '. The flyer could not be attached, so add it later in the website builder' : ''
+          }. Opening the event workspace, where you can add tickets and publish the website.`,
         ),
       );
       setExtractedDetails(null);
@@ -731,13 +868,13 @@ export default function AgentPage() {
     } finally {
       setCreating(false);
     }
-  }, [extractedDetails, creating, push, activeWorkspace, flyerDataUri, createEvent, router]);
+  }, [extractedDetails, creating, push, activeWorkspace, flyerDataUri, createEvent, router, upsertSummary, historyFailed]);
 
   useEffect(() => {
     confirmRef.current = handleConfirm;
   });
 
-  const handleNewChat = () => {
+  const resetChat = () => {
     setMessages([]);
     setInput('');
     setIsTyping(false);
@@ -747,7 +884,62 @@ export default function AgentPage() {
     setFlyerDataUri(null);
     setFlyerImages(null);
     setFlyerText(null);
+  };
+
+  const handleNewChat = () => {
+    chatEpoch.current += 1;
+    conversationRef.current = null;
+    setConversationId(null);
+    setChatUrl(null);
+    resetChat();
     textareaRef.current?.focus();
+  };
+
+  /* Reopen a saved chat: messages, the draft card and the flyer's text come back; the image does not. */
+  const openChat = async (id: string) => {
+    if (id === conversationRef.current || isTyping) return;
+    chatEpoch.current += 1;
+    conversationRef.current = id;
+    setConversationId(id);
+    setChatUrl(id);
+    setLoadingChat(true);
+    resetChat();
+    try {
+      const chat = await agentConversationsService.get(id);
+      if (conversationRef.current !== id) return; // another chat was picked meanwhile
+      if (!chat) {
+        handleNewChat();
+        push(assistantMsg('That chat could not be found. It may have been deleted.'));
+        return;
+      }
+      skipSaveRef.current = true;
+      const restored = fromStored(chat.messages);
+      setMessages(restored);
+      setExtractedDetails(chat.draft);
+      setFlyerText(chat.flyer_text);
+      setStage(chat.created_event_id ? 'done' : chat.draft ? 'reviewing_extraction' : 'idle');
+    } catch (err) {
+      historyFailed(err);
+      push(assistantMsg('That chat could not be opened. Try again in a moment.'));
+    } finally {
+      setLoadingChat(false);
+    }
+  };
+  useEffect(() => {
+    openChatRef.current = openChat;
+  });
+
+  const deleteChat = async (id: string) => {
+    const chat = history.find((c) => c.id === id);
+    if (!window.confirm(`Delete "${chat?.title ?? 'this chat'}"? This cannot be undone.`)) return;
+    try {
+      await agentConversationsService.remove(id);
+      setHistory((prev) => prev.filter((c) => c.id !== id));
+      if (id === conversationRef.current) handleNewChat();
+    } catch (err) {
+      historyFailed(err);
+      window.alert('The chat could not be deleted. Try again in a moment.');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -845,6 +1037,19 @@ export default function AgentPage() {
           onClose={() => setMobileMenuOpen(false)}
         />
 
+        <AgentHistoryPanel
+          items={history}
+          activeId={conversationId}
+          loading={historyLoading}
+          unavailable={historyUnavailable}
+          onSelect={openChat}
+          onNew={handleNewChat}
+          onDelete={deleteChat}
+          mobileOpen={mobileHistoryOpen}
+          onMobileClose={() => setMobileHistoryOpen(false)}
+          collapsed={historyCollapsed}
+        />
+
         <main
           className="relative flex-1 min-w-0 flex flex-col h-dvh bg-white"
           onDragEnter={(e) => {
@@ -861,8 +1066,29 @@ export default function AgentPage() {
             >
               <span className="material-symbols-outlined">menu</span>
             </button>
+            <button
+              type="button"
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-ds-muted hover:bg-ds-subtle hover:text-ds-ink"
+              onClick={() => setMobileHistoryOpen(true)}
+              aria-label="Open chat history"
+              title="Chats"
+            >
+              <span className="material-symbols-outlined text-[21px]">history</span>
+            </button>
+            <button
+              type="button"
+              className="hidden lg:flex w-9 h-9 items-center justify-center rounded-lg text-ds-muted hover:bg-ds-subtle hover:text-ds-ink"
+              onClick={() => setHistoryCollapsed((c) => !c)}
+              aria-label={historyCollapsed ? 'Show chat history' : 'Hide chat history'}
+              aria-pressed={!historyCollapsed}
+              title={historyCollapsed ? 'Show chats' : 'Hide chats'}
+            >
+              <span className="material-symbols-outlined text-[21px]">{historyCollapsed ? 'left_panel_open' : 'left_panel_close'}</span>
+            </button>
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <h1 className="text-[15px] font-medium text-ds-ink truncate">AI Event Agent</h1>
+              <h1 className="text-[15px] font-medium text-ds-ink truncate">
+                {(conversationId && history.find((c) => c.id === conversationId)?.title) || 'AI Event Agent'}
+              </h1>
             </div>
             <Link href="/app/events/new" className="ds-btn ds-btn-ghost ds-btn-sm hidden sm:inline-flex">
               Classic builder
@@ -913,6 +1139,12 @@ export default function AgentPage() {
               {/* Conversation */}
               <div className="flex-1 overflow-y-auto">
                 <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-4 pb-10 flex flex-col gap-7">
+                  {loadingChat && (
+                    <div className="flex items-center gap-2 py-10 text-[14px] text-ds-muted" role="status">
+                      <span className="material-symbols-outlined animate-spin text-[18px]" aria-hidden="true">progress_activity</span>
+                      Opening chat…
+                    </div>
+                  )}
                   {messages.map((msg) => (
                     <Message
                       key={msg.id}

@@ -39,19 +39,19 @@ export function Hero() {
       <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-12 w-full flex flex-col items-center text-center my-auto">
         {/* High-Impact Headline with Gradient Sheen */}
         <h1
-          className={`font-display text-5xl sm:text-6xl lg:text-[72px] text-white tracking-tight leading-[1.06] max-w-5xl mb-8 font-bold drop-shadow-[0_4px_36px_rgba(0,0,0,0.9)] transition-all duration-700 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`font-display text-5xl sm:text-6xl lg:text-[72px] text-white tracking-[0.01em] leading-[1.06] max-w-5xl mb-8 font-bold drop-shadow-[0_2px_24px_rgba(10,6,30,0.55)] transition-all duration-700 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          One platform.{' '}
-          <span className="bg-gradient-to-r from-white via-[#FFE2A8] to-stage-lamp bg-clip-text text-transparent">
-            Every event.
+          One platform{' '}
+          <span className="bg-gradient-to-r from-[#FFE9B8] via-[#FFD27A] to-[#FFC24D] bg-clip-text text-transparent">
+            for all events.
           </span>
         </h1>
 
         {/* Supporting Message - Enlarged and High Visibility */}
         <p
-          className={`font-jakarta text-lg sm:text-xl md:text-[22px] text-[#E7E2F5] max-w-3xl leading-relaxed mb-10 font-medium drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)] transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`font-jakarta text-lg sm:text-xl md:text-[22px] text-white/90 max-w-3xl leading-relaxed mb-10 font-medium drop-shadow-[0_1px_12px_rgba(10,6,30,0.6)] transition-all duration-700 delay-200 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
@@ -66,14 +66,14 @@ export function Hero() {
         >
           <Link
             href="/app/events/new"
-            className="w-full sm:w-auto px-9 py-4 rounded-xl bg-stage-lamp text-stage-ink font-bold text-[16px] shadow-sm shadow-sm active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 hover:-translate-y-0.5 border border-white/20"
+            className="w-full sm:w-auto px-9 py-4 rounded-xl bg-stage-lamp hover:bg-[#FFD27A] text-stage-ink font-bold text-[16px] shadow-[0_10px_30px_-10px_rgba(255,200,97,0.7)] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 hover:-translate-y-0.5 border border-white/20"
           >
             <span>Create your event</span>
             <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
           </Link>
           <a
             href="#solutions"
-            className="w-full sm:w-auto px-9 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-white/35 backdrop-blur-xl font-bold text-[16px] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 hover:-translate-y-0.5 shadow-lg shadow-black/30"
+            className="w-full sm:w-auto px-9 py-4 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/35 hover:border-white/55 backdrop-blur-xl font-bold text-[16px] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 hover:-translate-y-0.5 shadow-lg shadow-black/30"
           >
             <span>Explore the platform</span>
             <span className="material-symbols-outlined text-[20px]">tune</span>

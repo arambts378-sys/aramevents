@@ -6,7 +6,7 @@ import { AramLogo } from '@/components/brand/AramLogo';
 
 const navigationLinks = [
   { href: '/#features', label: 'Features' },
-  { href: '/#event-day', label: 'Event day' },
+  { href: '/live-events', label: 'Live events' },
   { href: '/pricing', label: 'Pricing' },
 ];
 
@@ -28,7 +28,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-ds-line/80 bg-white/80 backdrop-blur-xl shadow-sm transition-all">
-      <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-5 sm:px-8">
+      <div className="mx-auto flex h-[74px] max-w-[1600px] items-center justify-between px-5 sm:px-8 lg:px-12 xl:px-16">
         {/* Left: Brand Logo */}
         <Link
           href="/"
@@ -97,7 +97,7 @@ export function Navbar() {
           aria-label="Mobile navigation"
           className="border-t border-ds-line bg-white px-5 py-4 shadow-lg md:hidden animate-in slide-in-from-top-2 duration-200"
         >
-          <div className="mx-auto flex max-w-7xl flex-col gap-1">
+          <div className="mx-auto flex max-w-[1600px] flex-col gap-1">
             {navigationLinks.map(({ href, label }) => (
               <Link
                 key={href}

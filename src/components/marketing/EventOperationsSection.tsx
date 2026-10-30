@@ -1,161 +1,178 @@
 'use client';
 
-import React from 'react';
-import { useInView, AnimatedCounter } from './useScrollReveal';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import { useInView } from './useScrollReveal';
 
-const reveal = (isInView: boolean) =>
-  `transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-    isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-  }`;
+const GUESTS = [
+  { name: 'Ananya Rao', pass: 'General pass', gate: 'Gate A' },
+  { name: 'Farhan Ali', pass: 'VIP pass', gate: 'VIP entrance' },
+  { name: 'Meera Iyer', pass: 'Speaker pass', gate: 'VIP entrance' },
+  { name: 'Karthik Menon', pass: 'General pass', gate: 'Gate B' },
+  { name: 'Sneha Kulkarni', pass: 'General pass', gate: 'Gate C' },
+];
+const START_INSIDE = 1926;
+const TICKETS = 2480;
+const CYCLE_MS = 3600;
 
-const GATES = [
-  { name: 'Gate A', scanned: 742, capacity: 900 },
-  { name: 'Gate B', scanned: 610, capacity: 800 },
-  { name: 'Gate C', scanned: 418, capacity: 700 },
-  { name: 'VIP and speakers', scanned: 156, capacity: 200 },
+const POINTS = [
+  {
+    title: 'Scan with any phone',
+    body: 'Volunteers check guests in with the phone they already carry. No extra hardware to hire.',
+  },
+  {
+    title: 'Every gate, one count',
+    body: 'Each entrance adds to the same total, so you always know how many people are inside.',
+  },
+  {
+    title: 'Problems stop at the door',
+    body: 'Cancelled or already-used tickets are flagged on the spot, before anyone walks in.',
+  },
 ];
 
+const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
+const subscribeReduced = (cb: () => void) => {
+  const mq = window.matchMedia(REDUCED_QUERY);
+  mq.addEventListener('change', cb);
+  return () => mq.removeEventListener('change', cb);
+};
+const usePrefersReducedMotion = () =>
+  useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCED_QUERY).matches, () => false);
+
+// A fixed, QR-like pattern: three finder squares plus deterministic modules.
+const QR_SIZE = 21;
+const inFinder = (x: number, y: number) =>
+  (x < 7 && y < 7) || (x >= QR_SIZE - 7 && y < 7) || (x < 7 && y >= QR_SIZE - 7);
+const QR_MODULES = Array.from({ length: QR_SIZE * QR_SIZE }, (_, i) => {
+  const x = i % QR_SIZE;
+  const y = Math.floor(i / QR_SIZE);
+  if (inFinder(x, y)) return null;
+  let h = Math.imul(x + 1, 0x9e3779b1) ^ Math.imul(y + 1, 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+  return ((h ^ (h >>> 13)) >>> 0) % 100 < 48 ? [x, y] : null;
+}).filter((m): m is number[] => m !== null);
+
+function QrCode() {
+  const finder = (x: number, y: number) => (
+    <g key={`${x}-${y}`}>
+      <rect x={x} y={y} width="7" height="7" rx="1.4" fill="currentColor" />
+      <rect x={x + 1} y={y + 1} width="5" height="5" rx="1" fill="white" />
+      <rect x={x + 2} y={y + 2} width="3" height="3" rx="0.6" fill="currentColor" />
+    </g>
+  );
+  return (
+    <svg viewBox={`0 0 ${QR_SIZE} ${QR_SIZE}`} className="h-full w-full text-stage-ink" aria-hidden="true">
+      {finder(0, 0)}
+      {finder(QR_SIZE - 7, 0)}
+      {finder(0, QR_SIZE - 7)}
+      {QR_MODULES.map(([x, y]) => (
+        <rect key={`${x}-${y}`} x={x + 0.08} y={y + 0.08} width="0.84" height="0.84" rx="0.2" fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
+
 export function EventOperationsSection() {
-  const { ref, isInView } = useInView({ threshold: 0.15 });
+  const { ref, isInView } = useInView({ threshold: 0.1 });
+  const reduced = usePrefersReducedMotion();
+  const [scan, setScan] = useState(0);
+
+  // One scan per cycle while the section is on screen.
+  useEffect(() => {
+    if (!isInView || reduced) return;
+    const id = setInterval(() => {
+      if (!document.hidden) setScan((n) => n + 1);
+    }, CYCLE_MS);
+    return () => clearInterval(id);
+  }, [isInView, reduced]);
+
+  const guest = GUESTS[scan % GUESTS.length];
+  const inside = START_INSIDE + scan;
 
   return (
-    <section
-      ref={ref}
-      id="event-day"
-      className="relative overflow-hidden bg-stage-night py-16 text-white select-none sm:py-20 lg:py-24"
-    >
-      {/* Stage glow */}
-      <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[60rem] -translate-x-1/2 bg-[radial-gradient(ellipse_at_top,rgba(255,200,97,0.16),transparent_65%)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 right-0 h-96 w-[40rem] bg-[radial-gradient(ellipse,rgba(109,80,245,0.35),transparent_70%)]" />
+    <section ref={ref} id="event-day" className="relative overflow-hidden bg-stage-night py-20 text-white sm:py-24 lg:py-28">
+      <div aria-hidden="true" className="pointer-events-none absolute right-[-10rem] top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(109,80,245,0.28),transparent_65%)]" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
-        {/* Section Header */}
-        <div className="mb-10 flex flex-col justify-between gap-5 md:mb-14 md:flex-row md:items-end md:gap-6">
-          <div className="max-w-2xl">
-            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 backdrop-blur-sm ${reveal(isInView)}`}>
-              <span className="live-pulse h-2 w-2 rounded-full bg-emerald-400" />
-              <span className="text-[12px] font-semibold text-white">Live on event day</span>
-            </div>
+      <div className="relative mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 xl:gap-28 xl:px-16">
+        {/* Words */}
+        <div>
+          <h2 className="font-display text-3xl font-bold tracking-[0.01em] sm:text-4xl lg:text-[44px] lg:leading-[1.08]">
+            When the event starts, everything should work.
+          </h2>
+          <p className="mt-5 max-w-md text-[17px] leading-relaxed text-white/65">
+            Doors open, the queue moves, and you can see who has arrived without asking anyone.
+          </p>
 
-            <h2 className={`font-display mb-3 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-[42px] lg:leading-[1.1] ${reveal(isInView)} delay-100`}>
-              When the event starts, everything should work.
-            </h2>
-
-            <p className={`text-[16px] leading-relaxed text-white/70 ${reveal(isInView)} delay-200`}>
-              Check guests in at every gate and watch the numbers move as people arrive.
-            </p>
-          </div>
+          <dl className="mt-10 space-y-7">
+            {POINTS.map((p) => (
+              <div key={p.title} className="border-l border-white/15 pl-5">
+                <dt className="font-display text-[18px] font-semibold">{p.title}</dt>
+                <dd className="mt-1.5 max-w-md text-[15px] leading-relaxed text-white/60">{p.body}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
-        {/* Live dashboard */}
-        <div
-          className={`relative overflow-hidden rounded-[1.75rem] border border-white/15 shadow-2xl transition-all duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            isInView ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98]'
-          }`}
-          style={{ transitionDelay: '300ms' }}
-        >
-          <div
-            className="animate-cinematic-zoom pointer-events-none absolute inset-0 bg-cover bg-center opacity-35"
-            style={{
-              backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDEr9ruX6EZtJ_fWX4MrTnr09fQox8ii_d2xiQOnAYFoe017D4Q55KHOtMeKPd1jMyYAkpCjw5xcEqfZhqpULJlNhUGUkVhkwqQpXUvJDrdzZnAiLc-F8LDgqQtr-Mk1u00NhHRvH5oCC0xF5bK_suNbpLteQsL8Q88Oxh4HCXqLtpQz1CfhrcFNW7naIlZNKVU-nIkFDtEMlSCQObb1i_pIrQM0iDXBz3RklaHp7d1E7x4jXCfG1v5Hg')`,
-            }}
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stage-night via-stage-night/85 to-stage-night/55" />
-
-          <div className="relative z-10 p-4 sm:p-6 md:p-10">
-            {/* Top status row */}
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
-              <div className="flex items-center gap-3">
-                <span className="live-pulse h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                <div>
-                  <p className="text-[15px] font-semibold text-white">Monsoon Music Festival</p>
-                  <p className="text-[12.5px] text-white/60">Palace Grounds, Bengaluru · Sat 14 Dec</p>
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-3 py-1 text-[12.5px] font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/30">
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">sync</span>
-                Updating live
-              </span>
-            </div>
-
-            {/* Metrics */}
-            <div className="my-6 grid grid-cols-1 gap-3 sm:my-8 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4 xl:gap-5">
-              <Metric label="Checked in">
-                <AnimatedCounter end={1926} />
-                <Note tone="good" icon="arrow_upward">Up 214 in the last hour</Note>
-              </Metric>
-              <Metric label="Tickets sold" accent>
-                <AnimatedCounter end={2480} />
-                <Note>78% have arrived</Note>
-              </Metric>
-              <Metric label="Gates open">
-                <AnimatedCounter end={4} />
-                <Note tone="good" icon="check_circle">All scanners online</Note>
-              </Metric>
-              <Metric label="Arrivals per hour">
-                <AnimatedCounter end={412} />
-                <Note>Busiest at 18:00</Note>
-              </Metric>
-            </div>
-
-            {/* Gate progress */}
-            <div className="grid gap-4 rounded-2xl border border-white/10 bg-stage-deep/60 p-5 backdrop-blur-sm sm:grid-cols-2 sm:gap-x-8 lg:grid-cols-4">
-              {GATES.map(({ name, scanned, capacity }) => (
-                <div key={name}>
-                  <div className="flex justify-between text-[13px]">
-                    <span className="font-medium text-white/85">{name}</span>
-                    <span className="tabular-nums text-white/55">{scanned} / {capacity}</span>
-                  </div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-stage-violet to-stage-lamp transition-[width] duration-[1500ms] ease-out"
-                      style={{ width: isInView ? `${(scanned / capacity) * 100}%` : '0%' }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Last scan */}
-            <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-stage-ink">
-                  <span className="material-symbols-outlined text-[20px]" aria-hidden="true">check</span>
+        {/* The door moment */}
+        <figure className="mx-auto w-full max-w-[320px]">
+          <div className="rounded-[2.5rem] border border-white/15 bg-stage-deep p-3 shadow-[0_60px_120px_-40px_rgba(0,0,0,0.9)]">
+            <div className="overflow-hidden rounded-[2rem] bg-white text-stage-ink">
+              <div className="flex items-center justify-between px-5 pb-2 pt-4 text-[12px] text-stage-ink/55">
+                <span>Gate check-in</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+                  Online
                 </span>
-                <p className="text-[14px] text-white">
-                  <span className="font-semibold">Ananya Rao</span>
-                  <span className="text-white/60"> checked in with a General pass at Gate B</span>
-                </p>
               </div>
-              <span className="text-[13px] tabular-nums text-white/55">Just now · 17:42</span>
+
+              {/* Scanner window */}
+              <div className="px-5 pt-2">
+                <div className="relative aspect-square overflow-hidden rounded-2xl bg-stage-paper p-7">
+                  <QrCode />
+                  {/* Corner guides */}
+                  {['left-3 top-3 border-l-2 border-t-2', 'right-3 top-3 border-r-2 border-t-2', 'bottom-3 left-3 border-b-2 border-l-2', 'bottom-3 right-3 border-b-2 border-r-2'].map((c) => (
+                    <span key={c} aria-hidden="true" className={`absolute h-6 w-6 rounded-[4px] border-stage-violet ${c}`} />
+                  ))}
+                  {!reduced && (
+                    <span
+                      key={`sweep-${scan}`}
+                      aria-hidden="true"
+                      className="animate-scan-sweep absolute inset-x-5 h-0.5 rounded-full bg-stage-violet shadow-[0_0_18px_4px_rgba(109,80,245,0.45)]"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Result */}
+              <div className="px-5 pb-6 pt-5" aria-live="off">
+                <div key={`result-${scan}`} className="animate-scan-result flex items-center gap-3 rounded-2xl bg-emerald-50 px-4 py-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">check</span>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold">Welcome, {guest.name.split(' ')[0]}</p>
+                    <p className="truncate text-[12.5px] text-stage-ink/60">
+                      {guest.pass}, {guest.gate}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <figcaption className="mt-7 text-center">
+            <p className="text-[15px] text-white/75">
+              <span className="font-display text-[22px] font-bold tabular-nums text-white">{inside.toLocaleString('en-IN')}</span>{' '}
+              of {TICKETS.toLocaleString('en-IN')} guests inside
+            </p>
+            <div className="mx-auto mt-3 h-1 w-48 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-stage-lamp transition-[width] duration-700 ease-out"
+                style={{ width: `${(inside / TICKETS) * 100}%` }}
+              />
+            </div>
+          </figcaption>
+        </figure>
       </div>
     </section>
-  );
-}
-
-function Metric({ label, accent, children }: { label: string; accent?: boolean; children: React.ReactNode }) {
-  const [value, note] = React.Children.toArray(children);
-  return (
-    <div className="flex flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur-md xl:p-6">
-      <p className="mb-2 text-[13px] font-medium text-white/70">{label}</p>
-      <div>
-        <div className={`font-display text-4xl font-bold leading-none tracking-tight tabular-nums ${accent ? 'text-stage-lamp' : 'text-white'}`}>
-          {value}
-        </div>
-        {note}
-      </div>
-    </div>
-  );
-}
-
-function Note({ tone, icon, children }: { tone?: 'good'; icon?: string; children: React.ReactNode }) {
-  return (
-    <p className={`mt-2.5 flex items-center gap-1.5 text-[12.5px] ${tone === 'good' ? 'font-medium text-emerald-300' : 'text-white/60'}`}>
-      {icon && <span className="material-symbols-outlined text-[15px]" aria-hidden="true">{icon}</span>}
-      {children}
-    </p>
   );
 }
