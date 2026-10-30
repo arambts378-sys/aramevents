@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { sanitizeCsvValue } from '@/lib/csv';
 
 export interface ScanRecord {
   id: string;
@@ -29,16 +30,6 @@ function getAttendeeName(person?: { first_name?: string; last_name?: string; ful
   if (!person) return 'Anonymous Participant';
   const combined = [person.first_name, person.last_name].filter(Boolean).join(' ').trim();
   return combined || person.full_name || 'Anonymous Participant';
-}
-
-function sanitizeCsvValue(val: unknown): string {
-  if (val === null || val === undefined) return '""';
-  let str = String(val).trim();
-  // Formula injection mitigation (L16): prefix leading =, +, -, @, \t, \r with single quote
-  if (/^[=+\-@\t\r]/.test(str)) {
-    str = `'${str}`;
-  }
-  return `"${str.replace(/"/g, '""')}"`;
 }
 
 export function AccessActivityTable({ scans }: AccessActivityTableProps) {

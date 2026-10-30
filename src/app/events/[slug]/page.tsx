@@ -39,6 +39,7 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
 
   const mappedEventData = {
     id: appEvent.id,
+    slug: appEvent.slug,
     name: appEvent.name,
     type: appEvent.type,
     format: appEvent.format,

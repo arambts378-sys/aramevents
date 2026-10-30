@@ -58,7 +58,13 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
 
   const selectedTicket = tickets?.find(t => t.id === selectedTicketId) || null;
   const isPaidSelected = selectedTicket?.ticket_type === 'paid';
-  const isTicketUnavailable = selectedTicket ? (selectedTicket.status === 'sold_out' || selectedTicket.status === 'sales_ended') : false;
+  const isTicketUnavailable = selectedTicket
+    ? (selectedTicket.status === 'sold_out' || selectedTicket.status === 'sales_ended' || selectedTicket.status === 'scheduled')
+    : false;
+  const formatSalesStart = (iso?: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: event?.timezone || undefined })
+      : '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -294,7 +300,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                                 </span>
                               ) : isScheduled ? (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800">
-                                  Sales Start Soon
+                                  {ticket.sales_start_at ? `Sales start ${formatSalesStart(ticket.sales_start_at)}` : 'Sales Start Soon'}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
@@ -511,7 +517,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                 ) : isPaidSelected ? (
                   'Payment Gateway Not Configured'
                 ) : isTicketUnavailable ? (
-                  'Selected Ticket Unavailable'
+                  selectedTicket?.status === 'scheduled' ? 'Ticket Sales Not Open Yet' : 'Selected Ticket Unavailable'
                 ) : (
                   'Complete Registration'
                 )}

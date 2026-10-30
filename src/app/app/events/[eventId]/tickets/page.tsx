@@ -123,8 +123,15 @@ export default function OrganizerTicketsPage() {
   // Open Edit Modal
   const handleOpenEditModal = (ticket: EventTicketType) => {
     setEditingTicket(ticket);
-    const startStr = ticket.sales_start_at ? new Date(ticket.sales_start_at).toISOString().slice(0, 16) : '';
-    const endStr = ticket.sales_end_at ? new Date(ticket.sales_end_at).toISOString().slice(0, 16) : '';
+    // datetime-local inputs hold local wall-clock time. toISOString() would load the UTC time
+    // instead, and saving reads it back as local, shifting the window by the UTC offset on every edit.
+    const toLocalInput = (iso?: string | null) => {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    };
+    const startStr = toLocalInput(ticket.sales_start_at);
+    const endStr = toLocalInput(ticket.sales_end_at);
 
     setFormData({
       name: ticket.name,
@@ -316,7 +323,7 @@ export default function OrganizerTicketsPage() {
     const formatDate = (dStr: string) => {
       try {
         const d = new Date(dStr);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
       } catch {
         return dStr;
       }

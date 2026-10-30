@@ -5,7 +5,7 @@ export function buildDefaultWebsite({ flyerUrl, format }: { flyerUrl?: string; f
   return {
     status: 'draft',
     draft: {
-      templateId: 'minimal',
+      templateId: 'editorial',
       status: 'draft',
       theme: {},
       sections: [

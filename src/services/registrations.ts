@@ -53,7 +53,9 @@ export const registrationsService = {
       .from('registrations')
       .select(`
         *,
-        person:people(*)
+        person:people(*),
+        ticket_type:event_ticket_types(name),
+        distance_category:walkathon_distance_categories(name)
       `)
       .eq('event_id', eventId)
       .order('registered_at', { ascending: false });

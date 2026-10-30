@@ -83,34 +83,41 @@ export default function EventWebsiteEditorPage() {
   useEffect(() => {
     if (event && !draft && history.length === 0) {
       let initialDraft = event.website?.draft;
-      const defaultTpl = templates[0];
+      // Older events were saved with template ids that no longer exist (e.g. "minimal"); fall back
+      // to a real template so the gallery shows a selection and the theme matches it.
+      const resolveTemplate = (id?: string) => templates.find((t) => t.id === id) || templates[0];
       if (!initialDraft) {
+        const tpl = resolveTemplate(event.website?.templateId);
         initialDraft = {
-          templateId: event.website?.templateId || 'editorial',
+          templateId: tpl.id,
           status: 'draft',
           theme: {
-            colors: defaultTpl.colors,
-            typography: defaultTpl.typography,
-            layout: defaultTpl.layout,
+            colors: tpl.colors,
+            typography: tpl.typography,
+            layout: tpl.layout,
           },
           sections: event.website?.sections?.length ? event.website.sections : defaultSections,
         };
       } else {
-        const templateId = (initialDraft as any).templateId || 'editorial';
-        const matchedTpl = templates.find((t) => t.id === templateId) || defaultTpl;
+        const matchedTpl = resolveTemplate((initialDraft as any).templateId);
         const currentTheme = (initialDraft as any).theme || {};
-        if (!currentTheme.colors) {
-          initialDraft = {
-            ...initialDraft,
-            theme: {
-              colors: matchedTpl.colors,
-              typography: matchedTpl.typography,
-              layout: matchedTpl.layout,
-              ...currentTheme,
-            },
-          };
-        }
+        initialDraft = {
+          ...initialDraft,
+          templateId: matchedTpl.id,
+          theme: {
+            colors: matchedTpl.colors,
+            typography: matchedTpl.typography,
+            layout: matchedTpl.layout,
+            ...currentTheme,
+          },
+        };
       }
+      initialDraft = {
+        ...initialDraft,
+        sections: [...((initialDraft as any).sections || defaultSections)]
+          .sort((a: any, b: any) => a.order - b.order)
+          .map((s: any, idx: number) => ({ ...s, order: idx })),
+      };
       setDraft(initialDraft);
       setHistory([initialDraft]);
       setHistoryIndex(0);
@@ -316,22 +323,17 @@ export default function EventWebsiteEditorPage() {
   };
 
   const handleMoveSection = (sectionId: string, direction: 'up' | 'down') => {
-    const idx = draft.sections.findIndex((s: any) => s.id === sectionId);
-    if (
-      (direction === 'up' && idx === 0) ||
-      (direction === 'down' && idx === draft.sections.length - 1)
-    )
-      return;
-
-    const newSections = [...draft.sections];
+    // Work on the displayed (sorted) order, and copy the sections so earlier undo
+    // snapshots are not changed in place.
+    const ordered = [...draft.sections].sort((a: any, b: any) => a.order - b.order);
+    const idx = ordered.findIndex((s: any) => s.id === sectionId);
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= ordered.length) return;
 
-    const tempOrder = newSections[idx].order;
-    newSections[idx].order = newSections[swapIdx].order;
-    newSections[swapIdx].order = tempOrder;
+    [ordered[idx], ordered[swapIdx]] = [ordered[swapIdx], ordered[idx]];
     pushHistory({
       ...draft,
-      sections: newSections.sort((a: any, b: any) => a.order - b.order),
+      sections: ordered.map((s: any, i: number) => ({ ...s, order: i })),
     });
   };
 

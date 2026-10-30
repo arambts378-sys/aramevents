@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { registrationsService } from '@/services/registrations';
 import { Registration, EventRegistrationSettings } from '@/types';
+import { downloadCsv } from '@/lib/csv';
 
 export default function OrganizerRegistrationPage() {
   const router = useRouter();
@@ -134,6 +135,45 @@ export default function OrganizerRegistrationPage() {
       return true;
     });
   }, [registrations, searchQuery, statusFilter]);
+
+  // Downloads what the table shows, so the search and status filter carry over to the file.
+  const handleDownloadAttendees = () => {
+    if (filteredRegistrations.length === 0) return;
+    const meta = (reg: Registration, key: string) => (reg.metadata?.[key] as string | undefined) ?? '';
+    const isWalkathon = registrations.some((r) => r.distance_category_id);
+
+    const headers = [
+      'Registration #', 'First Name', 'Last Name', 'Email', 'Phone', 'Organization', 'Job Title',
+      'Ticket', 'Status', 'Registered At', 'Cancelled At',
+      ...(isWalkathon ? ['Distance', 'Gender', 'Age', 'T-Shirt Size', 'Emergency Contact', 'Emergency Phone'] : []),
+    ];
+    const rows = filteredRegistrations.map((reg) => [
+      reg.registration_number,
+      reg.person?.first_name,
+      reg.person?.last_name,
+      reg.person?.email,
+      reg.person?.phone,
+      reg.person?.organization,
+      reg.person?.job_title,
+      reg.ticket_type?.name || meta(reg, 'ticket_type_name'),
+      reg.status,
+      reg.registered_at ? new Date(reg.registered_at).toLocaleString() : '',
+      reg.cancelled_at ? new Date(reg.cancelled_at).toLocaleString() : '',
+      ...(isWalkathon
+        ? [
+            reg.distance_category?.name,
+            meta(reg, 'gender'),
+            meta(reg, 'age'),
+            meta(reg, 't_shirt_size'),
+            meta(reg, 'emergency_contact_name'),
+            meta(reg, 'emergency_contact_phone'),
+          ]
+        : []),
+    ]);
+
+    const name = (event?.name || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'event';
+    downloadCsv(`${name}-attendees-${new Date().toISOString().slice(0, 10)}.csv`, headers, rows);
+  };
 
   if (!isHydrated || !event) {
     return <div className="p-10 text-center text-on-surface-variant">Loading workspace...</div>;
@@ -275,7 +315,9 @@ export default function OrganizerRegistrationPage() {
         {/* Right Column: Registration List */}
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <h2 className="text-title-lg font-bold text-on-surface">Attendees</h2>
+            <h2 className="text-title-lg font-bold text-on-surface">
+              Attendees{!loading && <span className="text-on-surface-variant font-medium"> ({filteredRegistrations.length})</span>}
+            </h2>
             
             <div className="flex gap-3 w-full sm:w-auto">
               <div className="relative w-full sm:w-64">
@@ -300,6 +342,17 @@ export default function OrganizerRegistrationPage() {
                 <option value="cancelled">Cancelled</option>
                 <option value="failed">Failed</option>
               </select>
+
+              <button
+                type="button"
+                onClick={handleDownloadAttendees}
+                disabled={loading || filteredRegistrations.length === 0}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download the attendee list as a CSV file (opens in Excel or Google Sheets)"
+              >
+                <span className="material-symbols-outlined text-[18px]">file_download</span>
+                <span className="hidden sm:inline">Download</span>
+              </button>
             </div>
           </div>
 
