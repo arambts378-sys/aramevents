@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-tesseract.cjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-tesseract.cjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -11,6 +13,7 @@
     "test:auth": "node scripts/run-auth-tests.cjs",
     "test:security": "node scripts/run-security-tests.cjs",
     "test:remediation": "node scripts/run-remediation-tests.cjs",
+    "test:agent": "node scripts/run-agent-tests.cjs",
     "test:import": "node scripts/run-attendee-import-tests.cjs",
     "check:smtp": "node scripts/check-smtp.cjs",
     "test:super-admin": "node scripts/run-super-admin-tests.cjs",
@@ -39,6 +42,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sharp": "^0.35.5",
+    "tesseract.js": "7.0.0",
     "use-debounce": "^10.1.1",
     "zod": "^4.6.7"
   },

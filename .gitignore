@@ -80,3 +80,6 @@ next-env.d.ts
 .dev.vars*
 !.dev.vars.example
 cloudflare-secrets.json
+
+# in-browser OCR files, copied from node_modules by scripts/copy-tesseract.cjs
+/public/tesseract/

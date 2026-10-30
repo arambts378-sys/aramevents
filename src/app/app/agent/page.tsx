@@ -13,6 +13,9 @@ import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { buildDefaultWebsite, buildEventSlug } from '@/lib/events/defaultWebsite';
 import type { AgentTurn } from '@/lib/ai/eventDraft';
+import { readFlyerText } from '@/lib/flyer/ocr';
+import { localChatTurn, localFlyerTurn } from '@/lib/flyer/localAgent';
+import type { Details } from '@/lib/flyer/parseEventText';
 import type {
   ChatMessage,
   ConversationStage,
@@ -49,15 +52,29 @@ function getGreeting() {
   return 'Good evening';
 }
 
+type FlyerImages = { main: string; crops: string[] };
+
+/** What the server sends about the flyer: the image(s) on the reading turn, the transcription afterwards. */
+type FlyerInput = {
+  images: FlyerImages;
+  extract: boolean;
+  text: string | null;
+  /** The original upload, which on-device OCR reads at full resolution */
+  source: { dataUri: string; name: string };
+} | null;
+
 /** Sends the conversation to the server route, which calls the model and returns a reply plus the full draft. */
-async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | null, image: string | null) {
+async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | null, flyer: FlyerInput) {
   const res = await fetch('/api/agent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       messages: history.map((m) => ({ role: m.role, content: m.content })),
       draft,
-      image,
+      image: flyer?.images.main ?? null,
+      crops: flyer?.extract ? flyer.images.crops : undefined,
+      extract: flyer?.extract ?? false,
+      flyerText: flyer?.text ?? undefined,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   });
@@ -67,7 +84,60 @@ async function askAgent(history: UiMessage[], draft: ExtractedEventDetails | nul
     (err as Error & { code?: string }).code = json.code;
     throw err;
   }
-  return json as AgentTurn;
+  return json as AgentTurn & { flyerText?: string };
+}
+
+/** Larger images are accepted and compressed in the browser before anything is sent or stored */
+const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
+const MAIN_EDGE = 2400;
+const CROP_EDGE = 2000;
+const MAX_UPLOAD_CHARS = 6.5 * 1024 * 1024; // base64 length of a 5 MB image, less a margin
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('That flyer image could not be opened.'));
+    img.src = src;
+  });
+}
+
+/** Draws a region of the image onto a white canvas no larger than `edge`, as a JPEG under the size limit. */
+function renderRegion(img: HTMLImageElement, sx: number, sy: number, sw: number, sh: number, edge: number) {
+  const scale = Math.min(1, edge / Math.max(sw, sh));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(sw * scale);
+  canvas.height = Math.round(sh * scale);
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#ffffff'; // transparent PNGs would otherwise turn black
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+  for (const quality of [0.92, 0.85, 0.75]) {
+    const out = canvas.toDataURL('image/jpeg', quality);
+    if (out.length < MAX_UPLOAD_CHARS) return out;
+  }
+  return canvas.toDataURL('image/jpeg', 0.6);
+}
+
+/**
+ * Prepares the flyer for reading: the whole flyer at a sharp size, plus two overlapping
+ * halves along its long side so small print (dates, prices, emails) is read up close.
+ */
+async function prepareFlyer(dataUri: string): Promise<FlyerImages> {
+  const img = await loadImage(dataUri);
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const main = renderRegion(img, 0, 0, w, h, MAIN_EDGE);
+  // Small images gain nothing from crops
+  if (Math.max(w, h) < 1000) return { main, crops: [] };
+  const portrait = h >= w;
+  const long = portrait ? h : w;
+  const span = Math.round(long * 0.6);
+  const crops = [0, long - span].map((offset) =>
+    portrait ? renderRegion(img, 0, offset, w, span, CROP_EDGE) : renderRegion(img, offset, 0, span, h, CROP_EDGE),
+  );
+  return { main, crops };
 }
 
 /** Model output uses null for unknown fields; the UI uses undefined. */
@@ -165,11 +235,13 @@ function AgentMark({ className = '' }: { className?: string }) {
   );
 }
 
-function ThinkingIndicator() {
+function ThinkingIndicator({ ocrProgress }: { ocrProgress: number | null }) {
   return (
     <div className="flex items-center gap-3">
       <AgentMark className="text-[22px] animate-pulse" />
-      <span className="text-[14px] text-ds-muted">Thinking…</span>
+      <span className="text-[14px] text-ds-muted">
+        {ocrProgress === null ? 'Thinking…' : `Reading the flyer on this device… ${Math.round(ocrProgress * 100)}%`}
+      </span>
     </div>
   );
 }
@@ -322,7 +394,7 @@ function ExtractionCard({
         <p className="text-[13px] text-ds-muted">
           {missing.length ? `Still needed: ${missing.join(', ')}.` : 'Review, then create the event as a draft.'}
         </p>
-        <button type="button" onClick={onConfirm} disabled={missing.length > 0 || creating} className="ds-btn ds-btn-primary ds-btn-sm shrink-0">
+        <button type="button" onClick={() => onConfirm()} disabled={missing.length > 0 || creating} className="ds-btn ds-btn-primary ds-btn-sm shrink-0">
           {creating ? 'Creating…' : 'Create event'}
         </button>
       </div>
@@ -421,6 +493,13 @@ export default function AgentPage() {
   const [extractedDetails, setExtractedDetails] = useState<ExtractedEventDetails | null>(null);
   const [flyerPreview, setFlyerPreview] = useState<{ name: string; url: string } | null>(null);
   const [flyerDataUri, setFlyerDataUri] = useState<string | null>(null);
+  const [flyerImages, setFlyerImages] = useState<FlyerImages | null>(null);
+  /** True once the server reports no AI provider; flyers and messages are then handled on this device */
+  const [localMode, setLocalMode] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState<number | null>(null);
+  /** Lets a "create it" message create the event with the draft that same turn produced */
+  const confirmRef = useRef<(draft?: ExtractedEventDetails) => void>(() => {});
+  const [flyerText, setFlyerText] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [, startTransition] = useTransition();
 
@@ -451,10 +530,39 @@ export default function AgentPage() {
 
   /** Runs one assistant turn and shows the reply; the draft card follows the newest reply only. */
   const runTurn = useCallback(
-    async (history: UiMessage[], image: string | null) => {
+    async (history: UiMessage[], flyer: FlyerInput) => {
       setIsTyping(true);
+
+      // Without an AI provider the flyer is read on this device with OCR and rules.
+      const runLocally = async () => {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const today = new Date().toLocaleDateString('en-CA', { timeZone });
+        if (flyer?.extract) {
+          setOcrProgress(0);
+          try {
+            const lines = await readFlyerText(flyer.source.dataUri, setOcrProgress);
+            return localFlyerTurn(lines, { today, timeZone, fileName: flyer.source.name });
+          } finally {
+            setOcrProgress(null);
+          }
+        }
+        return localChatTurn(extractedDetails as Partial<Details> | null, history[history.length - 1].content, { today, timeZone });
+      };
+
       try {
-        const turn = await askAgent(history, extractedDetails, image);
+        let turn: AgentTurn & { flyerText?: string; action?: 'create' };
+        if (localMode) {
+          turn = await runLocally();
+        } else {
+          try {
+            turn = await askAgent(history, extractedDetails, flyer);
+          } catch (err) {
+            if ((err as Error & { code?: string }).code !== 'not_configured') throw err;
+            setLocalMode(true);
+            turn = await runLocally();
+          }
+        }
+        if (turn.flyerText !== undefined) setFlyerText(turn.flyerText);
         const details = toDetails(turn.details);
         const showCard = hasDraft(details);
         if (showCard) {
@@ -467,21 +575,15 @@ export default function AgentPage() {
             assistantMsg(turn.reply, showCard ? { extraction: details } : undefined),
           ]);
         });
+        if (turn.action === 'create' && showCard) confirmRef.current(details);
       } catch (err) {
-        const e = err as Error & { code?: string };
-        push(
-          assistantMsg(
-            e.code === 'not_configured'
-              ? `${e.message}\n\nUse the **classic builder** (top right) to create your event now.`
-              : e.message,
-          ),
-        );
+        push(assistantMsg((err as Error).message || 'The flyer could not be read. Try again, or describe the event in a message.'));
         setStage((current) => (current === 'extracting' ? 'idle' : current));
       } finally {
         setIsTyping(false);
       }
     },
-    [extractedDetails, push],
+    [extractedDetails, push, localMode],
   );
 
   /* Handle flyer upload */
@@ -490,14 +592,25 @@ export default function AgentPage() {
       push(assistantMsg('I can read PNG, JPG, WEBP or GIF flyers. Upload one of those, or describe the event in a message.'));
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      push(assistantMsg('That flyer is larger than 5 MB. Upload a smaller image.'));
+    if (file.size > MAX_SOURCE_BYTES) {
+      push(assistantMsg('That image is larger than 25 MB. Upload a smaller copy of the flyer.'));
       return;
     }
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const dataUri = e.target?.result as string;
+      let dataUri = e.target?.result as string;
+      let images: FlyerImages;
+      try {
+        images = await prepareFlyer(dataUri);
+      } catch (err) {
+        push(assistantMsg((err as Error).message));
+        return;
+      }
+      // Big screenshots and photos are kept as the compressed copy, which fits the 5 MB upload limit
+      if (file.size > 5 * 1024 * 1024) dataUri = images.main;
       setFlyerDataUri(dataUri);
+      setFlyerImages(images);
+      setFlyerText(null);
       setFlyerPreview({ name: file.name, url: dataUri });
       setStage('extracting');
 
@@ -505,10 +618,30 @@ export default function AgentPage() {
         attachment: { name: file.name, url: dataUri },
       });
       push(msg);
-      await runTurn([...messages, msg], dataUri);
+      await runTurn([...messages, msg], { images, extract: true, text: null, source: { dataUri, name: file.name } });
     };
     reader.readAsDataURL(file);
   }, [push, messages, runTurn]);
+
+  /* Paste a flyer (a screenshot or a copied image) anywhere on the page */
+  const pasteRef = useRef<{ onFile: (f: File) => void; busy: boolean }>({ onFile: handleFlyerFile, busy: isTyping });
+  useEffect(() => {
+    pasteRef.current = { onFile: handleFlyerFile, busy: isTyping };
+  });
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const item = [...(e.clipboardData?.items ?? [])].find((i) => i.kind === 'file' && i.type.startsWith('image/'));
+      const file = item?.getAsFile();
+      if (!file) return; // plain text pastes into the message box as usual
+      e.preventDefault();
+      if (pasteRef.current.busy) return;
+      const ext = file.type.split('/')[1] || 'png';
+      const named = file.name && file.name !== `image.${ext}` ? file : new File([file], `Pasted flyer.${ext}`, { type: file.type });
+      pasteRef.current.onFile(named);
+    };
+    document.addEventListener('paste', onPaste);
+    return () => document.removeEventListener('paste', onPaste);
+  }, []);
 
   /* Handle text send */
   const handleSend = useCallback(async () => {
@@ -517,8 +650,13 @@ export default function AgentPage() {
     setInput('');
     const msg = userMsg(text);
     push(msg);
-    await runTurn([...messages, msg], flyerDataUri);
-  }, [input, isTyping, push, messages, runTurn, flyerDataUri]);
+    await runTurn(
+      [...messages, msg],
+      flyerImages && flyerPreview
+        ? { images: flyerImages, extract: false, text: flyerText, source: { dataUri: flyerPreview.url, name: flyerPreview.name } }
+        : null,
+    );
+  }, [input, isTyping, push, messages, runTurn, flyerImages, flyerText, flyerPreview]);
 
   /* Handle inline field edit */
   const handleFieldEdit = useCallback((field: keyof ExtractedEventDetails, value: string) => {
@@ -534,8 +672,8 @@ export default function AgentPage() {
   }, []);
 
   /* Create the event from the reviewed draft, the same way the classic builder does */
-  const handleConfirm = useCallback(async () => {
-    const d = extractedDetails;
+  const handleConfirm = useCallback(async (draft?: ExtractedEventDetails) => {
+    const d = draft ?? extractedDetails;
     if (!d || creating) return;
     const missing = missingForCreate(d);
     if (missing.length) {
@@ -582,6 +720,8 @@ export default function AgentPage() {
       setExtractedDetails(null);
       setFlyerPreview(null);
       setFlyerDataUri(null);
+      setFlyerImages(null);
+      setFlyerText(null);
       router.push(`/app/events/${created.id}`);
     } catch (err) {
       const raw = (err as Error)?.message || '';
@@ -593,6 +733,10 @@ export default function AgentPage() {
     }
   }, [extractedDetails, creating, push, activeWorkspace, flyerDataUri, createEvent, router]);
 
+  useEffect(() => {
+    confirmRef.current = handleConfirm;
+  });
+
   const handleNewChat = () => {
     setMessages([]);
     setInput('');
@@ -601,6 +745,8 @@ export default function AgentPage() {
     setExtractedDetails(null);
     setFlyerPreview(null);
     setFlyerDataUri(null);
+    setFlyerImages(null);
+    setFlyerText(null);
     textareaRef.current?.focus();
   };
 
@@ -625,7 +771,7 @@ export default function AgentPage() {
               </div>
               <button
                 type="button"
-                onClick={() => { setFlyerPreview(null); setFlyerDataUri(null); }}
+                onClick={() => { setFlyerPreview(null); setFlyerDataUri(null); setFlyerImages(null); setFlyerText(null); }}
                 className="ml-1 w-6 h-6 flex items-center justify-center rounded-md text-ds-muted hover:text-ds-ink hover:bg-ds-ink/[0.05]"
                 aria-label="Remove flyer"
               >
@@ -641,7 +787,7 @@ export default function AgentPage() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isEmpty ? 'Describe your event, or upload a flyer…' : 'Reply to AI Event Agent…'}
+          placeholder={isEmpty ? 'Describe your event, or paste or upload a flyer…' : 'Reply to AI Event Agent…'}
           rows={1}
           className="block w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-[15px] leading-relaxed text-ds-ink placeholder:text-ds-muted focus:outline-none"
           style={{ scrollbarWidth: 'thin' }}
@@ -776,7 +922,7 @@ export default function AgentPage() {
                       creating={creating}
                     />
                   ))}
-                  {isTyping && <ThinkingIndicator />}
+                  {isTyping && <ThinkingIndicator ocrProgress={ocrProgress} />}
                   <div ref={bottomRef} />
                 </div>
               </div>
@@ -809,7 +955,7 @@ export default function AgentPage() {
               <div className="pointer-events-none flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-ds-accent/50 bg-ds-accent-soft px-12 py-10 text-center">
                 <span className="material-symbols-outlined text-[32px] text-ds-accent">upload_file</span>
                 <p className="text-[15px] font-medium text-ds-ink">Drop your flyer to analyze it</p>
-                <p className="text-[13px] text-ds-muted">PNG, JPG or WEBP, up to 5 MB</p>
+                <p className="text-[13px] text-ds-muted">PNG, JPG or WEBP. You can also paste an image with Ctrl+V.</p>
               </div>
             </div>
           )}
