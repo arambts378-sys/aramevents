@@ -1,13 +1,12 @@
 // Test bootstrap for the organizer auth route tests (CommonJS, loaded via `node --require`).
 //  - resolves the "@/..." tsconfig path alias (ts-node does not do this on its own)
-//  - replaces modules that talk to the network (Supabase clients, SMTP) with in-memory fakes
+//  - replaces modules that talk to the network (Supabase clients) with in-memory fakes
 //    controlled through `globalThis.__authTest` (a FakeSupabase instance).
 // No extra dependencies.
 const Module = require('node:module');
 const path = require('node:path');
 
 process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-process.env.OTP_PEPPER_SECRET = process.env.OTP_PEPPER_SECRET || 'test-otp-pepper-secret-32-chars-long-x!';
 
 const srcRoot = path.resolve(__dirname, '..', 'src');
 
@@ -31,27 +30,9 @@ const mocks = {
     createAdminClient: () => fake().client(),
   },
   '@/lib/supabase/server': {
-    createClient: async () => ({ auth: { verifyOtp: async () => ({ data: {}, error: null }) } }),
-  },
-  '@/services/organizerMailer': {
-    sendOrganizerVerificationEmail: async (to, otp) => {
-      const f = fake();
-      if (f.failMailTimes > 0) {
-        f.failMailTimes--;
-        throw new Error('SMTP exploded: smtp.internal.example:587 auth failed');
-      }
-      f.mailbox.push({ type: 'otp', to, otp });
-      return { success: true };
-    },
-    sendExistingAccountNoticeEmail: async (to) => {
-      const f = fake();
-      if (f.failMailTimes > 0) {
-        f.failMailTimes--;
-        throw new Error('SMTP exploded: smtp.internal.example:587 auth failed');
-      }
-      f.mailbox.push({ type: 'notice', to });
-      return { success: true };
-    },
+    createClient: async () => ({
+      auth: { signInWithPassword: (credentials) => fake().signInWithPassword(credentials) },
+    }),
   },
 };
 

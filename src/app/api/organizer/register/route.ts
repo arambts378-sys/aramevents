@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import {
-  OtpRateLimitError,
-  createChallenge,
-  maskEmail,
-} from '@/services/otpService';
-import {
-  sendExistingAccountNoticeEmail,
-  describePlatformSmtp,
-  sendOrganizerVerificationEmail,
-} from '@/services/organizerMailer';
+import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
 import {
   findAuthUserByEmail,
   isEmailExistsError,
   isWeakPasswordError,
 } from '@/lib/auth/adminUsers';
+import { ProvisioningError, ensureOrganizerProvisioned } from '@/lib/auth/provisionOrganizer';
 import { validateRegistration } from '@/lib/validation/auth';
 import { getActivityCorrelationId, recordPlatformActivity } from '@/services/platformActivity.server';
-import { getTrustedClientIp } from '@/lib/security/clientIp';
 
 /** Log only non-sensitive error attributes (never request bodies / passwords). */
 function logAuthError(context: string, err: unknown) {
@@ -29,14 +20,25 @@ function logAuthError(context: string, err: unknown) {
   });
 }
 
-// Identical for new accounts, pending (unverified) accounts, and already-verified accounts,
-// so this public endpoint cannot be used to discover which emails are registered.
-const GENERIC_SUCCESS_MESSAGE =
-  'If this address is awaiting verification, check your email for a code. If you already have an account, sign in or reset your password.';
+const ACCOUNT_EXISTS_MESSAGE =
+  'An account with this email already exists. Sign in, or reset your password if you have forgotten it.';
 
+/**
+ * Creates an organizer account and its organization, then signs the organizer in.
+ * There is no email verification step: the address is trusted as entered.
+ */
 export async function POST(req: NextRequest) {
   let activityActorId: string | null = null;
-  let createdNewAccount = false;
+  const correlationId = () => getActivityCorrelationId(req.headers.get('x-request-id'));
+  const failed = async () =>
+    recordPlatformActivity({
+      actorUserId: activityActorId,
+      action: 'auth.registration_failed',
+      outcome: 'failure',
+      errorCode: 'AUTH_REGISTRATION_FAILED',
+      correlationId: correlationId(),
+    });
+
   try {
     let body: Record<string, unknown>;
     try {
@@ -63,25 +65,23 @@ export async function POST(req: NextRequest) {
     }
 
     const { fullName, organizationName, email, phone, password } = validation.values;
-    const clientIp = getTrustedClientIp(req);
+    const metadata = { full_name: fullName, organization_name: organizationName, phone };
     const adminClient = createAdminClient();
 
     // 2. Create the Auth user. Supabase Auth's unique-email constraint is the source of truth,
     //    which also makes simultaneous submissions safe: exactly one createUser can succeed.
     //    The handle_new_user trigger provisions profile + workspace + owner membership atomically
-    //    with the auth.users insert, so a failed/retried registration cannot duplicate them.
+    //    with the auth.users insert. The user stays unconfirmed until provisioning has finished,
+    //    so a failure here leaves an account that the next attempt can complete.
     const { data: created, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
       email_confirm: false,
-      user_metadata: {
-        full_name: fullName,
-        organization_name: organizationName,
-        phone,
-      },
+      user_metadata: metadata,
     });
 
-    let accountState: 'new' | 'pending' | 'verified';
+    let userId: string;
+    let userMetadata: Record<string, unknown>;
 
     if (createError || !created?.user) {
       if (isWeakPasswordError(createError)) {
@@ -98,12 +98,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (!isEmailExistsError(createError)) {
-        await recordPlatformActivity({
-          action: 'auth.registration_failed',
-          outcome: 'failure',
-          errorCode: 'AUTH_REGISTRATION_FAILED',
-          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
-        });
+        await failed();
         logAuthError('createUser failed', createError);
         return NextResponse.json(
           { error: 'Unable to create your account right now. Please try again.' },
@@ -111,91 +106,90 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Email already registered: never modify the existing account (password, metadata,
-      // workspace). Only decide which email to send.
       const existing = await findAuthUserByEmail(adminClient, email);
       if (!existing) {
-        await recordPlatformActivity({
-          action: 'auth.registration_failed',
-          outcome: 'failure',
-          errorCode: 'AUTH_REGISTRATION_FAILED',
-          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
-        });
+        await failed();
         logAuthError('email_exists reported but user not found', null);
         return NextResponse.json(
           { error: 'Unable to create your account right now. Please try again.' },
           { status: 500 }
         );
       }
-      accountState = existing.email_confirmed_at ? 'verified' : 'pending';
-    } else {
-      accountState = 'new';
-      activityActorId = created.user.id;
-      createdNewAccount = true;
-    }
 
-    // 3. Challenge + email. Challenge creation is serialized in the database so concurrent
-    // requests cannot replace one another's code. For pending (unverified) accounts, we bind
-    // the registrant's chosen password and profile metadata so that upon OTP verification,
-    // any squatted/attacker-initiated password cannot retain control of the account (H6).
-    const challenge = await createChallenge(
-      email,
-      clientIp,
-      'organizer_registration',
-      accountState === 'verified'
-        ? undefined
-        : { password, fullName, organizationName, phone }
-    );
-    if (challenge.created) {
-
-      try {
-        if (accountState === 'verified') {
-          await sendExistingAccountNoticeEmail(email);
-        } else {
-          await sendOrganizerVerificationEmail(email, challenge.rawOtp, 10);
-        }
-      } catch (mailErr) {
-        await recordPlatformActivity({
-          actorUserId: activityActorId,
-          action: 'auth.registration_failed',
-          outcome: 'failure',
-          errorCode: 'AUTH_EMAIL_DELIVERY_FAILED',
-          correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
-        });
-        logAuthError('email delivery failed', mailErr);
-        // SMTP errors carry no credentials and are the only clue to misconfiguration.
-        console.error('[organizer/register] email delivery error:', (mailErr as Error)?.message, await describePlatformSmtp());
+      // A finished account is never modified by an unauthenticated request.
+      if (existing.email_confirmed_at) {
         return NextResponse.json(
-          { error: 'We could not send the verification email. Please try again.' },
+          { error: ACCOUNT_EXISTS_MESSAGE, fieldErrors: { email: ACCOUNT_EXISTS_MESSAGE } },
+          { status: 409 }
+        );
+      }
+
+      // An unfinished account (an earlier attempt that failed part-way, or one left waiting
+      // for the email code this flow used to require) has never been usable, so this
+      // registration completes it with the details just entered.
+      userId = existing.id;
+      userMetadata = { ...existing.user_metadata, ...metadata };
+    } else {
+      userId = created.user.id;
+      userMetadata = metadata;
+    }
+    activityActorId = userId;
+
+    // 3. Idempotent provisioning BEFORE confirming, so a failure leaves the account
+    //    unfinished and retryable instead of "active but without a workspace".
+    try {
+      await ensureOrganizerProvisioned(adminClient, { id: userId, user_metadata: userMetadata }, email);
+    } catch (provErr) {
+      if (provErr instanceof ProvisioningError) {
+        await failed();
+        return NextResponse.json(
+          { error: 'We could not finish setting up your organization. Please try again.' },
           { status: 500 }
         );
       }
+      throw provErr;
     }
 
-    if (createdNewAccount) {
-      await recordPlatformActivity({
-        actorUserId: activityActorId,
-        action: 'auth.registration_succeeded',
-        outcome: 'success',
-        correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
-      });
+    // 4. Activate the account, binding the password and details from this request.
+    const { error: confirmError } = await adminClient.auth.admin.updateUserById(userId, {
+      email_confirm: true,
+      password,
+      user_metadata: userMetadata,
+    });
+    if (confirmError) {
+      await failed();
+      logAuthError('account activation failed', confirmError);
+      return NextResponse.json(
+        { error: 'Unable to create your account right now. Please try again.' },
+        { status: 500 }
+      );
     }
+
+    // 5. Establish authenticated session cookies.
+    let signedIn = false;
+    try {
+      const serverSupabase = await createServerSupabaseClient();
+      const { error: signInError } = await serverSupabase.auth.signInWithPassword({ email, password });
+      if (signInError) logAuthError('sign-in after registration failed', signInError);
+      else signedIn = true;
+    } catch (sessionErr) {
+      logAuthError('could not establish session after registration', sessionErr);
+    }
+
+    await recordPlatformActivity({
+      actorUserId: userId,
+      action: 'auth.registration_succeeded',
+      outcome: 'success',
+      correlationId: correlationId(),
+    });
+    // The account is active either way; without a session the organizer signs in manually.
     return NextResponse.json({
       success: true,
-      message: GENERIC_SUCCESS_MESSAGE,
-      email: maskEmail(email),
+      message: 'Your organizer account is ready.',
+      redirect: signedIn ? '/app' : '/login',
     });
   } catch (err) {
-    if (err instanceof OtpRateLimitError) {
-      return NextResponse.json({ error: err.message }, { status: 429 });
-    }
-    await recordPlatformActivity({
-      actorUserId: activityActorId,
-      action: 'auth.registration_failed',
-      outcome: 'failure',
-      errorCode: 'AUTH_REGISTRATION_FAILED',
-      correlationId: getActivityCorrelationId(req.headers.get('x-request-id')),
-    });
+    await failed();
     logAuthError('unexpected error', err);
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },

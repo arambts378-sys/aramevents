@@ -18,10 +18,11 @@ import {
   type RegistrationField,
   type RegistrationFieldErrors,
 } from '@/lib/validation/auth';
+import Image from 'next/image';
 import { AramLogo } from '@/components/brand/AramLogo';
 
 const INPUT_BASE =
-  'w-full px-4 py-2.5 bg-white border rounded-xl text-xs font-semibold text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
+  'w-full h-10 px-3.5 bg-white border rounded-lg text-[13.5px] font-medium text-ds-ink placeholder-ds-muted/60 focus:outline-none transition-all shadow-xs';
 const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-2 focus:ring-ds-accent/20 focus:bg-white';
 const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-2 focus:ring-ds-danger/20';
 
@@ -170,8 +171,8 @@ export default function OrganizerRegisterPage() {
         return;
       }
 
-      // Same destination whether the email is new, pending, or already registered.
-      router.push(`/organizer/verify?email=${encodeURIComponent(result.values.email)}`);
+      // The account and organization now exist and the organizer is signed in.
+      router.push(typeof data?.redirect === 'string' ? data.redirect : '/app');
     } catch {
       setError('Network error. Please verify your internet connection and try again.');
     } finally {
@@ -184,29 +185,40 @@ export default function OrganizerRegisterPage() {
   const selectedCountry = getPhoneCountry(phoneCountry);
 
   return (
-    <div className="relative min-h-screen bg-ds-subtle flex flex-col justify-between items-center py-10 px-4 selection:bg-ds-accent/20 selection:text-ds-accent overflow-hidden">
-      <div className="absolute inset-0 hairline-grid opacity-30 pointer-events-none -z-0" />
+    <div className="relative min-h-dvh bg-stage-night selection:bg-ds-accent/20 selection:text-ds-accent">
+      {/* Evening networking reception over the city skyline. Fixed, so it stays put if the form scrolls. */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0">
+        <Image
+          src="/organizer-signup-background.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        {/* Same treatment as the sign-in page: an even dim, a little deeper at the edges */}
+        <div className="absolute inset-0 bg-stage-night/50" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(18,10,38,0.65)_100%)]" />
+      </div>
 
-      {/* Top Spacer */}
-      <div />
-
-      {/* Main Authentication Card */}
-      <div className="relative z-10 w-full max-w-[460px] bg-white rounded-3xl p-7 sm:p-9 border border-ds-line shadow-sm flex flex-col items-center">
-        {/* Brand Logo & Header */}
-        <Link href="/" className="flex flex-col items-center gap-2.5 group mb-5">
+      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 py-8 sm:px-6">
+        {/* Centred registration card */}
+        <div className="flex w-full flex-col items-center">
+      <div className="w-full max-w-[460px] bg-white rounded-3xl p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(10,6,30,0.7)] ring-1 ring-white/40 flex flex-col">
+        <Link href="/" aria-label="Aram home" className="mb-4 inline-flex self-center">
           <AramLogo size="lg" priority />
         </Link>
 
         {/* Heading & Subtitle */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-ds-ink tracking-tight">Create your organizer account</h1>
-          <p className="text-xs text-ds-muted mt-1.5 font-normal">
+        <div className="mb-5 text-center">
+          <h1 className="font-display text-[24px] font-bold leading-tight tracking-[0.01em] text-ds-ink">Create your organizer account</h1>
+          <p className="text-[13px] text-ds-muted mt-1">
             Start managing your events with Aram Events.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3.5" noValidate>
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3" noValidate>
           {error && (
             <div
               role="alert"
@@ -218,9 +230,10 @@ export default function OrganizerRegisterPage() {
             </div>
           )}
 
+          <div className="flex flex-col gap-3">
           {/* Full Name */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="fullName" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="fullName" className="text-[12.5px] font-medium text-ds-body">
               Full Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
@@ -246,8 +259,8 @@ export default function OrganizerRegisterPage() {
           </div>
 
           {/* Organization Name */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="organizationName" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="organizationName" className="text-[12.5px] font-medium text-ds-body">
               Organization Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
@@ -271,10 +284,11 @@ export default function OrganizerRegisterPage() {
             />
             <FieldError id="organizationName-error" message={errors.organizationName} />
           </div>
+          </div>
 
           {/* Work Email */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="email" className="text-[12.5px] font-medium text-ds-body">
               Work Email <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <input
@@ -303,8 +317,8 @@ export default function OrganizerRegisterPage() {
           </div>
 
           {/* Mobile Number */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="phoneNumber" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="phoneNumber" className="text-[12.5px] font-medium text-ds-body">
               Mobile Number <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="flex gap-2">
@@ -375,9 +389,10 @@ export default function OrganizerRegisterPage() {
             )}
           </div>
 
+          <div className="flex flex-col gap-3">
           {/* Password */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="password" className="text-[12.5px] font-medium text-ds-body">
               Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
@@ -404,9 +419,9 @@ export default function OrganizerRegisterPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute right-3 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
+                className="absolute right-2.5 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
               >
-                <span className="material-symbols-outlined text-lg">
+                <span className="material-symbols-outlined text-[18px]">
                   {showPassword ? 'visibility_off' : 'visibility'}
                 </span>
               </button>
@@ -430,8 +445,8 @@ export default function OrganizerRegisterPage() {
           </div>
 
           {/* Confirm Password */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="confirmPassword" className="text-xs font-semibold text-ds-ink">
+          <div className="flex min-w-0 flex-col gap-1">
+            <label htmlFor="confirmPassword" className="text-[12.5px] font-medium text-ds-body">
               Confirm Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
@@ -464,9 +479,9 @@ export default function OrganizerRegisterPage() {
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
-                className="absolute right-3 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
+                className="absolute right-2.5 text-ds-muted hover:text-ds-ink focus:outline-none transition-colors"
               >
-                <span className="material-symbols-outlined text-lg">
+                <span className="material-symbols-outlined text-[18px]">
                   {showConfirmPassword ? 'visibility_off' : 'visibility'}
                 </span>
               </button>
@@ -484,13 +499,14 @@ export default function OrganizerRegisterPage() {
               </p>
             )}
           </div>
+          </div>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={loading || confirmMismatch}
             aria-busy={loading}
-            className="w-full h-12 mt-3 bg-ds-accent text-white font-bold text-xs rounded-xl transition-all shadow-sm shadow-sm hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-white/20"
+            className="w-full h-11 mt-2 bg-ds-accent text-white font-semibold text-[14px] rounded-lg transition-colors hover:bg-ds-accent-strong active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent focus-visible:ring-offset-2"
           >
             {loading ? (
               <>
@@ -507,21 +523,22 @@ export default function OrganizerRegisterPage() {
         </form>
 
         {/* Existing account link */}
-        <div className="mt-5 text-center text-xs text-ds-muted">
+        <div className="mt-5 w-full border-t border-ds-line pt-4 text-center text-[13px] text-ds-muted">
           Already have an account?{' '}
           <Link
             href="/login"
-            className="font-bold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
+            className="font-semibold text-ds-accent hover:text-ds-accent-strong transition-colors underline-offset-2 hover:underline"
           >
             Sign in
           </Link>
         </div>
       </div>
 
-      {/* Minimal Footer with Security Trust */}
-      <footer className="mt-8 text-center text-xs text-ds-muted flex flex-col items-center gap-2">
-        <span>&copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.</span>
-      </footer>
+      <p className="mt-4 text-center text-[12px] text-white/55">
+        &copy; {new Date().getFullYear()} Aram Events. Events Beyond Boundaries.
+      </p>
+        </div>
+      </div>
     </div>
   );
 }

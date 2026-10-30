@@ -155,16 +155,9 @@ export function getConfigChecks(): ConfigCheck[] {
       required: true,
     },
     {
-      id: 'otp',
-      label: 'OTP pepper',
-      detail: 'Hashes organizer verification codes',
-      configured: has('OTP_PEPPER_SECRET') && !/^0+$/.test(process.env.OTP_PEPPER_SECRET || ''),
-      required: true,
-    },
-    {
       id: 'smtp',
       label: 'Platform email',
-      detail: 'Sends organizer sign-up verification codes',
+      detail: 'Sends team invitations and contact-form emails',
       configured: has('PLATFORM_SMTP_HOST') && has('PLATFORM_SMTP_PASS'),
       required: true,
     },

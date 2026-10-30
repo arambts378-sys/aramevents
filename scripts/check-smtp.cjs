@@ -1,4 +1,4 @@
-// Checks the platform SMTP settings that send organizer verification codes.
+// Checks the platform SMTP settings that send team invitations and contact-form emails.
 // Usage: node scripts/check-smtp.cjs [recipient@example.com]
 // Reads .env, logs in to the SMTP server, and (if a recipient is given) sends a test email.
 const nodemailer = require('nodemailer');
@@ -48,7 +48,7 @@ if (missing.length) {
     from: `"${fromName}" <${fromEmail}>`,
     to,
     subject: 'Aram Events SMTP test',
-    text: 'If you can read this, verification codes will be delivered.',
+    text: 'If you can read this, platform emails will be delivered.',
   });
   console.log(`Sent test email to ${to} (id ${info.messageId}). Check the inbox and spam folder.`);
 })();

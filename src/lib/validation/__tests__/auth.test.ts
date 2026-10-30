@@ -164,10 +164,10 @@ describe('login validation and error mapping', () => {
     assert.equal(r.message, 'Invalid email or password.');
   });
 
-  test('14. unverified email is reported with the verification path', () => {
+  test('14. an unfinished (unconfirmed) account is reported with the way to complete it', () => {
     const r = mapLoginError({ code: 'email_not_confirmed', status: 400, message: 'Email not confirmed' });
     assert.equal(r.kind, 'email_not_confirmed');
-    assert.match(r.message, /not been verified/);
+    assert.match(r.message, /never finished/);
   });
 
   test('15. network / server / rate-limit failures are recoverable and leak nothing internal', () => {
@@ -205,16 +205,13 @@ describe('login validation and error mapping', () => {
     assert.deepEqual(result, { kind: 'authenticated', redirectTo: '/app' });
   });
 
-  test('unverified successful authentication redirects to the existing OTP flow', async () => {
+  test('an unfinished account that signs in is sent to registration to complete it', async () => {
     const result = await authenticateWithEmailPassword('pending@example.com', 'ExistingPass123', {
       signIn: async () => ({ error: null }),
       getUser: async () => ({ data: { user: { email_confirmed_at: null } }, error: null }),
     });
 
-    assert.deepEqual(result, {
-      kind: 'unverified',
-      redirectTo: '/organizer/verify?email=pending%40example.com&sent=0',
-    });
+    assert.deepEqual(result, { kind: 'unverified', redirectTo: '/organizer/register' });
   });
 
   test('failed credentials do not query the authenticated user', async () => {

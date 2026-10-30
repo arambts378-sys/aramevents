@@ -78,7 +78,6 @@ Workspace routes do not share one common application layout; sidebar and main si
 | `/forgot-password` | [x] | [ ] |
 | `/reset-password` | [x] | [ ] |
 | `/organizer/register` | [x] | [ ] |
-| `/organizer/verify` | [x] | [ ] |
 
 ## Check-in, invites, and volunteers
 

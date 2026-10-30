@@ -334,7 +334,7 @@ export interface LoginFailure {
 export const LOGIN_MESSAGES = {
   invalid: 'Invalid email or password.',
   unverified:
-    'Your email has not been verified yet. Verify your email to finish setting up your account.',
+    'This account was never finished. Create your organizer account again with the same email to complete it.',
   rateLimited: 'Too many sign-in attempts. Please wait a moment and try again.',
   network: 'We could not reach the server. Check your connection and try again.',
   unknown: 'Something went wrong while signing in. Please try again.',
