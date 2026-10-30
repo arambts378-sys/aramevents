@@ -83,3 +83,6 @@ cloudflare-secrets.json
 
 # in-browser OCR files, copied from node_modules by scripts/copy-tesseract.cjs
 /public/tesseract/
+
+# personal Claude Code settings
+/.claude/settings.local.json
