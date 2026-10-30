@@ -51,7 +51,90 @@ export async function resolvePlatformSmtpConfig(): Promise<SmtpOptions | null> {
 /** Host and port only (never credentials), so a misconfigured value shows up in the logs. */
 export async function describePlatformSmtp(): Promise<string> {
   const smtp = await resolvePlatformSmtpConfig();
-  return smtp ? `host=${JSON.stringify(smtp.host)} port=${smtp.port} secure=${smtp.secure}` : 'not configured';
+  if (resolveHttpMailConfig()) return 'route=brevo-api';
+  return smtp ? `route=smtp host=${JSON.stringify(smtp.host)} port=${smtp.port} secure=${smtp.secure}` : 'not configured';
+}
+
+export interface OutgoingMail {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+  replyTo?: string;
+}
+
+interface HttpMailConfig {
+  apiKey: string;
+  fromEmail: string;
+  fromName: string;
+}
+
+/**
+ * HTTPS email delivery (Brevo). Cloudflare Workers cannot reliably open raw SMTP
+ * connections, so production uses this path when BREVO_API_KEY is set. The sender
+ * must be a verified sender in the Brevo account (PLATFORM_SMTP_FROM).
+ */
+function resolveHttpMailConfig(): HttpMailConfig | null {
+  const apiKey = cleanEnv(process.env.BREVO_API_KEY);
+  const fromEmail = cleanEnv(process.env.PLATFORM_SMTP_FROM) || cleanEnv(process.env.PLATFORM_MAIL_FROM);
+  if (!apiKey || !fromEmail) return null;
+  return {
+    apiKey,
+    fromEmail,
+    fromName: cleanEnv(process.env.PLATFORM_SMTP_FROM_NAME) || 'Aram Events',
+  };
+}
+
+async function sendViaBrevo(cfg: HttpMailConfig, mail: OutgoingMail) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': cfg.apiKey, 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({
+      sender: { name: cfg.fromName, email: cfg.fromEmail },
+      to: [{ email: mail.to }],
+      ...(mail.replyTo ? { replyTo: { email: mail.replyTo } } : {}),
+      subject: mail.subject,
+      textContent: mail.text,
+      ...(mail.html ? { htmlContent: mail.html } : {}),
+    }),
+  });
+  if (!res.ok) {
+    // Brevo's error body names the problem (for example an unverified sender); it never echoes the key.
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    throw new Error(`Brevo API ${res.status}: ${detail}`);
+  }
+  const json = (await res.json().catch(() => ({}))) as { messageId?: string };
+  return { success: true, messageId: json.messageId };
+}
+
+/** True when any delivery route (HTTPS API or SMTP) is configured. */
+async function isMailConfigured(): Promise<boolean> {
+  return !!resolveHttpMailConfig() || !!(await resolvePlatformSmtpConfig());
+}
+
+/** Sends through the HTTPS API when configured, otherwise through SMTP. */
+async function deliver(mail: OutgoingMail): Promise<{ success: boolean; messageId?: string }> {
+  const http = resolveHttpMailConfig();
+  if (http) return sendViaBrevo(http, mail);
+
+  const smtp = await resolvePlatformSmtpConfig();
+  if (!smtp) throw new Error('Platform email delivery service is not configured. Please contact support.');
+
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.secure,
+    auth: { user: smtp.user, pass: smtp.pass },
+  });
+  const info = await transporter.sendMail({
+    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
+    to: mail.to,
+    replyTo: mail.replyTo,
+    subject: mail.subject,
+    text: mail.text,
+    html: mail.html,
+  });
+  return { success: true, messageId: info.messageId };
 }
 
 /** Simulated delivery is only allowed in tests, `next dev`, or when explicitly opted in. */
@@ -68,9 +151,9 @@ export async function sendOrganizerVerificationEmail(
   otpCode: string,
   expirationMinutes: number = 10
 ): Promise<{ success: boolean; messageId?: string }> {
-  const smtp = await resolvePlatformSmtpConfig();
+  const configured = await isMailConfigured();
 
-  if (!smtp) {
+  if (!configured) {
     // In automated tests or local development without platform credentials, allow explicit mock or simulation
     if (canSimulateEmail()) {
       if (process.env.NODE_ENV !== 'production') {
@@ -183,26 +266,7 @@ If you did not request this account creation, please ignore this email.
 © 2026 Aram Events.
 `.trim();
 
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.secure,
-    auth: {
-      user: smtp.user,
-      pass: smtp.pass,
-    },
-  });
-
-  const mailOptions = {
-    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
-    to: toEmail,
-    subject,
-    text,
-    html,
-  };
-
-  const info = await transporter.sendMail(mailOptions);
-  return { success: true, messageId: info.messageId };
+  return deliver({ to: toEmail, subject, text, html });
 }
 
 /**
@@ -213,13 +277,13 @@ If you did not request this account creation, please ignore this email.
 export async function sendExistingAccountNoticeEmail(
   toEmail: string
 ): Promise<{ success: boolean; messageId?: string }> {
-  const smtp = await resolvePlatformSmtpConfig();
+  const configured = await isMailConfigured();
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const loginUrl = `${appUrl}/login`;
   const recoveryUrl = `${appUrl}/forgot-password`;
   const subject = 'You already have an Aram Events account';
 
-  if (!smtp) {
+  if (!configured) {
     if (canSimulateEmail()) {
       return { success: true, messageId: 'simulated-dev-id' };
     }
@@ -264,21 +328,7 @@ Reset password: ${recoveryUrl}
 If this wasn't you, you can safely ignore this email.
 `.trim();
 
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.secure,
-    auth: { user: smtp.user, pass: smtp.pass },
-  });
-
-  const info = await transporter.sendMail({
-    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
-    to: toEmail,
-    subject,
-    text,
-    html,
-  });
-  return { success: true, messageId: info.messageId };
+  return deliver({ to: toEmail, subject, text, html });
 }
 
 /** Sends a plain platform email (team invitations, contact form). Throws if SMTP is not configured. */
@@ -289,28 +339,8 @@ export async function sendPlatformEmail(message: {
   html?: string;
   replyTo?: string;
 }) {
-  const smtp = await resolvePlatformSmtpConfig();
-  if (!smtp) {
-    throw new Error('Platform SMTP is not configured.');
+  if (!(await isMailConfigured())) {
+    throw new Error('Platform email delivery is not configured.');
   }
-
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.secure,
-    auth: {
-      user: smtp.user,
-      pass: smtp.pass,
-    },
-  });
-
-  const info = await transporter.sendMail({
-    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
-    to: message.to,
-    replyTo: message.replyTo,
-    subject: message.subject,
-    text: message.text,
-    html: message.html,
-  });
-  return { success: true, messageId: info.messageId };
+  return deliver(message);
 }
