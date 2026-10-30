@@ -125,7 +125,7 @@ export default function LoginPage() {
             <label htmlFor="email" className="text-[13px] font-medium text-ds-body">
               Email address
             </label>
-            <input
+            <input suppressHydrationWarning
               id="email"
               type="email"
               autoComplete="email"
@@ -162,7 +162,7 @@ export default function LoginPage() {
               </Link>
             </div>
             <div className="relative flex items-center">
-              <input
+              <input suppressHydrationWarning
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
@@ -178,7 +178,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 className={`${INPUT_BASE} pl-3.5 pr-10 ${fieldErrors.password ? INPUT_BAD : INPUT_OK}`}
               />
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -197,7 +197,7 @@ export default function LoginPage() {
           </div>
 
           {/* Submit Sign In Button */}
-          <button
+          <button suppressHydrationWarning
             type="submit"
             disabled={loading}
             aria-busy={loading}

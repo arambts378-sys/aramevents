@@ -187,7 +187,7 @@ export default function SuperAdminLoginPage() {
                 <>
                   <div>
                     <label htmlFor="admin-email" className="ds-label">Administrator email</label>
-                    <input
+                    <input suppressHydrationWarning
                       id="admin-email"
                       type="email"
                       autoComplete="email"
@@ -200,7 +200,7 @@ export default function SuperAdminLoginPage() {
                   </div>
                   <div>
                     <label htmlFor="admin-password" className="ds-label">Password</label>
-                    <input
+                    <input suppressHydrationWarning
                       id="admin-password"
                       type="password"
                       autoComplete="current-password"
@@ -215,7 +215,7 @@ export default function SuperAdminLoginPage() {
               ) : (
                 <div>
                   <label htmlFor="admin-mfa" className="ds-label">Multi-factor authentication code</label>
-                  <input
+                  <input suppressHydrationWarning
                     id="admin-mfa"
                     type="text"
                     inputMode="numeric"
@@ -233,7 +233,7 @@ export default function SuperAdminLoginPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="ds-btn ds-btn-primary w-full min-h-11">
+              <button suppressHydrationWarning type="submit" disabled={loading} className="ds-btn ds-btn-primary w-full min-h-11">
                 {loading ? (
                   <>
                     <span className="material-symbols-outlined animate-spin text-[18px]" aria-hidden="true">

@@ -236,7 +236,7 @@ export default function OrganizerRegisterPage() {
             <label htmlFor="fullName" className="text-[12.5px] font-medium text-ds-body">
               Full Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
-            <input
+            <input suppressHydrationWarning
               id="fullName"
               name="name"
               type="text"
@@ -263,7 +263,7 @@ export default function OrganizerRegisterPage() {
             <label htmlFor="organizationName" className="text-[12.5px] font-medium text-ds-body">
               Organization Name <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
-            <input
+            <input suppressHydrationWarning
               id="organizationName"
               name="organization"
               type="text"
@@ -291,7 +291,7 @@ export default function OrganizerRegisterPage() {
             <label htmlFor="email" className="text-[12.5px] font-medium text-ds-body">
               Work Email <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
-            <input
+            <input suppressHydrationWarning
               id="email"
               name="email"
               type="email"
@@ -323,7 +323,7 @@ export default function OrganizerRegisterPage() {
             </label>
             <div className="flex gap-2">
               <div className="relative w-[108px] shrink-0">
-                <select
+                <select suppressHydrationWarning
                   id="phoneCountry"
                   aria-label="Country code"
                   autoComplete="tel-country-code"
@@ -348,7 +348,7 @@ export default function OrganizerRegisterPage() {
                   expand_more
                 </span>
               </div>
-              <input
+              <input suppressHydrationWarning
                 id="phoneNumber"
                 name="tel-national"
                 type="tel"
@@ -396,7 +396,7 @@ export default function OrganizerRegisterPage() {
               Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
-              <input
+              <input suppressHydrationWarning
                 id="password"
                 name="new-password"
                 type={showPassword ? 'text' : 'password'}
@@ -415,7 +415,7 @@ export default function OrganizerRegisterPage() {
                 maxLength={PASSWORD_MAX_LENGTH}
                 className={inputClass(!!errors.password, 'pl-3.5 pr-10')}
               />
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -450,7 +450,7 @@ export default function OrganizerRegisterPage() {
               Confirm Password <span className="text-ds-danger" aria-hidden="true">*</span>
             </label>
             <div className="relative flex items-center">
-              <input
+              <input suppressHydrationWarning
                 id="confirmPassword"
                 name="confirm-password"
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -475,7 +475,7 @@ export default function OrganizerRegisterPage() {
                 maxLength={PASSWORD_MAX_LENGTH}
                 className={inputClass(!!errors.confirmPassword, 'pl-3.5 pr-10')}
               />
-              <button
+              <button suppressHydrationWarning
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? 'Hide confirmed password' : 'Show confirmed password'}
@@ -502,7 +502,7 @@ export default function OrganizerRegisterPage() {
           </div>
 
           {/* Submit Button */}
-          <button
+          <button suppressHydrationWarning
             type="submit"
             disabled={loading || confirmMismatch}
             aria-busy={loading}

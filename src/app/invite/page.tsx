@@ -78,7 +78,7 @@ function InviteRedemption() {
           <p className="text-body-md text-on-surface-variant mb-8">
             Your invitation is accepted. You can now open the workspace with the role you were given.
           </p>
-          <button 
+          <button suppressHydrationWarning 
             onClick={() => {
               // Ensure nextParam is a safe internal relative path (L1)
               const isSafeRelative = (p: string | null) =>
@@ -143,13 +143,13 @@ function InviteRedemption() {
               <p className="text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1">Signed in as</p>
               <p className="font-medium text-on-surface truncate">{userEmail}</p>
             </div>
-            <button 
+            <button suppressHydrationWarning 
               onClick={handleRedeem}
               className="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
             >
               Accept Invitation
             </button>
-            <button 
+            <button suppressHydrationWarning 
               onClick={async () => {
                 const supabase = createClient();
                 await supabase.auth.signOut();

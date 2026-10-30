@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
           <label htmlFor="recovery-email" className="text-xs font-semibold text-ds-body">
             Email address
           </label>
-          <input
+          <input suppressHydrationWarning
             id="recovery-email"
             type="email"
             autoComplete="email"
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
               {emailError}
             </p>
           )}
-          <button
+          <button suppressHydrationWarning
             type="submit"
             disabled={loading}
             aria-busy={loading}

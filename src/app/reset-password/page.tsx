@@ -150,7 +150,7 @@ export default function ResetPasswordPage() {
                 New password
               </label>
               <div className="relative">
-                <input
+                <input suppressHydrationWarning
                   id="new-password"
                   type={passwordVisible ? 'text' : 'password'}
                   autoComplete="new-password"
@@ -166,7 +166,7 @@ export default function ResetPasswordPage() {
                   }}
                   className={`${INPUT_BASE} pr-16 ${passwordError ? INPUT_BAD : INPUT_OK}`}
                 />
-                <button
+                <button suppressHydrationWarning
                   type="button"
                   onClick={() => setPasswordVisible((visible) => !visible)}
                   aria-label={passwordVisible ? 'Hide password' : 'Show password'}
@@ -190,7 +190,7 @@ export default function ResetPasswordPage() {
                 Confirm new password
               </label>
               <div className="relative">
-                <input
+                <input suppressHydrationWarning
                   id="confirm-password"
                   type={confirmVisible ? 'text' : 'password'}
                   autoComplete="new-password"
@@ -206,7 +206,7 @@ export default function ResetPasswordPage() {
                   }}
                   className={`${INPUT_BASE} pr-16 ${confirmationError ? INPUT_BAD : INPUT_OK}`}
                 />
-                <button
+                <button suppressHydrationWarning
                   type="button"
                   onClick={() => setConfirmVisible((visible) => !visible)}
                   aria-label={confirmVisible ? 'Hide confirmation' : 'Show confirmation'}
@@ -227,7 +227,7 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <button
+            <button suppressHydrationWarning
               type="submit"
               disabled={loading || mismatch || updated}
               aria-busy={loading}
