@@ -74,7 +74,7 @@ export default function Registration({ event, section, variant = "split" }: Regi
   const buttonText = content.buttonText || "Register Now";
 
   return (
-    <section id="registration" className="bg-brand-soft py-20 md:py-28 border-t border-brand-border">
+    <section id="registration" className="bg-brand-soft website-section border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* VARIANT: INVITATION (Summit / Executive) */}

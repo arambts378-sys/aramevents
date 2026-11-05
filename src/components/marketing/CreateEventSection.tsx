@@ -247,7 +247,7 @@ export function CreateEventSection() {
   };
 
   return (
-    <section ref={ref} id="features" className="relative bg-white py-20 sm:py-24">
+    <section ref={ref} id="features" data-assist-tip="steps" className="relative bg-white py-20 sm:py-24">
       <div
         className={`mx-auto max-w-[1600px] px-5 transition-opacity duration-700 motion-reduce:transition-none sm:px-8 lg:px-12 xl:px-16 ${
           isInView ? 'opacity-100' : 'opacity-0'

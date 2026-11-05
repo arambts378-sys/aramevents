@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendPlatformEmail } from '@/services/organizerMailer';
 import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
 import { getTrustedClientIp } from '@/lib/security/clientIp';
-import { CONTACT_TOPICS as TOPICS } from '@/lib/site';
+import { CONTACT_TOPICS as TOPICS, SUPPORT_EMAIL } from '@/lib/site';
 
 // Best-effort per-instance throttle; the honeypot and length limits do most of the work.
 const recent = new Map<string, number[]>();
@@ -46,13 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Check the highlighted fields.', fieldErrors }, { status: 400 });
   }
 
-  const inbox = process.env.CONTACT_INBOX_EMAIL;
-  if (!inbox) {
-    return NextResponse.json(
-      { error: 'The contact form is not connected to an inbox yet. Please try again later.' },
-      { status: 503 }
-    );
-  }
+  const inbox = process.env.CONTACT_INBOX_EMAIL || SUPPORT_EMAIL;
 
   if (throttled(getTrustedClientIp(req) || 'unknown')) {
     return NextResponse.json({ error: 'Too many messages from this connection. Try again in an hour.' }, { status: 429 });

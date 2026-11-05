@@ -143,16 +143,17 @@ export default function PeoplePage() {
           <span className="material-symbols-outlined text-xl">arrow_back</span>
         </button>
         <div>
-          <h1 className="text-label-md font-bold text-on-surface leading-tight">PEOPLE</h1>
+          <h1 className="text-label-md font-bold text-on-surface leading-tight">PEOPLE &amp; TEAM</h1>
           <div className="text-xs text-on-surface-variant">Manage everyone involved in {event.name}</div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1760px] mx-auto w-full p-8 flex flex-col gap-8">
+      <main className="flex-1 max-w-[1760px] mx-auto w-full p-4 sm:p-8 flex flex-col gap-6 sm:gap-8">
         
         {/* Top Actions & Metrics */}
+        {people.length > 0 && (
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="flex gap-8">
+          <div className="flex gap-6 sm:gap-8">
             <div>
               <div className="text-body-sm text-on-surface-variant mb-1">Total People</div>
               <div className="text-headline-sm font-bold text-on-surface">{metrics.total}</div>
@@ -162,7 +163,7 @@ export default function PeoplePage() {
               <div className="text-headline-sm font-bold text-on-surface">{metrics.attendees}</div>
             </div>
             <div>
-              <div className="text-body-sm text-on-surface-variant mb-1">Staff</div>
+              <div className="text-body-sm text-on-surface-variant mb-1">Team</div>
               <div className="text-headline-sm font-bold text-on-surface">{metrics.staff}</div>
             </div>
             <div>
@@ -192,8 +193,10 @@ export default function PeoplePage() {
             </button>
           </div>
         </div>
+        )}
 
         {/* Filters */}
+        {people.length > 0 && (
         <div className="bg-surface-container-low border border-outline-variant/40 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-80">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
@@ -214,7 +217,8 @@ export default function PeoplePage() {
             >
               <option value="all">All Types</option>
               <option value="attendee">Attendees</option>
-              <option value="staff">Staff</option>
+              <option value="staff">Team</option>
+              <option value="speaker">Speakers</option>
             </select>
             
             <select 
@@ -228,6 +232,7 @@ export default function PeoplePage() {
             </select>
           </div>
         </div>
+        )}
 
         {/* Content */}
         {loading ? (
@@ -252,14 +257,24 @@ export default function PeoplePage() {
             </div>
             {people.length === 0 ? (
               <>
-                <h3 className="text-title-lg font-bold text-on-surface mb-2">Your event doesn't have any people yet.</h3>
-                <p className="text-body-md text-on-surface-variant mb-6">Add your first attendee or staff member to get started.</p>
-                <button 
-                  onClick={() => { setModalMode('add'); setSelectedPerson(null); setIsModalOpen(true); }}
-                  className="px-5 py-2.5 bg-primary text-white text-label-md font-bold rounded hover:bg-primary/90 transition-colors"
-                >
-                  + Add Person
-                </button>
+                <h3 className="text-title-lg font-bold text-on-surface mb-2">No one here yet</h3>
+                <p className="text-body-md text-on-surface-variant mb-6 max-w-md">
+                  Add your team, or import a list of attendees. People who register on your website show up here on their own.
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    onClick={() => { setModalMode('add'); setSelectedPerson(null); setIsModalOpen(true); }}
+                    className="px-5 py-2.5 bg-primary text-white text-label-md font-bold rounded hover:bg-primary/90 transition-colors"
+                  >
+                    + Add Person
+                  </button>
+                  <button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="px-5 py-2.5 bg-surface-container-highest text-on-surface text-label-md font-bold rounded hover:bg-surface-container-highest/80 transition-colors"
+                  >
+                    Import a List
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -315,7 +330,7 @@ export default function PeoplePage() {
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider uppercase
                           ${p.person_type === 'staff' ? 'bg-ds-accent-strong/10 text-ds-accent-strong' : 'bg-surface-container-highest text-on-surface-variant'}
                         `}>
-                          {p.person_type}
+                          {p.person_type === 'staff' ? 'team' : p.person_type}
                         </span>
                       </td>
                       <td className="px-6 py-4">

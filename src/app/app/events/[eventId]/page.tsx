@@ -6,6 +6,8 @@ import { useParams } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { createClient } from '@/lib/supabase/client';
+import { EventSetupCard } from '@/components/events/setup/EventSetupCard';
+import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
 
 export default function EventWorkspacePage() {
   const routeParams = useParams();
@@ -225,6 +227,7 @@ export default function EventWorkspacePage() {
   const formattedDate = formatDisplayDate(event.startDate);
   const formattedTime = formatDisplayTime(event.startTime, event.endTime);
   const locationString = event.location || (event.format === 'Virtual' ? 'Online / Remote' : 'Location TBA');
+  const isDraft = event.status === 'draft';
 
   const workspaceModules = [
     {
@@ -246,10 +249,16 @@ export default function EventWorkspacePage() {
       href: `/app/events/${event.id}/tickets`,
     },
     {
-      title: 'People & Roles',
+      title: 'People & Team',
       description: 'Manage attendees, staff, and team permissions.',
       icon: 'badge',
       href: `/app/events/${event.id}/people`,
+    },
+    {
+      title: 'Sponsors & Partners',
+      description: 'Track sponsors and partners, what they agreed to pay and what is due.',
+      icon: 'handshake',
+      href: `/app/events/${event.id}/sponsors`,
     },
     {
       title: 'QR & Access',
@@ -360,6 +369,24 @@ export default function EventWorkspacePage() {
               </div>
             </section>
 
+            {/* Shareable link. Shown before publishing too, so organizers can plan around it. */}
+            <section className="bg-white border border-ds-line rounded-2xl p-5 shadow-xs flex flex-col gap-2">
+              <div className="flex flex-col md:flex-row md:items-center gap-3">
+                <h2 className="text-[14px] font-bold text-ds-ink font-space shrink-0">Your website link</h2>
+                <WebsiteLinkField slug={event.slug} />
+              </div>
+              {event.website?.status !== 'published' && (
+                <p className="text-[12px] text-ds-muted font-jakarta">
+                  This website is not published yet. Visitors will see a &quot;not published&quot; page until you publish it.
+                </p>
+              )}
+            </section>
+
+            {/* While it's a draft, the next steps come first and stand in for the tool shortcuts below */}
+            {isDraft && (
+              <EventSetupCard event={event} onGoLive={handleTogglePublish} goingLive={publishing} />
+            )}
+
             {/* 2. EVENT SUMMARY CARD */}
             <section className="bg-white border border-ds-line rounded-2xl p-7 shadow-xs">
               <div className="space-y-1 pb-6 border-b border-ds-line">
@@ -424,6 +451,7 @@ export default function EventWorkspacePage() {
             </section>
 
             {/* 3. QUICK ACTIONS */}
+            {!isDraft && (
             <section className="space-y-3">
               <h3 className="text-[11px] font-bold tracking-wider text-ds-muted uppercase font-jakarta">
                 Quick actions
@@ -470,8 +498,10 @@ export default function EventWorkspacePage() {
                 </Link>
               </div>
             </section>
+            )}
 
             {/* 4. EVENT WORKSPACE MODULES (3-Column Grid) */}
+            {!isDraft && (
             <section className="space-y-4">
               <div>
                 <h2 className="text-[19px] font-bold text-ds-ink font-space">
@@ -517,6 +547,7 @@ export default function EventWorkspacePage() {
                 ))}
               </div>
             </section>
+            )}
 
             {/* 5. EVENT OVERVIEW METRICS (Real Data) */}
             {metrics !== null && (

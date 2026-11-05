@@ -45,10 +45,9 @@ export default function SponsorsPropertiesPanel({ section, updateSection }: { se
         </label>
       </div>
 
-      <div className="p-3 bg-amber-50 border border-amber-200 rounded text-amber-800">
-        <p className="font-semibold mb-1">Live Data Binding Blocked</p>
+      <div className="p-3 bg-ds-accent-soft border border-ds-line rounded text-ds-ink">
         <p className="text-xs">
-          The operational Sponsors module has not yet been built. This section will remain empty or show a placeholder on the live site until the Sponsors database source exists.
+          Add names on the event&apos;s Sponsors &amp; Partners page. Amounts are never shown here or on your website.
         </p>
       </div>
     </div>

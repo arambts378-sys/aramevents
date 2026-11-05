@@ -123,51 +123,25 @@ export default function SuperAdminLoginPage() {
   return (
     <div className="grid min-h-screen w-full bg-ds-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       {/* Brand panel */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ds-ink p-10 text-white lg:flex xl:p-14">
-        <div className="relative flex items-center gap-3">
-          <Image src="/aram-logo.png" alt="Aram" width={1382} height={418} priority className="h-8 w-auto" />
-          <span className="text-[12px] font-medium text-white/60 border border-white/20 rounded-md px-1.5 py-0.5">
-            Admin
-          </span>
-        </div>
-        <div className="relative max-w-lg">
-          <h2 className="font-space text-3xl font-bold leading-tight tracking-tight xl:text-4xl">
-            One console for every workspace, event and audit trail.
-          </h2>
-          <ul className="mt-8 space-y-4 text-sm text-white/75">
-            {[
-              ['corporate_fare', 'Supervise tenant workspaces and plan entitlements'],
-              ['policy', 'Moderate events with an append-only audit record'],
-              ['lock', 'Role-based access with optional MFA verification'],
-            ].map(([icon, text]) => (
-              <li key={text} className="flex items-center gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10">
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{icon}</span>
-                </span>
-                {text}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <p className="relative text-xs text-white/50">Authorized platform personnel only.</p>
+      <aside className="relative hidden overflow-hidden bg-ds-ink lg:block">
+        <Image
+          src="/aram-admin-lobby-portrait.webp"
+          alt="Aram headquarters lobby"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover object-center"
+        />
       </aside>
 
       {/* Form panel */}
       <main className="flex flex-col justify-center px-4 py-10 sm:px-8">
         <div className="mx-auto w-full max-w-md">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <Image src="/aram-logo.png" alt="Aram" width={1382} height={418} priority className="h-7 w-auto" />
-            <span className="text-[12px] font-medium text-ds-muted border border-ds-line rounded-md px-1.5 py-0.5">
-              Admin
-            </span>
+          <div className="flex flex-col items-center text-center">
+            <Image src="/aram-logo.png" alt="Aram" width={1382} height={418} priority className="h-11 w-auto" />
+            <h1 className="mt-8 font-space text-3xl font-bold tracking-tight text-ds-ink">Sign in</h1>
+            <p className="mt-1.5 text-sm text-ds-muted">Authorized platform personnel only.</p>
           </div>
-
-          <span className="inline-flex items-center gap-1.5 rounded-[999px] border border-[#DDD6FE] bg-ds-accent-soft px-3 py-1 text-xs font-semibold text-ds-accent-strong">
-            <span className="material-symbols-outlined text-[14px]" aria-hidden="true">lock</span>
-            Master Admin Portal
-          </span>
-          <h1 className="mt-4 font-space text-3xl font-bold tracking-tight text-ds-ink">Sign in</h1>
-          <p className="mt-1.5 text-sm text-ds-muted">Authorized platform personnel only.</p>
 
           <div className="ds-card mt-7 p-6 sm:p-8">
             {errorMessage && (

@@ -9,6 +9,8 @@ const result = spawnSync(
     'ts-node/register',
     '--test',
     'src/lib/security/__tests__/securityRemediation.test.ts',
+    'src/lib/events/__tests__/setupSteps.test.ts',
+    'src/lib/events/__tests__/sponsors.test.ts',
   ],
   {
     stdio: 'inherit',

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { AramLogo } from '@/components/brand/AramLogo';
+import { SUPPORT_EMAIL } from '@/lib/site';
 
 export function Footer() {
   return (
@@ -13,6 +14,9 @@ export function Footer() {
           <p className="mt-2 text-xs text-ds-muted">
             © 2026 WisRight Technologies. All rights reserved.
           </p>
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-1 inline-block text-xs text-ds-muted hover:text-ds-ink">
+            {SUPPORT_EMAIL}
+          </a>
         </div>
 
         <nav

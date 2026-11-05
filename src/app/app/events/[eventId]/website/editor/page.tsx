@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
@@ -8,6 +8,8 @@ import EditorToolbar from '@/components/website-editor/EditorToolbar';
 import WebsitePreview from '@/components/website-editor/WebsitePreview';
 import TemplateGallery from '@/components/website-editor/TemplateGallery';
 import SectionPropertiesPanel from '@/components/website-editor/SectionPropertiesPanel';
+import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
+import { createClient } from '@/lib/supabase/client';
 import { templates, ThemeColors, ThemeTypography, ThemeLayout } from '@/data/templates';
 
 const defaultSections = [
@@ -66,7 +68,6 @@ export default function EventWebsiteEditorPage() {
 
   const [publishing, setPublishing] = useState(false);
   const [viewport, setViewport] = useState('desktop');
-  const [zoom, setZoom] = useState<number | 'fit'>('fit');
   const [isExpandedPreview, setIsExpandedPreview] = useState(false);
   const [draft, setDraft] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
@@ -75,8 +76,12 @@ export default function EventWebsiteEditorPage() {
   const [saving, setSaving] = useState(false);
   const [mobileTab, setMobileTab] = useState<'sections' | 'preview' | 'templates'>('preview');
   const [leftPanelView, setLeftPanelView] = useState<'sections' | 'properties'>('sections');
-  const [saveSuccessNotice, setSaveSuccessNotice] = useState(false);
-  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [sponsors, setSponsors] = useState<any[]>([]);
+  const [showLiveDialog, setShowLiveDialog] = useState(false);
+  // The last draft written to the database, and the latest state for saving on the way out.
+  const savedDraft = useRef<any>(null);
+  const latest = useRef<{ draft: any; event: any }>({ draft: null, event: null });
 
   const event = getEvent(eventId);
 
@@ -123,6 +128,63 @@ export default function EventWebsiteEditorPage() {
       setHistoryIndex(0);
     }
   }, [event, draft, history]);
+
+  useEffect(() => {
+    latest.current = { draft, event };
+  });
+
+  // The same safe columns the public page shows, so the preview matches it
+  useEffect(() => {
+    if (!eventId) return;
+    createClient()
+      .from('event_sponsors')
+      .select('id,name,kind,tier,website_url')
+      .eq('event_id', eventId)
+      .eq('show_on_website', true)
+      .eq('request_status', 'approved')
+      .order('created_at', { ascending: true })
+      .then(({ data }) => setSponsors(data || []));
+  }, [eventId]);
+
+  // Save changes automatically, shortly after the organizer stops editing
+  useEffect(() => {
+    if (!draft || !event || publishing) return;
+    if (savedDraft.current === null) {
+      savedDraft.current = draft;
+      return;
+    }
+    if (draft === savedDraft.current) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        setSaving(true);
+        setSaveFailed(false);
+        await updateEvent({ ...event, website: { ...event.website, draft } });
+        savedDraft.current = draft;
+      } catch (err) {
+        console.error('Error saving draft:', err);
+        setSaveFailed(true);
+      } finally {
+        setSaving(false);
+      }
+    }, 1200);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, publishing]);
+
+  // Don't lose an edit made just before leaving the editor
+  useEffect(() => {
+    return () => {
+      const { draft: lastDraft, event: lastEvent } = latest.current;
+      if (lastDraft && lastEvent && savedDraft.current && lastDraft !== savedDraft.current) {
+        savedDraft.current = lastDraft;
+        updateEvent({ ...lastEvent, website: { ...lastEvent.website, draft: lastDraft } }).catch((err) =>
+          console.error('Error saving draft:', err)
+        );
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Loading Skeleton State
   if (!isHydrated) {
@@ -216,39 +278,11 @@ export default function EventWebsiteEditorPage() {
     }
   };
 
-  const applyTemplateChange = (templateId: string, applyRecommendedOrder: boolean) => {
+  // Applies straight away and keeps the organizer's sections and content; Undo restores the old look.
+  const handleTemplateSelect = (templateId: string) => {
+    if (templateId === draft.templateId) return;
     const matched = templates.find((t) => t.id === templateId);
     if (!matched) return;
-
-    let updatedSections = draft.sections;
-
-    if (applyRecommendedOrder && matched.defaultSections && matched.defaultSections.length > 0) {
-      const recSet = new Set(matched.defaultSections);
-
-      // Order recommended sections according to template's recommended defaultSections sequence
-      const orderedRecSections: any[] = [];
-      matched.defaultSections.forEach((secId, idx) => {
-        const found = draft.sections.find((s: any) => s.id === secId);
-        if (found) {
-          orderedRecSections.push({
-            ...found,
-            order: idx,
-            visible: true,
-          });
-        }
-      });
-
-      // Append any remaining or custom sections with preserved order after recommended sections
-      const otherSections = draft.sections
-        .filter((s: any) => !recSet.has(s.id))
-        .sort((a: any, b: any) => a.order - b.order)
-        .map((s: any, idx: number) => ({
-          ...s,
-          order: orderedRecSections.length + idx,
-        }));
-
-      updatedSections = [...orderedRecSections, ...otherSections];
-    }
 
     pushHistory({
       ...draft,
@@ -258,31 +292,7 @@ export default function EventWebsiteEditorPage() {
         typography: matched.typography,
         layout: matched.layout,
       },
-      sections: updatedSections,
     });
-
-    setPendingTemplateId(null);
-  };
-
-  const handleTemplateSelect = (templateId: string) => {
-    if (templateId === draft.templateId) return;
-    const matched = templates.find((t) => t.id === templateId);
-    if (!matched) return;
-
-    // Check if current visible section order differs from recommended defaultSections
-    const currentVisibleOrder = (draft.sections || [])
-      .filter((s: any) => s.visible)
-      .sort((a: any, b: any) => a.order - b.order)
-      .map((s: any) => s.id);
-
-    const isOrderDifferent =
-      JSON.stringify(currentVisibleOrder) !== JSON.stringify(matched.defaultSections);
-
-    if (isOrderDifferent) {
-      setPendingTemplateId(templateId);
-    } else {
-      applyTemplateChange(templateId, true);
-    }
   };
 
   const handleUpdateColors = (newColors: ThemeColors) => {
@@ -327,8 +337,10 @@ export default function EventWebsiteEditorPage() {
     // snapshots are not changed in place.
     const ordered = [...draft.sections].sort((a: any, b: any) => a.order - b.order);
     const idx = ordered.findIndex((s: any) => s.id === sectionId);
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (idx === -1 || swapIdx < 0 || swapIdx >= ordered.length) return;
+    const step = direction === 'up' ? -1 : 1;
+    let swapIdx = idx + step;
+    while (ordered[swapIdx] && !ordered[swapIdx].visible) swapIdx += step;
+    if (idx === -1 || !ordered[swapIdx]) return;
 
     [ordered[idx], ordered[swapIdx]] = [ordered[swapIdx], ordered[idx]];
     pushHistory({
@@ -350,21 +362,15 @@ export default function EventWebsiteEditorPage() {
     pushHistory({ ...draft, sections: newSections });
   };
 
-  const handleSave = async () => {
+  const handleRetrySave = async () => {
     try {
       setSaving(true);
-      await updateEvent({
-        ...event,
-        website: {
-          ...event.website,
-          draft,
-        },
-      });
-      setSaveSuccessNotice(true);
-      setTimeout(() => setSaveSuccessNotice(false), 2500);
+      setSaveFailed(false);
+      await updateEvent({ ...event, website: { ...event.website, draft } });
+      savedDraft.current = draft;
     } catch (err) {
       console.error('Error saving draft:', err);
-      alert('Failed to save website changes. Please try again.');
+      setSaveFailed(true);
     } finally {
       setSaving(false);
     }
@@ -383,9 +389,10 @@ export default function EventWebsiteEditorPage() {
           published: publishedState,
         },
       });
+      savedDraft.current = publishedState;
       setDraft(publishedState);
-      setSaveSuccessNotice(true);
-      setTimeout(() => setSaveSuccessNotice(false), 2500);
+      setSaveFailed(false);
+      setShowLiveDialog(true);
     } catch (err) {
       console.error('Error publishing website:', err);
       alert('Failed to publish website. Please try again.');
@@ -396,6 +403,8 @@ export default function EventWebsiteEditorPage() {
 
   const activeSection = draft.sections.find((s: any) => s.id === activeSectionId);
   const sortedSections = [...draft.sections].sort((a: any, b: any) => a.order - b.order);
+  const shownSections = sortedSections.filter((s: any) => s.visible);
+  const hiddenSections = sortedSections.filter((s: any) => !s.visible);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden bg-ds-canvas text-ds-ink antialiased select-none font-jakarta">
@@ -406,14 +415,13 @@ export default function EventWebsiteEditorPage() {
         publishing={publishing}
         viewport={viewport}
         setViewport={setViewport}
-        zoom={zoom}
-        setZoom={setZoom}
         undo={undo}
         redo={redo}
         canUndo={historyIndex > 0}
         canRedo={historyIndex < history.length - 1}
-        handleSave={handleSave}
         saving={saving}
+        saveFailed={saveFailed}
+        onRetrySave={handleRetrySave}
         isExpandedPreview={isExpandedPreview}
         onToggleExpandPreview={() => setIsExpandedPreview((prev) => !prev)}
         activeMobileTab={mobileTab}
@@ -462,16 +470,6 @@ export default function EventWebsiteEditorPage() {
         </div>
       )}
 
-      {/* Temporary Success Toast Notification */}
-      {saveSuccessNotice && (
-        <div className="fixed bottom-6 right-6 z-50 bg-ds-ink text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 border border-white/10 animate-fade-in">
-          <span className="material-symbols-outlined text-[18px] text-emerald-400">
-            check_circle
-          </span>
-          <span>Changes successfully saved to website</span>
-        </div>
-      )}
-
       {/* 2. THREE-PANEL WORKSPACE (Height: 100vh - 68px, Full-Height & Zero Page-Level Scrolling) */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* =================================================================== */}
@@ -496,7 +494,7 @@ export default function EventWebsiteEditorPage() {
                         : 'text-ds-muted hover:text-ds-ink'
                     }`}
                   >
-                    Sections ({draft.sections.length})
+                    Sections ({shownSections.length})
                   </button>
                   <button
                     type="button"
@@ -515,7 +513,7 @@ export default function EventWebsiteEditorPage() {
                   <div className="flex items-center gap-1.5">
                     <h2 className="text-[14px] font-bold text-ds-ink font-space">Website Sections</h2>
                     <span className="text-[11px] font-mono font-semibold text-ds-muted">
-                      ({draft.sections.length})
+                      ({shownSections.length})
                     </span>
                   </div>
                 </div>
@@ -526,56 +524,25 @@ export default function EventWebsiteEditorPage() {
             {leftPanelView === 'sections' || !activeSectionId ? (
               <>
                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
-                  {sortedSections.map((section: any, idx: number) => {
-                    const isVisible = section.visible;
+                  {shownSections.map((section: any, idx: number) => {
                     const isActive = section.id === activeSectionId;
-                    const title = formatSectionTitle(section.id);
 
                     return (
                       <div
                         key={section.id}
                         onClick={() => {
                           setActiveSectionId(section.id);
-                          if (window.innerWidth < 1280) {
-                            setMobileTab('preview');
-                          }
+                          setLeftPanelView('properties');
                         }}
                         className={`h-[46px] rounded-lg flex items-center justify-between px-3 transition-all group cursor-pointer border ${
                           isActive
                             ? 'bg-ds-accent-soft border-ds-accent text-ds-accent font-semibold shadow-xs'
-                            : !isVisible
-                            ? 'bg-white/60 border-ds-line text-ds-muted/70 opacity-60 hover:opacity-100 hover:bg-white'
                             : 'bg-white border-ds-line text-ds-ink hover:border-ds-accent/40 hover:bg-white'
                         }`}
                       >
-                        {/* Left: Drag / Order Indicator + Name */}
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span
-                            className={`material-symbols-outlined text-[17px] ${
-                              isActive ? 'text-ds-accent' : 'text-ds-line-strong group-hover:text-ds-muted'
-                            }`}
-                          >
-                            drag_indicator
-                          </span>
-                          <span className="text-[13px] truncate">{title}</span>
-                        </div>
+                        <span className="text-[13px] truncate min-w-0">{formatSectionTitle(section.id)}</span>
 
-                        {/* Right: Actions */}
                         <div className="flex items-center gap-1 shrink-0">
-                          {isActive && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setLeftPanelView('properties');
-                              }}
-                              className="px-2 py-0.5 text-[11px] font-semibold bg-ds-accent text-white rounded-md hover:bg-ds-accent-strong transition-colors flex items-center gap-0.5 shadow-2xs mr-1"
-                              title="Edit Section Content"
-                            >
-                              <span className="material-symbols-outlined text-[13px]">edit</span>
-                              <span>Edit</span>
-                            </button>
-                          )}
                           <button
                             type="button"
                             onClick={(e) => {
@@ -595,7 +562,7 @@ export default function EventWebsiteEditorPage() {
                               e.stopPropagation();
                               handleMoveSection(section.id, 'down');
                             }}
-                            disabled={idx === sortedSections.length - 1}
+                            disabled={idx === shownSections.length - 1}
                             className="opacity-0 group-hover:opacity-100 p-0.5 text-ds-muted hover:text-ds-accent disabled:opacity-20 transition-opacity"
                             title="Move section down"
                             aria-label="Move section down"
@@ -608,29 +575,48 @@ export default function EventWebsiteEditorPage() {
                               e.stopPropagation();
                               handleToggleSection(section.id);
                             }}
-                            className={`p-0.5 transition-colors ${
-                              isVisible
-                                ? 'text-ds-muted hover:text-ds-accent'
-                                : 'text-ds-line-strong hover:text-ds-ink'
-                            }`}
-                            title={isVisible ? 'Hide Section' : 'Show Section'}
-                            aria-label={isVisible ? 'Hide Section' : 'Show Section'}
+                            className="p-0.5 text-ds-muted hover:text-ds-accent transition-colors"
+                            title="Hide section"
+                            aria-label={`Hide ${formatSectionTitle(section.id)} section`}
                           >
-                            <span className="material-symbols-outlined text-[17px]">
-                              {isVisible ? 'visibility' : 'visibility_off'}
-                            </span>
+                            <span className="material-symbols-outlined text-[17px]">visibility</span>
                           </button>
                         </div>
                       </div>
                     );
                   })}
+
+                  {hiddenSections.length > 0 && (
+                    <div className="pt-3">
+                      <h3 className="px-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-ds-muted">
+                        Add a section
+                      </h3>
+                      <div className="space-y-1.5">
+                        {hiddenSections.map((section: any) => (
+                          <button
+                            key={section.id}
+                            type="button"
+                            onClick={() => {
+                              handleToggleSection(section.id);
+                              setActiveSectionId(section.id);
+                              setLeftPanelView('properties');
+                            }}
+                            className="w-full h-[40px] rounded-lg flex items-center justify-between px-3 border border-dashed border-ds-line text-[13px] text-ds-muted hover:border-ds-accent hover:text-ds-accent transition-colors"
+                          >
+                            <span className="truncate">{formatSectionTitle(section.id)}</span>
+                            <span className="material-symbols-outlined text-[17px] shrink-0" aria-hidden="true">add</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Left Sidebar Footer */}
                 <div className="p-3 border-t border-ds-line bg-white text-center shrink-0">
                   <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-ds-muted">
                     <span className="material-symbols-outlined text-[14px]">touch_app</span>
-                    <span>Click section to highlight &amp; scroll</span>
+                    <span>Click a section to edit it</span>
                   </div>
                 </div>
               </>
@@ -669,10 +655,10 @@ export default function EventWebsiteEditorPage() {
           }`}
         >
           <WebsitePreview
-            event={event}
+            event={{ ...event, sponsors }}
             draft={draft}
             viewport={viewport}
-            zoom={zoom}
+            zoom="fit"
             activeSectionId={activeSectionId}
             onSectionClick={(sectionId) => {
               setActiveSectionId(sectionId);
@@ -704,55 +690,38 @@ export default function EventWebsiteEditorPage() {
           </aside>
         )}
 
-      {/* Template Switch Confirmation Dialog */}
-      {pendingTemplateId && (
+      {/* Shown after publishing, with the link to share */}
+      {showLiveDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-ds-line space-y-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="website-live-title"
+            className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-ds-line space-y-4 select-text"
+          >
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-ds-accent-soft text-ds-accent flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[22px]">auto_awesome_mosaic</span>
+              <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[22px]" aria-hidden="true">check_circle</span>
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-ds-ink font-space leading-snug">
-                  Switching templates will apply the recommended section layout.
+                <h3 id="website-live-title" className="text-base font-bold text-ds-ink font-space leading-snug">
+                  Your website is live
                 </h3>
                 <p className="text-xs text-ds-muted font-jakarta leading-relaxed">
-                  Your event content will be preserved. Existing sections that are not part of this template remain available.
+                  Copy this link and share it anywhere: email, WhatsApp or social media.
                 </p>
               </div>
             </div>
 
-            <div className="p-3 bg-ds-accent-soft/60 rounded-xl border border-ds-line text-xs font-mono space-y-1.5">
-              <div className="text-[11px] font-bold text-ds-ink flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-ds-accent"></span>
-                <span>Template: {templates.find((t) => t.id === pendingTemplateId)?.name}</span>
-              </div>
-              <div className="text-[10px] text-ds-muted leading-relaxed">
-                Recommended Order: {templates.find((t) => t.id === pendingTemplateId)?.defaultSections.map((s) => s.replace('_', ' ')).join(' → ')}
-              </div>
-            </div>
+            <WebsiteLinkField slug={event.slug} />
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-ds-line">
+            <div className="flex justify-end pt-2 border-t border-ds-line">
               <button
                 type="button"
-                onClick={() => setPendingTemplateId(null)}
+                onClick={() => setShowLiveDialog(false)}
                 className="px-3.5 py-2 text-xs font-semibold text-ds-muted hover:text-ds-ink hover:bg-gray-100 rounded-lg transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => applyTemplateChange(pendingTemplateId, false)}
-                className="px-3.5 py-2 text-xs font-semibold text-ds-accent bg-ds-accent-soft hover:bg-ds-subtle rounded-lg transition-colors border border-ds-accent/20"
-              >
-                Keep Current Layout
-              </button>
-              <button
-                type="button"
-                onClick={() => applyTemplateChange(pendingTemplateId, true)}
-                className="px-4 py-2 text-xs font-semibold text-white bg-ds-accent hover:bg-ds-accent rounded-lg shadow-xs transition-colors"
-              >
-                Apply Recommended Layout
+                Done
               </button>
             </div>
           </div>

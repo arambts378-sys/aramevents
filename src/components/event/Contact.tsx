@@ -8,7 +8,7 @@ interface ContactProps {
 export default function Contact({ event, section }: ContactProps) {
   const content = section?.content || {};
   return (
-    <section id="contact" className="bg-brand-soft py-16 md:py-24 border-t border-brand-border">
+    <section id="contact" className="bg-brand-soft website-section border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:justify-between items-start md:items-end">
           <div className="mb-10 md:mb-0">

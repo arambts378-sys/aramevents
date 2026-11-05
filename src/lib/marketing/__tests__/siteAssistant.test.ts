@@ -12,7 +12,7 @@ test('greets back on hi, hello and local greetings', () => {
 });
 
 test('greets and answers when a greeting comes with a question', () => {
-  says('hey, how much does it cost?', 'Hi there', '₹1,499');
+  says('hey, how much does it cost?', 'Hi there', '₹1,999', 'GST');
   says('hi there, how does qr check-in work', 'Hi there', 'scan');
 });
 
@@ -26,15 +26,18 @@ test('handles small talk', () => {
 
 test('recommends a plan from the attendee count', () => {
   says('we expect 80 people', 'Free');
-  says('we expect 600 people', 'Professional', '₹3,999');
-  says('around 3,000 attendees', 'Business');
-  says('12000 guests', 'Enterprise');
+  says('we expect 600 people', 'Professional', '₹4,999 per event', 'digital certificates');
+  says('around 3,000 attendees', 'Business', '₹12,999');
+  says('12000 guests', 'Enterprise', 'custom pricing');
 });
 
 test('answers about named plans and pricing', () => {
-  says('what is the business plan', 'Business is ₹9,999');
-  says('what is in essential', '₹1,499');
+  says('what is the business plan', 'Business is ₹12,999 per event', 'everything in Professional', 'multi-gate check-in');
+  says('what is in essential', '₹1,999', 'custom registration fields');
+  says('tell me about the free plan', 'Free is ₹0', 'QR check-in');
   says('how much is it', 'per event');
+  says('is GST included?', 'exclusive of applicable GST');
+  says('do you charge extra for whatsapp messages', 'charged separately');
 });
 
 test('explains product features from the website', () => {

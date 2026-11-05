@@ -34,7 +34,7 @@ export function PeopleDataSection() {
   const { ref, isInView } = useInView({ threshold: 0.2 });
 
   return (
-    <section ref={ref} id="resources" className="relative bg-stage-paper py-20 sm:py-24 lg:py-28">
+    <section ref={ref} id="resources" data-assist-tip="reports" className="relative bg-stage-paper py-20 sm:py-24 lg:py-28">
       <div className="mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 xl:gap-28 xl:px-16">
         {/* The report */}
         <figure className="order-2 lg:order-1">

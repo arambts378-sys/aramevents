@@ -7,13 +7,17 @@ import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { 
   ticketService, 
-  rupeesToPaise, 
   paiseToRupees, 
   formatPaiseToINR,
   CreateTicketPayload, 
   UpdateTicketPayload 
 } from '@/services/ticketService';
 import { EventTicketType, TicketType, TicketVisibility, TicketDerivedStatus } from '@/types';
+import { MoreOptions } from '@/components/ui/MoreOptions';
+import { FieldError, focusFirstError } from '@/components/ui/FieldError';
+import { FieldErrors, hasErrors, validateTicketForm, withoutFieldError } from '@/lib/validation/forms';
+
+const TICKET_NAME_IDEAS = ['General Admission', 'Early Bird', 'VIP', 'Student'];
 
 export default function OrganizerTicketsPage() {
   const routeParams = useParams();
@@ -33,6 +37,7 @@ export default function OrganizerTicketsPage() {
   const [editingTicket, setEditingTicket] = useState<EventTicketType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // Deletion/Deactivation Confirmation Modal State
   const [deleteModalTicket, setDeleteModalTicket] = useState<EventTicketType | null>(null);
@@ -117,6 +122,7 @@ export default function OrganizerTicketsPage() {
       is_active: true,
     });
     setFormError(null);
+    setFieldErrors({});
     setModalOpen(true);
   };
 
@@ -147,6 +153,7 @@ export default function OrganizerTicketsPage() {
       is_active: ticket.is_active,
     });
     setFormError(null);
+    setFieldErrors({});
     setModalOpen(true);
   };
 
@@ -155,49 +162,16 @@ export default function OrganizerTicketsPage() {
     e.preventDefault();
     setFormError(null);
 
-    // Validation
-    if (!formData.name.trim()) {
-      setFormError('Ticket name is required.');
+    const found = validateTicketForm(formData, editingTicket?.quantity_sold || 0);
+    setFieldErrors(found);
+    if (hasErrors(found)) {
+      focusFirstError();
       return;
     }
 
     const qty = parseInt(formData.quantity_total, 10);
-    if (isNaN(qty) || qty < 1) {
-      setFormError('Quantity must be at least 1.');
-      return;
-    }
-
-    if (formData.ticket_type === 'paid') {
-      const priceVal = parseFloat(formData.price_in_rupees);
-      if (isNaN(priceVal) || priceVal <= 0) {
-        setFormError('Paid tickets must have a price greater than ₹0.');
-        return;
-      }
-    }
-
     const minQty = parseInt(formData.min_per_order, 10);
     const maxQty = parseInt(formData.max_per_order, 10);
-    if (minQty < 1) {
-      setFormError('Minimum tickets per order must be at least 1.');
-      return;
-    }
-    if (maxQty < minQty) {
-      setFormError('Maximum tickets per order cannot be less than minimum tickets per order.');
-      return;
-    }
-
-    if (formData.sales_start_at && formData.sales_end_at) {
-      if (new Date(formData.sales_end_at) < new Date(formData.sales_start_at)) {
-        setFormError('Sales end date cannot be earlier than sales start date.');
-        return;
-      }
-    }
-
-    // When editing: enforce quantity >= sold count
-    if (editingTicket && (editingTicket.quantity_sold || 0) > qty) {
-      setFormError(`Quantity cannot be lower than tickets already sold (${editingTicket.quantity_sold}).`);
-      return;
-    }
 
     setIsSubmitting(true);
     try {
@@ -495,6 +469,7 @@ export default function OrganizerTicketsPage() {
             )}
 
             {/* 2. Summary Cards (4 Cards) */}
+            {tickets.length > 0 && (
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {/* Card 1: Total Ticket Types */}
               <div className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs space-y-2">
@@ -560,26 +535,17 @@ export default function OrganizerTicketsPage() {
                 </p>
               </div>
             </section>
+            )}
 
-            {/* 3. Payment Gateway Configuration Status Notice */}
-            <section className="bg-white border border-ds-line rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center shrink-0 border border-ds-line/60">
-                  <span className="material-symbols-outlined text-[22px]">account_balance_wallet</span>
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-[15px] font-bold text-ds-ink font-space">Payment Configuration</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600 font-mono text-[10px] font-semibold uppercase tracking-wider">
-                      Not Configured
-                    </span>
-                  </div>
-                  <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
-                    Online payment processing is not configured for this event. Free tickets can be booked immediately. Paid ticket checkout remains safely blocked until a payment provider is connected.
-                  </p>
-                </div>
+            {/* 3. Paid tickets can't be sold until a payment provider is connected */}
+            {tickets.some((t) => t.ticket_type === 'paid') && (
+              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[13px] font-jakarta flex items-start gap-3">
+                <span className="material-symbols-outlined text-amber-600 text-[20px]">info</span>
+                <span>
+                  Online payments are not connected yet, so people can&apos;t buy paid tickets on your website. Free tickets work right away.
+                </span>
               </div>
-            </section>
+            )}
 
             {/* 4. Ticket Types List / Table */}
             <section className="bg-white border border-ds-line rounded-2xl shadow-xs overflow-hidden">
@@ -604,7 +570,7 @@ export default function OrganizerTicketsPage() {
                   <div className="space-y-1">
                     <h3 className="text-[18px] font-bold text-ds-ink font-space">No ticket types yet</h3>
                     <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
-                      Create your first ticket type to start accepting registrations. You can offer free or paid tiers with custom quotas and sales schedules.
+                      Add a ticket and registration opens right away.
                     </p>
                   </div>
                   <button
@@ -883,7 +849,7 @@ export default function OrganizerTicketsPage() {
                     {editingTicket ? 'Edit Ticket Type' : 'Create Ticket Type'}
                   </h2>
                   <p className="text-[13px] text-ds-muted font-jakarta">
-                    Configure ticket pricing, sales period and purchase rules.
+                    Just a name, a price and how many.
                   </p>
                 </div>
                 <button
@@ -905,13 +871,9 @@ export default function OrganizerTicketsPage() {
               )}
 
               {/* Modal Form */}
-              <form onSubmit={handleSubmitForm} className="space-y-5 font-jakarta">
-              {/* Basic Information */}
+              <form onSubmit={handleSubmitForm} onChange={(e) => setFieldErrors((prev) => withoutFieldError(prev, (e.target as unknown as HTMLInputElement).name))} noValidate className="space-y-5 font-jakarta">
+              {/* Essentials */}
               <div className="space-y-4">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
-                  Basic Information
-                </h3>
-
                 <div className="space-y-1">
                   <label className="text-[13px] font-semibold text-ds-ink block">
                     Ticket Name *
@@ -920,51 +882,37 @@ export default function OrganizerTicketsPage() {
                     type="text"
                     required
                     placeholder="e.g. Early Bird, General Admission, VIP"
-                    value={formData.name}
+                    name="name"
+ aria-invalid={Boolean(fieldErrors.name)}
+ value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                   />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[13px] font-semibold text-ds-ink block">
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="What does this ticket include?"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent resize-y"
-                  />
+<FieldError message={fieldErrors.name} />
+                  {!editingTicket && (
+                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                      {TICKET_NAME_IDEAS.map((idea) => (
+                        <button
+                          key={idea}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, name: idea })}
+                          className={`px-2.5 py-1 rounded-full border text-[12px] font-medium transition-colors ${
+                            formData.name === idea
+                              ? 'border-ds-accent bg-ds-accent-soft text-ds-accent'
+                              : 'border-ds-line text-ds-muted hover:border-ds-accent/50 hover:text-ds-ink'
+                          }`}
+                        >
+                          {idea}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Pricing */}
-              <div className="space-y-4 pt-2 border-t border-ds-line">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
-                  Pricing (INR)
-                </h3>
-
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, ticket_type: 'paid' })}
-                    className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                      formData.ticket_type === 'paid'
-                        ? 'border-ds-accent bg-ds-accent-soft text-ds-ink'
-                        : 'border-ds-line bg-white text-ds-muted hover:border-ds-accent/40'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-bold text-[13px]">Paid Ticket</div>
-                      <div className="text-[11px]">Set custom price in INR</div>
-                    </div>
-                    {formData.ticket_type === 'paid' && (
-                      <span className="material-symbols-outlined text-ds-accent text-[18px]">check_circle</span>
-                    )}
-                  </button>
-
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, ticket_type: 'free', price_in_rupees: '0' })}
@@ -976,12 +924,30 @@ export default function OrganizerTicketsPage() {
                   >
                     <div>
                       <div className="font-bold text-[13px]">Free Ticket</div>
-                      <div className="text-[11px]">₹0 (Complimentary pass)</div>
+                      <div className="text-[11px]">People register at no cost</div>
                     </div>
                     {formData.ticket_type === 'free' && (
                       <span className="material-symbols-outlined text-ds-accent text-[18px]">check_circle</span>
                     )}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, ticket_type: 'paid' })}
+                    className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                      formData.ticket_type === 'paid'
+                        ? 'border-ds-accent bg-ds-accent-soft text-ds-ink'
+                        : 'border-ds-line bg-white text-ds-muted hover:border-ds-accent/40'
+                    }`}
+                  >
+                    <div>
+                      <div className="font-bold text-[13px]">Paid Ticket</div>
+                      <div className="text-[11px]">Set a price in ₹</div>
+                    </div>
+                    {formData.ticket_type === 'paid' && (
+                      <span className="material-symbols-outlined text-ds-accent text-[18px]">check_circle</span>
+                    )}
+                  </button>
+
                 </div>
 
                 {formData.ticket_type === 'paid' && (
@@ -999,28 +965,27 @@ export default function OrganizerTicketsPage() {
                         step="1"
                         required
                         placeholder="799"
-                        value={formData.price_in_rupees}
+                        name="price_in_rupees"
+ aria-invalid={Boolean(fieldErrors.price_in_rupees)}
+ value={formData.price_in_rupees}
                         onChange={(e) => setFormData({ ...formData, price_in_rupees: e.target.value })}
                         className="w-full pl-8 pr-4 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                       />
                     </div>
-                    <p className="text-[11px] text-ds-muted">
-                      Stored with integer precision in paise ({rupeesToPaise(formData.price_in_rupees)} paise).
+<FieldError message={fieldErrors.price_in_rupees} />
+                    <p className="text-[12px] text-amber-800">
+                      Online payments are not connected yet, so this ticket can&apos;t be bought on your website until they are.
                     </p>
                   </div>
                 )}
               </div>
 
-              {/* Inventory */}
-              <div className="space-y-4 pt-2 border-t border-ds-line">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
-                  Inventory
-                </h3>
-
+              {/* Quantity */}
+              <div className="space-y-4">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <label className="text-[13px] font-semibold text-ds-ink block">
-                      Total Available Quantity *
+                      How many tickets? *
                     </label>
                     {editingTicket && (editingTicket.quantity_sold || 0) > 0 && (
                       <span className="text-[11px] text-amber-700 font-medium">
@@ -1033,17 +998,37 @@ export default function OrganizerTicketsPage() {
                     min={editingTicket?.quantity_sold || 1}
                     required
                     placeholder="100"
-                    value={formData.quantity_total}
+                    name="quantity_total"
+ aria-invalid={Boolean(fieldErrors.quantity_total)}
+ value={formData.quantity_total}
                     onChange={(e) => setFormData({ ...formData, quantity_total: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent"
                   />
+<FieldError message={fieldErrors.quantity_total} />
                 </div>
               </div>
 
+              <MoreOptions defaultOpen={Boolean(editingTicket)}>
+                <div className="space-y-1">
+                  <label className="text-[13px] font-semibold text-ds-ink block">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="What does this ticket include?"
+                    name="description"
+ aria-invalid={Boolean(fieldErrors.description)}
+ value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-ds-line rounded-xl text-[14px] text-ds-ink focus:outline-none focus:border-ds-accent focus:ring-1 focus:ring-ds-accent resize-y"
+                  />
+<FieldError message={fieldErrors.description} />
+                </div>
+
               {/* Sales Period */}
-              <div className="space-y-4 pt-2 border-t border-ds-line">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
-                  Sales Period (Optional)
+              <div className="space-y-2">
+                <h3 className="text-[12px] font-semibold text-ds-ink">
+                  When tickets are on sale
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1053,10 +1038,13 @@ export default function OrganizerTicketsPage() {
                     </label>
                     <input
                       type="datetime-local"
-                      value={formData.sales_start_at}
+                      name="sales_start_at"
+ aria-invalid={Boolean(fieldErrors.sales_start_at)}
+ value={formData.sales_start_at}
                       onChange={(e) => setFormData({ ...formData, sales_start_at: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     />
+<FieldError message={fieldErrors.sales_start_at} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[12px] font-medium text-ds-muted block">
@@ -1064,79 +1052,86 @@ export default function OrganizerTicketsPage() {
                     </label>
                     <input
                       type="datetime-local"
-                      value={formData.sales_end_at}
+                      name="sales_end_at"
+ aria-invalid={Boolean(fieldErrors.sales_end_at)}
+ value={formData.sales_end_at}
                       onChange={(e) => setFormData({ ...formData, sales_end_at: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     />
+<FieldError message={fieldErrors.sales_end_at} />
                   </div>
                 </div>
               </div>
 
               {/* Purchase Rules & Visibility */}
-              <div className="space-y-4 pt-2 border-t border-ds-line">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-ds-muted">
-                  Purchase Rules &amp; Visibility
-                </h3>
+              <div className="space-y-4">
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[12px] font-medium text-ds-muted block">
-                      Min Tickets / Order
+                      Minimum per order
                     </label>
                     <input
                       type="number"
                       min="1"
                       required
-                      value={formData.min_per_order}
+                      name="min_per_order"
+ aria-invalid={Boolean(fieldErrors.min_per_order)}
+ value={formData.min_per_order}
                       onChange={(e) => setFormData({ ...formData, min_per_order: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent"
                     />
+<FieldError message={fieldErrors.min_per_order} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-[12px] font-medium text-ds-muted block">
-                      Max Tickets / Order
+                      Maximum per order
                     </label>
                     <input
                       type="number"
                       min={formData.min_per_order || 1}
                       required
-                      value={formData.max_per_order}
+                      name="max_per_order"
+ aria-invalid={Boolean(fieldErrors.max_per_order)}
+ value={formData.max_per_order}
                       onChange={(e) => setFormData({ ...formData, max_per_order: e.target.value })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink font-mono focus:outline-none focus:border-ds-accent"
                     />
+<FieldError message={fieldErrors.max_per_order} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
                     <label className="text-[12px] font-medium text-ds-muted block">
-                      Visibility
+                      Who can see it
                     </label>
                     <select
                       value={formData.visibility}
                       onChange={(e) => setFormData({ ...formData, visibility: e.target.value as TicketVisibility })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     >
-                      <option value="public">Public (Website &amp; Registration)</option>
-                      <option value="hidden">Hidden (Internal Only)</option>
+                      <option value="public">Everyone</option>
+                      <option value="hidden">Hidden</option>
                     </select>
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-[12px] font-medium text-ds-muted block">
-                      Status
+                      Sales
                     </label>
                     <select
                       value={formData.is_active ? 'active' : 'inactive'}
                       onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'active' })}
                       className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-[13px] text-ds-ink focus:outline-none focus:border-ds-accent"
                     >
-                      <option value="active">Active (Available for purchase)</option>
-                      <option value="inactive">Inactive (Disabled)</option>
+                      <option value="active">On sale</option>
+                      <option value="inactive">Paused</option>
                     </select>
                   </div>
                 </div>
               </div>
+              </MoreOptions>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-ds-line">

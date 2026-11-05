@@ -62,10 +62,10 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
   );
 
   return (
-    <section id="speakers" className="bg-brand-soft py-20 md:py-28 border-t border-brand-border">
+    <section id="speakers" className="bg-brand-soft website-section border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className={`mb-14 md:mb-20 ${variant === "circular" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
+        <div className={`mb-8 md:mb-10 ${variant === "circular" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
           <div className={`inline-flex items-center space-x-2 mb-4 ${variant === "circular" ? "justify-center" : ""}`}>
             <span className="w-8 h-[1px] bg-brand-maroon"></span>
             <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">

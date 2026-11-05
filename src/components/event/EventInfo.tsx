@@ -26,7 +26,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
   const endTime = timeParts.length > 1 ? timeParts[1] : "";
 
   return (
-    <section className="bg-brand-soft py-14 md:py-20 border-b border-brand-border">
+    <section className="bg-brand-soft website-section border-b border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* VARIANT: EDITORIAL-META (Publication metadata columns) */}

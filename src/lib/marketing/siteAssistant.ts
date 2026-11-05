@@ -1,9 +1,11 @@
-import { PUBLIC_PRICING } from './pricing';
+import { ADDITIONAL_SERVICES, GST_NOTE, PUBLIC_PRICING, describeTier, type PublicPricingTier } from './pricing';
 
 export const ASSISTANT_NAME = 'Aram Assist';
 
+const priceText = (t: PublicPricingTier) => (t.priceNote ? `${t.price} ${t.priceNote}` : t.price);
+
 const pricingLines = PUBLIC_PRICING.map(
-  (t) => `- ${t.name}: ${t.price} (${t.basis}; ${t.attendees}). ${t.summary}`
+  (t) => `- ${t.name}${t.popular ? ' (most popular)' : ''}: ${priceText(t)}. ${t.audience}; ${t.attendees.toLowerCase()}. Includes ${describeTier(t)}`
 ).join('\n');
 
 /** Stable across requests so it can be prompt-cached. */
@@ -17,8 +19,9 @@ What Aram Events does:
 - Event day: volunteers and team members scan QR tickets with their phones at gates and zones. Cancelled or already-used tickets are flagged at the door. Check-ins update one shared count.
 - Also: speakers, sponsors, exhibitors, agenda, venues, team members with roles, communications, integrations and analytics. Walkathons support distance categories and t-shirt sizes.
 
-Pricing (per event, Indian rupees):
+Pricing (Indian rupees, exclusive of applicable GST):
 ${pricingLines}
+Additional services: ${ADDITIONAL_SERVICES}
 
 Website pages: home (/), browse published events (/live-events), pricing (/pricing), about (/about), contact (/contact), privacy (/privacy), terms (/terms), create an account (/organizer/register), log in (/login).
 
@@ -40,8 +43,12 @@ type Intent = { id: string; patterns: RegExp[]; answer: string | ((q: string) =>
 const tierFor = (n: number) =>
   n <= 100 ? PUBLIC_PRICING[0] : n <= 250 ? PUBLIC_PRICING[1] : n <= 1000 ? PUBLIC_PRICING[2] : n <= 5000 ? PUBLIC_PRICING[3] : PUBLIC_PRICING[4];
 
+// Built from the pricing data, so these answers never drift from the /pricing page.
+const [, ESSENTIAL, PROFESSIONAL, BUSINESS] = PUBLIC_PRICING;
 const planSummary =
-  'Pricing is per event: Free up to 100 attendees, Essential ₹1,499 up to 250, Professional ₹3,999 up to 1,000, Business ₹9,999 up to 5,000, and custom Enterprise pricing above that. Full details are on /pricing.';
+  `Free covers up to 100 attendees. Paid plans are per event: Essential ${ESSENTIAL.price} up to 250, ` +
+  `Professional ${PROFESSIONAL.price} up to 1,000 (most popular), Business ${BUSINESS.price} up to 5,000, ` +
+  `and custom Enterprise pricing beyond that. ${GST_NOTE} Full details are on /pricing.`;
 
 const GREETING = /^(hi+|hey+|hello+|helo|hai|hiya|yo|howdy|greetings|good (morning|afternoon|evening|day)|namaste|namaskar|vanakkam|hola|sup)\b/;
 
@@ -81,8 +88,7 @@ const TOPICS: Intent[] = [
       const m = /(\d[\d,]*)\s*(\+\s*)?(attendees|people|guests|participants|members|pax|visitors|delegates|registrations)/.exec(q)!;
       const n = Number(m[1].replace(/,/g, ''));
       const fit = tierFor(n);
-      const price = fit.price === 'Custom' ? 'custom pricing' : `${fit.price} per event`;
-      return `For ${n.toLocaleString('en-IN')} attendees, ${fit.name} fits best (${price}, ${fit.attendees.toLowerCase()}). It includes: ${fit.summary} You can compare every plan on /pricing.`;
+      return `For ${n.toLocaleString('en-IN')} attendees, ${fit.name} fits best (${priceText(fit)}, ${fit.attendees.toLowerCase()}). It includes ${describeTier(fit)} You can compare every plan on /pricing.`;
     },
   },
   {
@@ -90,9 +96,13 @@ const TOPICS: Intent[] = [
     patterns: PUBLIC_PRICING.map((t) => new RegExp(`\\b${t.name.toLowerCase()}\\b( plan)?`)),
     answer: (q) => {
       const t = PUBLIC_PRICING.find((p) => new RegExp(`\\b${p.name.toLowerCase()}\\b`).test(q))!;
-      const price = t.price === 'Custom' ? 'custom pricing' : t.price;
-      return `${t.name} is ${price} (${t.basis.toLowerCase()}, ${t.attendees.toLowerCase()}). It includes: ${t.summary} See all plans on /pricing.`;
+      return `${t.name} is ${priceText(t)}, ${t.audience.toLowerCase()} (${t.attendees.toLowerCase()}). It includes ${describeTier(t)} See all plans on /pricing.`;
     },
+  },
+  {
+    id: 'extras',
+    patterns: [/\b(gst|tax|taxes|sms|whatsapp|badge printing|badges?|on.?site staff|extra charges?|additional (charges?|costs?|services?)|hidden (fees?|charges?)|travel (cost|expenses?)|custom development)\b/],
+    answer: `${GST_NOTE} ${ADDITIONAL_SERVICES} Ask us on /contact for a quote on any of these.`,
   },
   {
     id: 'paid-tickets',
@@ -212,7 +222,7 @@ const TOPICS: Intent[] = [
     // "support" alone is left out: "do you support X" is a feature question, not a contact request.
     patterns: [/\b(contact|talk to|speak to|human|real person|sales|customer support|support team|help ?desk|call (you|us)|phone number|email (you|us)|demo)\b/],
     answer:
-      'You can reach the Aram team through the form on /contact. For larger programs or custom needs, ask about the Enterprise plan there.',
+      'You can reach the Aram team at support@aram.events, or find every way to contact us on /contact. For larger programs or custom needs, ask about the Enterprise plan.',
   },
 ];
 

@@ -18,6 +18,12 @@ export class PasswordRecoveryState {
     };
   }
 
+  // For implicit-flow recovery links (#access_token=…&type=recovery) that the PKCE
+  // browser client won't consume itself; call only after the link's session is set.
+  markRecovered() {
+    this.update(true);
+  }
+
   clear() {
     this.update(false);
   }

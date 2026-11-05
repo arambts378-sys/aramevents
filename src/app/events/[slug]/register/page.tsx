@@ -4,9 +4,16 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { isPublicRegistrationEnabled } from '@/lib/security/publicRegistration';
 import Link from 'next/link';
 
-export default async function PublicRegistrationPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PublicRegistrationPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ as?: string | string[] }>;
+}) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
+  const { as } = await searchParams;
   
   const supabase = createAdminClient();
   
@@ -108,6 +115,14 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
     console.warn('Could not load tickets for public registration:', tErr);
   }
 
+  // 5. Sponsor and partner packages. Prices are public; who has bought them is not.
+  const { data: sponsorPackages } = await supabase
+    .from('event_sponsor_packages')
+    .select('id, kind, name, amount, description')
+    .eq('event_id', event.id)
+    .eq('is_active', true)
+    .order('amount', { ascending: false });
+
   return (
     <PublicRegistrationClient 
       event={event} 
@@ -116,6 +131,8 @@ export default async function PublicRegistrationPage({ params }: { params: Promi
       walkathonDistances={walkathonDistances} 
       isWalkathon={event?.type === 'Walkathon'}
       tickets={tickets}
+      sponsorPackages={sponsorPackages || []}
+      initialRole={as === 'sponsor' || as === 'partner' ? as : 'attendee'}
     />
   );
 }

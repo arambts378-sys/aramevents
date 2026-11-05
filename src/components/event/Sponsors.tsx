@@ -7,10 +7,12 @@ interface SponsorsProps {
 
 export default function Sponsors({ event, section }: SponsorsProps) {
   const content = section?.content || {};
+  const sponsorList = (event.sponsors || []).filter((s) => s.kind !== "partner");
+  const partnerList = (event.sponsors || []).filter((s) => s.kind === "partner");
   return (
-    <section id="sponsors" className="bg-brand-soft py-24 md:py-32 border-t border-brand-border">
+    <section id="sponsors" className="bg-brand-soft website-section border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16 md:mb-24">
+        <div className="text-center mb-8 md:mb-10">
           <div className="inline-flex items-center space-x-2 mb-6">
             <span className="text-sm font-mono text-brand-maroon uppercase tracking-widest font-semibold">
               {content.heading || "Sponsors"}
@@ -22,12 +24,33 @@ export default function Sponsors({ event, section }: SponsorsProps) {
         </div>
 
         {event.sponsors && event.sponsors.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
-            {event.sponsors.map((sponsor) => (
-              <div key={sponsor.id} className="w-full max-w-[200px] aspect-[3/2] flex items-center justify-center filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
-                <span className="text-2xl md:text-3xl font-bold text-brand-dark tracking-tighter">
-                  {sponsor.name}
-                </span>
+          <div className="space-y-10">
+            {[sponsorList, partnerList].filter((group) => group.length > 0).map((group, index) => (
+              <div key={index}>
+                {partnerList.length > 0 && (
+                  <h3 className="text-center text-sm font-mono text-brand-muted uppercase tracking-widest mb-4">
+                    {group === partnerList ? "Partners" : "Sponsors"}
+                  </h3>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
+                  {group.map((sponsor) => {
+                    const name = (
+                      <span className="text-2xl md:text-3xl font-bold text-brand-dark tracking-tighter text-center">
+                        {sponsor.name}
+                      </span>
+                    );
+                    return (
+                      <div key={sponsor.id} className="w-full max-w-[200px] aspect-[3/2] flex flex-col items-center justify-center filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+                        {sponsor.website_url ? (
+                          <a href={sponsor.website_url} target="_blank" rel="noopener noreferrer">{name}</a>
+                        ) : name}
+                        {(content.showTiers ?? true) && sponsor.tier && (
+                          <span className="text-xs font-mono text-brand-muted mt-1">{sponsor.tier}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ))}
           </div>

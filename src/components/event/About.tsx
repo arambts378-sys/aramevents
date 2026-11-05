@@ -37,7 +37,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
   const imageUrl = content.image || "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=2070&auto=format&fit=crop";
 
   return (
-    <section id="about" className="bg-brand-white py-20 md:py-28 border-t border-brand-border/60">
+    <section id="about" className="bg-brand-white website-section border-t border-brand-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* VARIANT: MANIFESTO (Creative / Experimental Typography) */}
