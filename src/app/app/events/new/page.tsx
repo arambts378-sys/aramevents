@@ -58,6 +58,7 @@ export default function CreateEventPage() {
 
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
+  const [planLimitReached, setPlanLimitReached] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittingStep, setSubmittingStep] = useState('');
@@ -130,9 +131,11 @@ export default function CreateEventPage() {
     // Field-level Validation
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = 'Event name is required';
+    else if (formData.name.trim().length > 150) newErrors.name = 'Event name must be 150 characters or fewer';
     if (!formData.type) newErrors.type = 'Please select an event type';
     if (!formData.format) newErrors.format = 'Please select an event format';
     if (!formData.startDate) newErrors.startDate = 'Start date is required';
+    else if (formData.startDate < new Date().toLocaleDateString('en-CA')) newErrors.startDate = 'Start date cannot be in the past';
     if (!formData.startTime) newErrors.startTime = 'Start time is required';
     if (!formData.endDate) newErrors.endDate = 'End date is required';
     if (!formData.endTime) newErrors.endTime = 'End time is required';
@@ -211,6 +214,7 @@ export default function CreateEventPage() {
 
     setFieldErrors({});
     setError('');
+    setPlanLimitReached(false);
 
     if (activeWorkspace?.is_suspended) {
       setError('This workspace is suspended, so new events cannot be created. Contact support to reactivate it.');
@@ -311,8 +315,11 @@ export default function CreateEventPage() {
       setSubmittingStep('Opening event workspace...');
       router.push(`/app/events/${createdEvent.id}`);
     } catch (err: any) {
-      console.error('Event creation submission error:', err);
       const rawMsg = err?.message || '';
+      // Hitting the plan's event limit is an expected outcome, not a crash: show it with an upgrade link.
+      const isPlanLimit = /event limit .* plan/i.test(rawMsg);
+      setPlanLimitReached(isPlanLimit);
+      if (!isPlanLimit) console.error('Event creation submission error:', rawMsg || err, err?.code ?? '');
       const isInternal = /supabase|postgres|sql|relation|foreign key|syntax error|uuid|column|table|database/i.test(rawMsg);
       setError(
         isInternal || !rawMsg
@@ -406,12 +413,17 @@ export default function CreateEventPage() {
                     Unable to create event
                   </h4>
                   <p className="text-[13px] text-red-700 mt-0.5 font-jakarta">{error}</p>
+                  {planLimitReached && (
+                    <Link href="/app/settings#billing" className="inline-block mt-2 text-[13px] font-semibold text-red-900 underline">
+                      View plans
+                    </Link>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} noValidate className="space-y-6">
               {/* SECTION 1: EVENT BASICS */}
               <div className="bg-white rounded-xl border border-ds-line p-6 sm:p-7 shadow-xs space-y-5">
                 <div>
@@ -1030,6 +1042,11 @@ export default function CreateEventPage() {
                       Unable to create event
                     </h4>
                     <p className="text-[13px] text-red-700 mt-0.5 font-jakarta">{error}</p>
+                    {planLimitReached && (
+                      <Link href="/app/settings#billing" className="inline-block mt-2 text-[13px] font-semibold text-red-900 underline">
+                        View plans
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}
@@ -1055,7 +1072,7 @@ export default function CreateEventPage() {
                     </>
                   ) : (
                     <>
-                      <span>Create Event</span>
+                      <span>Create Event &amp; Continue</span>
                       <span
                         className="material-symbols-outlined text-[18px]"
                         data-icon="arrow_forward"

@@ -89,7 +89,7 @@ export function EventOperationsSection() {
   const inside = START_INSIDE + scan;
 
   return (
-    <section ref={ref} id="event-day" className="relative overflow-hidden bg-stage-night py-20 text-white sm:py-24 lg:py-28">
+    <section ref={ref} id="event-day" data-assist-tip="event-day" className="relative overflow-hidden bg-stage-night py-20 text-white sm:py-24 lg:py-28">
       <div aria-hidden="true" className="pointer-events-none absolute right-[-10rem] top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(109,80,245,0.28),transparent_65%)]" />
 
       <div className="relative mx-auto grid max-w-[1600px] grid-cols-1 items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 xl:gap-28 xl:px-16">

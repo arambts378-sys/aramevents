@@ -1,9 +1,11 @@
 import 'server-only';
 import { cache } from 'react';
+import { headers } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 import { createClient as createSupabaseClient, type User } from '@supabase/supabase-js';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { authorizedAdminClient } from '@/services/superAdminPortal.server';
+import { sendPasswordResetLink } from '@/services/passwordReset';
 
 /**
  * Live data for the Super Admin console.
@@ -44,9 +46,16 @@ function publicAuthClient() {
   );
 }
 
-function resetRedirect() {
-  const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
-  return base ? { redirectTo: `${base}/reset-password` } : undefined;
+// Without a redirectTo, Supabase falls back to its Site URL (the home page), which
+// ignores the recovery token. Use the configured app URL, else this request's origin.
+async function resetRedirect() {
+  let base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
+  if (!base) {
+    const h = await headers();
+    const host = h.get('x-forwarded-host') || h.get('host');
+    if (host) base = `${h.get('x-forwarded-proto') || (host.startsWith('localhost') ? 'http' : 'https')}://${host}`;
+  }
+  return base ? `${base}/reset-password` : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -511,8 +520,7 @@ export async function sendOrganizerPasswordReset(userId: string): Mutation {
     const { db, actor } = await context('customers.manage');
     const account = (await listAccounts()).find((a) => a.id === userId);
     if (!account?.email) return { ok: false, message: 'This account has no email address.' };
-    const { error } = await publicAuthClient().auth.resetPasswordForEmail(account.email, resetRedirect());
-    if (error) return { ok: false, message: error.message };
+    await sendPasswordResetLink(db, account.email, await resetRedirect());
     await audit(db, actor.id, 'organizer.password_reset_sent', 'user', userId, null);
     return { ok: true, message: `Password reset email sent to ${account.email}.` };
   } catch (err) {
@@ -954,8 +962,11 @@ export async function grantPlatformAccess(emailInput: string, role: PlatformRole
       const { data, error } = await db.auth.admin.createUser({ email, email_confirm: true });
       if (error || !data.user) return { ok: false, message: error?.message || 'The account could not be created.' };
       user = toAccount(data.user as User & { banned_until?: string | null });
-      const { error: mailError } = await publicAuthClient().auth.resetPasswordForEmail(email, resetRedirect());
-      if (mailError) console.warn('Set-password email failed:', mailError.message);
+      try {
+        await sendPasswordResetLink(db, email, await resetRedirect());
+      } catch (mailError) {
+        console.warn('Set-password email failed:', (mailError as Error).message);
+      }
       invited = true;
     }
 
@@ -1070,5 +1081,74 @@ export async function changeMyPassword(current: string, next: string): Mutation 
     return { ok: true, message: 'Password changed.' };
   } catch (err) {
     return fail(err, 'Your password could not be changed.');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Exit survey (public site): why visitors leave
+// ---------------------------------------------------------------------------
+
+export interface ExitSurveyEntry {
+  id: string;
+  reason: string;
+  comment: string | null;
+  pagePath: string | null;
+  device: string | null;
+  createdAt: string;
+}
+
+export interface ExitSurveyOverview {
+  items: ExitSurveyEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+  /** All-time answers per reason id, for the breakdown */
+  byReason: Record<string, number>;
+  allTime: number;
+  last7Days: number;
+}
+
+const EXIT_SURVEY_SQL = 'supabase/migrations/20261031000000_exit_survey.sql';
+
+export async function listExitSurvey(query: { reason?: string; q?: string; page?: number }): Promise<Result<ExitSurveyOverview>> {
+  try {
+    const { db } = await context('console.view');
+    const pageSize = 30;
+    const page = Math.max(1, query.page ?? 1);
+
+    let req = db.from('exit_survey_responses').select('*', { count: 'exact' });
+    if (query.reason && query.reason !== 'all') req = req.eq('reason', query.reason);
+    if (query.q) req = req.or(`comment.ilike.%${query.q.replace(/[%,()]/g, '')}%,page_path.ilike.%${query.q.replace(/[%,()]/g, '')}%`);
+    const [list, reasons] = await Promise.all([
+      req.order('created_at', { ascending: false }).range((page - 1) * pageSize, page * pageSize - 1),
+      // Reason and date only, for the totals; small rows even with many answers.
+      db.from('exit_survey_responses').select('reason, created_at').order('created_at', { ascending: false }).limit(10000),
+    ]);
+    if (list.error) return { ok: false, message: `Exit survey answers couldn’t be read (${list.error.message}). Run ${EXIT_SURVEY_SQL} to create the table.` };
+
+    const weekAgo = Date.now() - 7 * DAY;
+    const byReason: Record<string, number> = {};
+    let last7Days = 0;
+    for (const r of (reasons.data ?? []) as { reason: string; created_at: string }[]) {
+      byReason[r.reason] = (byReason[r.reason] ?? 0) + 1;
+      if (new Date(r.created_at).getTime() >= weekAgo) last7Days += 1;
+    }
+
+    return {
+      ok: true,
+      data: {
+        total: list.count ?? 0,
+        page,
+        pageSize,
+        byReason,
+        allTime: (reasons.data ?? []).length,
+        last7Days,
+        items: ((list.data ?? []) as { id: string; reason: string; comment: string | null; page_path: string | null; device: string | null; created_at: string }[]).map((r) => ({
+          id: r.id, reason: r.reason, comment: r.comment, pagePath: r.page_path, device: r.device, createdAt: r.created_at,
+        })),
+      },
+    };
+  } catch (err) {
+    return fail(err, 'Exit survey answers could not be loaded.');
   }
 }

@@ -211,6 +211,14 @@ export default function EventWebsiteRenderer({
         .website-renderer-root .max-w-4xl {
           max-width: var(--website-content-width) !important;
         }
+        .website-renderer-root .website-section {
+          padding-block: calc(2.5rem * var(--website-spacing));
+        }
+        @media (min-width: 768px) {
+          .website-renderer-root .website-section {
+            padding-block: calc(3.5rem * var(--website-spacing));
+          }
+        }
       `}</style>
 
       {visibleSections.map((section: any) => {

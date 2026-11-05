@@ -41,8 +41,10 @@ export async function authenticateWithEmailPassword(
   }
 
   if (!data.user.email_confirmed_at) {
-    // Left over from the email-code signup flow: registering again completes the account.
-    return { kind: 'unverified', redirectTo: '/organizer/register' };
+    return {
+      kind: 'unverified',
+      redirectTo: `/organizer/verify?email=${encodeURIComponent(normalizedEmail)}&sent=0`,
+    };
   }
   return { kind: 'authenticated', redirectTo: '/app' };
 }

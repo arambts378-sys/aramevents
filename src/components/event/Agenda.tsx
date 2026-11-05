@@ -46,10 +46,10 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
   );
 
   return (
-    <section id="agenda" className="bg-brand-white py-20 md:py-28 border-t border-brand-border/60">
+    <section id="agenda" className="bg-brand-white website-section border-t border-brand-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className={`mb-14 md:mb-20 ${variant === "daily-rhythm" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
+        <div className={`mb-8 md:mb-10 ${variant === "daily-rhythm" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
           <div className={`inline-flex items-center space-x-2 mb-4 ${variant === "daily-rhythm" ? "justify-center" : ""}`}>
             <span className="w-8 h-[1px] bg-brand-maroon"></span>
             <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">

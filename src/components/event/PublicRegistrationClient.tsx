@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation';
 import { registrationsService } from '@/services/registrations';
 import { EventRegistrationSettings } from '@/types';
 import Link from 'next/link';
+import { FieldError, focusFirstError } from '@/components/ui/FieldError';
+import { FieldErrors, hasErrors, validatePublicRegistration, withoutFieldError } from '@/lib/validation/forms';
 import { TicketTemplate } from '../ticket/TicketTemplate';
+import SponsorRequestForm from './SponsorRequestForm';
+import type { PublicSponsorPackage, SponsorKind } from '@/lib/events/sponsors';
 
 import { submitRegistrationServerAction } from '@/app/actions/registrationActions';
 import { PublicTicketAvailability } from '@/types';
@@ -19,10 +23,21 @@ interface Props {
   walkathonDistances?: any[];
   isWalkathon?: boolean;
   tickets?: PublicTicketAvailability[];
+  sponsorPackages?: PublicSponsorPackage[];
+  initialRole?: 'attendee' | SponsorKind;
 }
 
-export default function PublicRegistrationClient({ event, settings, slug, walkathonDistances = [], isWalkathon = false, tickets = [] }: Props) {
+export default function PublicRegistrationClient({ event, settings, slug, walkathonDistances = [], isWalkathon = false, tickets = [], sponsorPackages = [], initialRole = 'attendee' }: Props) {
   const router = useRouter();
+
+  // Only offer the ways of joining that this event actually has packages for.
+  const roles = [
+    { id: 'attendee' as const, label: 'Attend', icon: 'confirmation_number' },
+    ...(['sponsor', 'partner'] as const)
+      .filter((kind) => sponsorPackages.some((p) => p.kind === kind))
+      .map((kind) => ({ id: kind, label: kind === 'sponsor' ? 'Sponsor' : 'Partner', icon: kind === 'sponsor' ? 'workspace_premium' : 'handshake' })),
+  ];
+  const [role, setRole] = useState<'attendee' | SponsorKind>(roles.some((r) => r.id === initialRole) ? initialRole : 'attendee');
   
   const isRegistrationOpen = isPublicRegistrationEnabled(settings);
   const [error, setError] = useState<string | null>(isRegistrationOpen ? null : "Registration is currently closed for this event.");
@@ -53,6 +68,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
     emergency_contact_name: '',
     emergency_contact_phone: ''
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<{ registration_number: string, emailDeliveryFailed?: boolean, qrToken?: string } | null>(null);
 
@@ -86,18 +102,14 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
       }
     }
     
-    // Walkathon specific validation
-    if (isWalkathon) {
-      if (!formData.distance_category_id) {
-        setFormError("Please select a distance category.");
-        return;
-      }
-      if (!formData.gender || !formData.age || !formData.t_shirt_size) {
-        setFormError("Please fill out all required Walkathon fields (Gender, Age, T-Shirt Size).");
-        return;
-      }
+    const found = validatePublicRegistration(formData, isWalkathon);
+    setFieldErrors(found);
+    if (hasErrors(found)) {
+      setFormError(null);
+      focusFirstError();
+      return;
     }
-    
+
     setIsSubmitting(true);
     setFormError(null);
     
@@ -218,10 +230,12 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
           <div className="w-full p-8 md:p-10">
             <div className="mb-8">
               <h1 className="text-headline-sm font-bold text-on-surface mb-2">
-                {settings?.title || 'Register for Event'}
+                {role === 'attendee' ? settings?.title || 'Register for Event' : `Become a ${role}`}
               </h1>
               <p className="text-body-md text-on-surface-variant">
-                {settings?.description || 'Please fill out the form below to secure your spot.'}
+                {role === 'attendee'
+                  ? settings?.description || 'Please fill out the form below to secure your spot.'
+                  : `Choose a package to support ${event?.name}.`}
               </p>
             </div>
 
@@ -232,7 +246,40 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {roles.length > 1 && (
+              <div className="grid gap-2 mb-6" style={{ gridTemplateColumns: `repeat(${roles.length}, minmax(0, 1fr))` }} role="radiogroup" aria-label="How would you like to join?">
+                {roles.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={role === option.id}
+                    onClick={() => {
+                      setRole(option.id);
+                      setFormError(null);
+                    }}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border text-sm font-bold transition-colors ${
+                      role === option.id
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-outline-variant text-on-surface-variant hover:border-primary/50'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[22px]" aria-hidden="true">{option.icon}</span>
+                    <span>{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {role !== 'attendee' ? (
+              <SponsorRequestForm
+                key={role}
+                eventId={event.id}
+                kind={role}
+                packages={sponsorPackages.filter((p) => p.kind === role)}
+              />
+            ) : (
+            <form onSubmit={handleSubmit} onChange={(e) => setFieldErrors((prev) => withoutFieldError(prev, (e.target as unknown as HTMLInputElement).name))} noValidate className="flex flex-col gap-5">
               {/* Ticket Selection Tier (When tickets are configured) */}
               {tickets && tickets.length > 0 && (
                 <div className="space-y-3 pb-4 border-b border-outline-variant/60">
@@ -339,20 +386,26 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                   <input 
                     type="text" 
                     required
-                    value={formData.first_name}
+                    name="first_name"
+ aria-invalid={Boolean(fieldErrors.first_name)}
+ value={formData.first_name}
                     onChange={e => setFormData({...formData, first_name: e.target.value})}
                     className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                   />
+<FieldError message={fieldErrors.first_name} />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-label-sm font-bold text-on-surface-variant">Last Name *</label>
                   <input 
                     type="text" 
                     required
-                    value={formData.last_name}
+                    name="last_name"
+ aria-invalid={Boolean(fieldErrors.last_name)}
+ value={formData.last_name}
                     onChange={e => setFormData({...formData, last_name: e.target.value})}
                     className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                   />
+<FieldError message={fieldErrors.last_name} />
                 </div>
               </div>
 
@@ -361,10 +414,13 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                 <input 
                   type="email" 
                   required
-                  value={formData.email}
+                  name="email"
+ aria-invalid={Boolean(fieldErrors.email)}
+ value={formData.email}
                   onChange={e => setFormData({...formData, email: e.target.value})}
                   className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
+<FieldError message={fieldErrors.email} />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -372,10 +428,13 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                 <input 
                   type="tel" 
                   required
-                  value={formData.phone}
+                  name="phone"
+ aria-invalid={Boolean(fieldErrors.phone)}
+ value={formData.phone}
                   onChange={e => setFormData({...formData, phone: e.target.value})}
                   className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
+<FieldError message={fieldErrors.phone} />
               </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -383,19 +442,25 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                     <label className="text-label-sm font-bold text-on-surface-variant">Organization (Optional)</label>
                     <input 
                       type="text" 
-                      value={formData.organization}
+                      name="organization"
+ aria-invalid={Boolean(fieldErrors.organization)}
+ value={formData.organization}
                       onChange={e => setFormData({...formData, organization: e.target.value})}
                       className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                     />
+<FieldError message={fieldErrors.organization} />
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-label-sm font-bold text-on-surface-variant">Job Title (Optional)</label>
                     <input 
                       type="text" 
-                      value={formData.job_title}
+                      name="job_title"
+ aria-invalid={Boolean(fieldErrors.job_title)}
+ value={formData.job_title}
                       onChange={e => setFormData({...formData, job_title: e.target.value})}
                       className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                     />
+<FieldError message={fieldErrors.job_title} />
                     </div>
                   </div>
               {isWalkathon && (
@@ -412,7 +477,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                           <label key={distance.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${formData.distance_category_id === distance.id ? 'border-primary bg-primary/5' : 'border-outline-variant hover:border-primary/50'}`}>
                             <input 
                               type="radio"
-                              name="distance_category"
+                              name="distance_category_id"
                               value={distance.id}
                               checked={formData.distance_category_id === distance.id}
                               onChange={e => setFormData({...formData, distance_category_id: e.target.value})}
@@ -429,6 +494,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                         </div>
                       )}
                     </div>
+<FieldError message={fieldErrors.distance_category_id} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -436,7 +502,9 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                       <label className="text-label-sm font-bold text-on-surface-variant">Gender *</label>
                       <select
                         required
-                        value={formData.gender}
+                        name="gender"
+ aria-invalid={Boolean(fieldErrors.gender)}
+ value={formData.gender}
                         onChange={e => setFormData({...formData, gender: e.target.value})}
                         className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                       >
@@ -446,6 +514,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                         <option value="Other">Other</option>
                         <option value="Prefer not to say">Prefer not to say</option>
                       </select>
+<FieldError message={fieldErrors.gender} />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-label-sm font-bold text-on-surface-variant">Age *</label>
@@ -454,10 +523,13 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                         min="1"
                         max="120"
                         required
-                        value={formData.age}
+                        name="age"
+ aria-invalid={Boolean(fieldErrors.age)}
+ value={formData.age}
                         onChange={e => setFormData({...formData, age: e.target.value})}
                         className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                       />
+<FieldError message={fieldErrors.age} />
                     </div>
                   </div>
 
@@ -465,7 +537,9 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                     <label className="text-label-sm font-bold text-on-surface-variant">T-Shirt Size *</label>
                     <select
                       required
-                      value={formData.t_shirt_size}
+                      name="t_shirt_size"
+ aria-invalid={Boolean(fieldErrors.t_shirt_size)}
+ value={formData.t_shirt_size}
                       onChange={e => setFormData({...formData, t_shirt_size: e.target.value})}
                       className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                     >
@@ -477,6 +551,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                       <option value="XL">XL</option>
                       <option value="XXL">XXL</option>
                     </select>
+<FieldError message={fieldErrors.t_shirt_size} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -485,20 +560,26 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                       <input 
                         type="text" 
                         required
-                        value={formData.emergency_contact_name}
+                        name="emergency_contact_name"
+ aria-invalid={Boolean(fieldErrors.emergency_contact_name)}
+ value={formData.emergency_contact_name}
                         onChange={e => setFormData({...formData, emergency_contact_name: e.target.value})}
                         className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                       />
+<FieldError message={fieldErrors.emergency_contact_name} />
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <label className="text-label-sm font-bold text-on-surface-variant">Emergency Contact Phone *</label>
                       <input 
                         type="tel" 
                         required
-                        value={formData.emergency_contact_phone}
+                        name="emergency_contact_phone"
+ aria-invalid={Boolean(fieldErrors.emergency_contact_phone)}
+ value={formData.emergency_contact_phone}
                         onChange={e => setFormData({...formData, emergency_contact_phone: e.target.value})}
                         className="px-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                       />
+<FieldError message={fieldErrors.emergency_contact_phone} />
                     </div>
                   </div>
                 </>
@@ -523,6 +604,7 @@ export default function PublicRegistrationClient({ event, settings, slug, walkat
                 )}
               </button>
             </form>
+            )}
           </div>
 
         </div>

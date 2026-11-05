@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 import { normalizeEmail, validateEmail } from '@/lib/validation/auth';
 import { AramLogo } from '@/components/brand/AramLogo';
 
@@ -18,7 +17,6 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const submitGuard = useRef(false);
-  const supabase = createClient();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,12 +34,14 @@ export default function ForgotPasswordPage() {
     submitGuard.current = true;
     setLoading(true);
     try {
-      const { error: recoveryError } = await supabase.auth.resetPasswordForEmail(
-        normalizeEmail(email),
-        { redirectTo: `${window.location.origin}/reset-password` }
-      );
-      if (recoveryError) {
-        setError('We could not send reset instructions right now. Please try again.');
+      const response = await fetch('/api/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizeEmail(email) }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error || 'We could not send reset instructions right now. Please try again.');
         return;
       }
       setSent(true);

@@ -12,12 +12,12 @@ export default function FinalCTA({ event, section }: any) {
   const secondaryCtaText = content.secondaryCtaText || "View Agenda";
   const secondaryCtaDest = content.secondaryCtaDest || "#agenda";
   return (
-    <section className="bg-brand-maroon py-24 md:py-32">
+    <section className="bg-brand-maroon website-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl lg:text-7xl font-medium text-brand-white leading-tight tracking-tight mb-6">
           {title}
         </h2>
-        <p className="text-xl md:text-2xl text-brand-cream/80 mb-12 max-w-2xl mx-auto font-light">
+        <p className="text-xl md:text-2xl text-brand-cream/80 mb-8 max-w-2xl mx-auto font-light">
           Join {event?.name} and be part of this amazing experience.
         </p>
         

@@ -8,6 +8,9 @@ import {
   UpdatePersonInput,
 } from '@/services/peopleService';
 import { Person, EventPersonType, EventPerson } from '@/types';
+import { MoreOptions } from '@/components/ui/MoreOptions';
+import { FieldError, focusFirstError } from '@/components/ui/FieldError';
+import { FieldErrors, hasErrors, validatePersonForm, withoutFieldError } from '@/lib/validation/forms';
 
 export interface PersonFormData {
   first_name: string;
@@ -53,6 +56,7 @@ export function PersonModal({
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -76,6 +80,7 @@ export function PersonModal({
         setPersonType('attendee');
       }
       setErrorMessage(null);
+      setFieldErrors({});
       setLoading(false);
     }
   }, [isOpen, initialData]);
@@ -93,19 +98,17 @@ export function PersonModal({
     const trimmedOrg = organization.trim();
     const trimmedJob = jobTitle.trim();
 
-    if (!trimmedFirst) {
-      setErrorMessage('First Name is required.');
-      return;
-    }
-
-    if (!trimmedEmail) {
-      setErrorMessage('Email address is required.');
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmedEmail)) {
-      setErrorMessage('Please enter a valid email address.');
+    const found = validatePersonForm({
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone,
+      organization,
+      job_title: jobTitle,
+    });
+    setFieldErrors(found);
+    if (hasErrors(found)) {
+      focusFirstError();
       return;
     }
 
@@ -192,8 +195,8 @@ export function PersonModal({
             </h2>
             <p className="text-xs text-ds-muted mt-0.5">
               {isEditing
-                ? 'Update contact and organizational details.'
-                : 'Add a person to your directory or event.'}
+                ? 'Update contact details.'
+                : 'Only a name and email are needed.'}
             </p>
           </div>
           <button
@@ -208,7 +211,7 @@ export function PersonModal({
         </div>
 
         {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto p-6 gap-4">
+        <form onSubmit={handleSubmit} onChange={(e) => setFieldErrors((prev) => withoutFieldError(prev, (e.target as unknown as HTMLInputElement).name))} noValidate className="flex flex-col flex-1 overflow-y-auto p-6 gap-4">
           {errorMessage && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium animate-in fade-in">
               <span className="material-symbols-outlined text-[18px] shrink-0">error</span>
@@ -219,34 +222,29 @@ export function PersonModal({
           {/* If legacy onSave is present, show Person Type radio toggle */}
           {onSave && (
             <div>
-              <label className="block text-xs font-bold text-ds-ink mb-1.5">
-                Person Type <span className="text-ds-danger">*</span>
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-xs font-medium text-ds-ink cursor-pointer">
-                  <input
-                    type="radio"
-                    name="person_type"
-                    value="attendee"
-                    checked={personType === 'attendee'}
-                    onChange={(e) => setPersonType(e.target.value as EventPersonType)}
+              <span className="block text-xs font-bold text-ds-ink mb-1.5">Role</span>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Role">
+                {([
+                  ['attendee', 'Attendee', 'Coming to the event'],
+                  ['staff', 'Team', 'Helping run the event'],
+                ] as const).map(([value, label, hint]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={personType === value}
+                    onClick={() => setPersonType(value)}
                     disabled={isEditing}
-                    className="accent-[#6D50F5]"
-                  />
-                  <span>Attendee</span>
-                </label>
-                <label className="flex items-center gap-2 text-xs font-medium text-ds-ink cursor-pointer">
-                  <input
-                    type="radio"
-                    name="person_type"
-                    value="staff"
-                    checked={personType === 'staff'}
-                    onChange={(e) => setPersonType(e.target.value as EventPersonType)}
-                    disabled={isEditing}
-                    className="accent-[#6D50F5]"
-                  />
-                  <span>Staff</span>
-                </label>
+                    className={`p-2.5 rounded-xl border text-left transition-colors disabled:opacity-60 ${
+                      personType === value
+                        ? 'border-ds-accent bg-ds-accent-soft'
+                        : 'border-ds-line hover:border-ds-accent/40'
+                    }`}
+                  >
+                    <span className="block text-xs font-bold text-ds-ink">{label}</span>
+                    <span className="block text-[11px] text-ds-muted">{hint}</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -264,12 +262,15 @@ export function PersonModal({
                 type="text"
                 id="person-first-name"
                 required
-                value={firstName}
+                name="first_name"
+ aria-invalid={Boolean(fieldErrors.first_name)}
+ value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="e.g. Santhosh"
                 disabled={loading}
                 className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
+<FieldError message={fieldErrors.first_name} />
             </div>
             <div>
               <label
@@ -281,12 +282,15 @@ export function PersonModal({
               <input
                 type="text"
                 id="person-last-name"
-                value={lastName}
+                name="last_name"
+ aria-invalid={Boolean(fieldErrors.last_name)}
+ value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="e.g. S"
                 disabled={loading}
                 className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
+<FieldError message={fieldErrors.last_name} />
             </div>
           </div>
 
@@ -302,14 +306,19 @@ export function PersonModal({
               type="email"
               id="person-email"
               required
-              value={email}
+              name="email"
+ aria-invalid={Boolean(fieldErrors.email)}
+ value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="e.g. name@domain.com"
               disabled={loading}
+              readOnly={Boolean(onSave) && isEditing}
               className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
             />
+<FieldError message={fieldErrors.email} />
           </div>
 
+          <MoreOptions label="Add phone, organization and job title" defaultOpen={Boolean(phone || organization || jobTitle)}>
           {/* Phone */}
           <div>
             <label
@@ -321,12 +330,15 @@ export function PersonModal({
             <input
               type="tel"
               id="person-phone"
-              value={phone}
+              name="phone"
+ aria-invalid={Boolean(fieldErrors.phone)}
+ value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. +91 98765 43210"
               disabled={loading}
               className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
             />
+<FieldError message={fieldErrors.phone} />
           </div>
 
           {/* Organization & Job Title */}
@@ -341,12 +353,15 @@ export function PersonModal({
               <input
                 type="text"
                 id="person-org"
-                value={organization}
+                name="organization"
+ aria-invalid={Boolean(fieldErrors.organization)}
+ value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
                 placeholder="e.g. Aram Academy"
                 disabled={loading}
                 className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
+<FieldError message={fieldErrors.organization} />
             </div>
             <div>
               <label
@@ -358,14 +373,19 @@ export function PersonModal({
               <input
                 type="text"
                 id="person-title"
-                value={jobTitle}
+                name="job_title"
+ aria-invalid={Boolean(fieldErrors.job_title)}
+ value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
                 placeholder="e.g. Director"
                 disabled={loading}
                 className="w-full px-3 py-2 bg-white border border-ds-line rounded-xl text-xs sm:text-sm text-ds-ink placeholder-ds-muted focus:outline-none focus:border-ds-accent transition-colors"
               />
+<FieldError message={fieldErrors.job_title} />
             </div>
           </div>
+
+          </MoreOptions>
 
           {/* Modal Actions */}
           <div className="flex items-center justify-end gap-2.5 pt-4 mt-2 border-t border-ds-line">

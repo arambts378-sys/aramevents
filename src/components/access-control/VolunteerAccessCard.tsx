@@ -21,12 +21,9 @@ export function VolunteerAccessCard({ eventId }: VolunteerAccessCardProps) {
             <h2 className="font-space text-[18px] text-ds-ink font-bold">
               VOLUNTEER ACCESS
             </h2>
-            <span className="px-2 py-0.5 rounded-full bg-ds-accent-soft text-ds-accent-strong text-[10px] font-mono uppercase font-bold tracking-wider">
-              Device Control
-            </span>
           </div>
           <p className="font-jakarta text-[14px] text-ds-muted mt-0.5 max-w-xl">
-            Manage event volunteers and assign the scanner zones they are allowed to access.
+            Give volunteers a scanner and choose which zones they can scan at.
           </p>
         </div>
       </div>

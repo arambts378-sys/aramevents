@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export function FinalCTA() {
   return (
-    <section className="bg-stage-night text-white">
+    <section data-assist-tip="get-started" className="bg-stage-night text-white">
       <div className="mx-auto max-w-[1600px] px-5 py-20 sm:px-8 sm:py-24 lg:px-12 xl:px-16">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">

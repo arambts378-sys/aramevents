@@ -44,7 +44,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'asymmetric') {
     return (
-      <section className="relative w-full min-h-[85vh] flex flex-col justify-between py-16 lg:py-24 px-6 sm:px-10 lg:px-16 overflow-hidden border-b border-[var(--website-border)] bg-[var(--website-background)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-8 lg:py-10 px-6 sm:px-10 lg:px-16 overflow-hidden border-b border-[var(--website-border)] bg-[var(--website-background)]">
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-between">
           {/* Eyebrow & Issue / Edition metadata */}
           <div className="flex items-center justify-between pb-6 border-b border-[var(--website-border)] text-xs font-mono uppercase tracking-widest text-[var(--website-muted)]">
@@ -56,9 +56,9 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {/* Main Asymmetric Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center py-12">
-            {/* Left Column (7 cols): Giant Editorial Headline & Essay intro */}
-            <div className="lg:col-span-7 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center py-8">
+            {/* Left Column: Giant Editorial Headline & Essay intro. Takes the full width when there is no image. */}
+            <div className={`${flyerImage ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6`}>
               {showTitle && (
                 <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] text-[var(--website-text)]">
                   {eventName}
@@ -94,32 +94,18 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
               </div>
             </div>
 
-            {/* Right Column (5 cols): Asymmetric Image Frame or Architectural Card */}
-            <div className="lg:col-span-5">
-              <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-[var(--website-border)] shadow-xl bg-[var(--website-surface)]">
-                {flyerImage ? (
+            {/* Right Column (5 cols): Asymmetric Image Frame */}
+            {flyerImage && (
+              <div className="lg:col-span-5">
+                <div className="relative aspect-[4/5] max-h-[460px] w-full rounded-xl overflow-hidden border border-[var(--website-border)] shadow-xl bg-[var(--website-surface)]">
                   <img
                     src={flyerImage}
                     alt={eventName}
                     className="w-full h-full object-cover filter contrast-[1.05]"
                   />
-                ) : (
-                  <div className="w-full h-full flex flex-col justify-end p-8 bg-gradient-to-t from-[var(--website-text)]/20 via-transparent to-transparent">
-                    <div className="space-y-2">
-                      <span className="text-[11px] font-mono tracking-widest uppercase text-[var(--website-primary)]">
-                        Location &amp; Gathering
-                      </span>
-                      <h4 className="text-2xl font-semibold text-[var(--website-text)]">
-                        {eventLocation}
-                      </h4>
-                      <p className="text-xs text-[var(--website-muted)]">
-                        Curated in-person symposium and dialogue.
-                      </p>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Bottom Editorial Metadata Strip */}
@@ -154,9 +140,9 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'split') {
     return (
-      <section className="relative w-full min-h-[85vh] flex flex-col lg:flex-row bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col lg:flex-row bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
         {/* Left Side: Enterprise Leadership Panel */}
-        <div className="w-full lg:w-7/12 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-16 lg:py-24 z-10">
+        <div className="w-full lg:w-7/12 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-10 lg:py-12 z-10">
           <div className="max-w-2xl space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--website-border)] bg-[var(--website-surface)] text-xs font-mono font-medium text-[var(--website-primary)] uppercase tracking-wider">
               <span className="w-2 h-2 rounded-full bg-[var(--website-primary)]" />
@@ -220,7 +206,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
         </div>
 
         {/* Right Side: Media Frame or Visual Pillar */}
-        <div className="w-full lg:w-5/12 relative min-h-[360px] lg:min-h-full bg-[var(--website-surface)] border-t lg:border-t-0 lg:border-l border-[var(--website-border)] flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full lg:w-5/12 relative min-h-[280px] lg:min-h-full bg-[var(--website-surface)] border-t lg:border-t-0 lg:border-l border-[var(--website-border)] flex items-center justify-center p-8 overflow-hidden">
           {flyerImage ? (
             <img
               src={flyerImage}
@@ -252,7 +238,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'full-bleed') {
     return (
-      <section className="relative w-full min-h-[90vh] flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-20 bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-12 bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
         {/* Subtle decorative glow */}
         <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-[var(--website-primary)] opacity-15 blur-3xl pointer-events-none" />
 
@@ -309,7 +295,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'stats-driven') {
     return (
-      <section className="relative w-full min-h-[85vh] flex flex-col justify-between py-14 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-10 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-7xl mx-auto w-full my-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[var(--website-primary)] text-white font-mono text-xs font-black uppercase tracking-widest rounded-sm">
             <span className="material-symbols-outlined text-[15px]">sports_score</span>
@@ -349,7 +335,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {/* Athletic Numerical Metrics Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t-2 border-[var(--website-text)]/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t-2 border-[var(--website-text)]/10">
             <div className="p-4 bg-[var(--website-surface)] border border-[var(--website-border)] rounded-md">
               <span className="text-[10px] font-mono uppercase text-[var(--website-muted)] block tracking-wider">Race Day</span>
               <span className="text-xl sm:text-2xl font-black font-space">{eventDate}</span>
@@ -378,7 +364,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'poster') {
     return (
-      <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center text-center py-20 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
         <div className="max-w-5xl mx-auto w-full space-y-6 relative z-10">
           <div className="inline-block px-4 py-1.5 rounded-full border-2 border-[var(--website-primary)] text-xs font-mono font-bold uppercase tracking-widest text-[var(--website-primary)]">
             ★ Annual Festival &amp; Celebration ★
@@ -435,7 +421,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'outcome-focused') {
     return (
-      <section className="relative w-full min-h-[75vh] flex flex-col justify-center py-16 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             <span className="px-3 py-1 rounded bg-[var(--website-primary)] text-white font-bold uppercase tracking-wider">
@@ -505,7 +491,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'cinematic') {
     return (
-      <section className="relative w-full min-h-[90vh] flex flex-col justify-center items-center text-center py-24 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
         <div className="max-w-4xl mx-auto w-full space-y-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--website-accent)]/40 bg-[var(--website-surface)] text-xs font-mono tracking-widest uppercase text-[var(--website-accent)] font-semibold shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[var(--website-accent)] animate-pulse" />
@@ -554,7 +540,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'story-led') {
     return (
-      <section className="relative w-full min-h-[80vh] flex flex-col justify-center py-16 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <div className="inline-flex items-center gap-2 text-xs font-mono text-[var(--website-primary)] font-bold uppercase tracking-wider">
             <span className="material-symbols-outlined text-[16px]">groups</span>
@@ -610,7 +596,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'minimal') {
     return (
-      <section className="relative w-full min-h-[80vh] flex flex-col justify-center items-center text-center py-20 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-3xl mx-auto w-full space-y-6">
           <span className="text-xs font-mono uppercase tracking-widest text-[var(--website-muted)]">
             Restorative Experience · Sanctuary Retreat
@@ -655,7 +641,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // Grand centered conference hero with centered badge and balanced CTAs
   // =========================================================================
   return (
-    <section className="relative w-full min-h-[80vh] flex flex-col justify-center items-center text-center py-20 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+    <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
       <div className="max-w-4xl mx-auto w-full space-y-6">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[var(--website-border)] bg-[var(--website-surface)] text-xs font-mono font-medium text-[var(--website-primary)] uppercase tracking-wider">
           <span className="w-2 h-2 rounded-full bg-[var(--website-primary)] animate-pulse" />

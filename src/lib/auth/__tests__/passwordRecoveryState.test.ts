@@ -52,6 +52,18 @@ describe('PasswordRecoveryState', () => {
     assert.equal(verified, false);
   });
 
+  it('authorizes an implicit recovery link once its session is set', () => {
+    const state = new PasswordRecoveryState();
+    state.handleAuthEvent('SIGNED_IN', true);
+    state.markRecovered();
+
+    let verified = false;
+    state.subscribe((value) => {
+      verified = value;
+    });
+    assert.equal(verified, true);
+  });
+
   it('clears recovery authorization after sign-out or successful update', () => {
     const state = new PasswordRecoveryState();
     state.handleAuthEvent('PASSWORD_RECOVERY', true);

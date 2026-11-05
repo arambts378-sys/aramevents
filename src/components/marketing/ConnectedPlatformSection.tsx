@@ -41,7 +41,7 @@ export function ConnectedPlatformSection() {
   const { ref, isInView } = useInView({ threshold: 0.2 });
 
   return (
-    <section ref={ref} id="solutions" className="relative bg-stage-paper py-20 sm:py-24 lg:py-28">
+    <section ref={ref} id="solutions" data-assist-tip="journey" className="relative bg-stage-paper py-20 sm:py-24 lg:py-28">
       <div className="mx-auto max-w-[1600px] px-5 sm:px-8 lg:px-12 xl:px-16">
         <div className="max-w-2xl">
           <h2 className="font-display text-3xl font-bold tracking-[0.01em] text-stage-ink sm:text-4xl lg:text-[44px] lg:leading-[1.08]">

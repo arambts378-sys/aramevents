@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Event } from '@/types';
+import { copyToClipboard, publicWebsiteUrl } from '@/components/website-editor/WebsiteLinkField';
 
 interface EventGridProps {
   events: Event[];
@@ -44,6 +45,47 @@ function EventImageWithFallback({
       onError={() => setImageError(true)}
       className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-300"
     />
+  );
+}
+
+/** The event's public address with a copy button, so it can be shared from the list. */
+function EventWebsiteLink({ event }: { event: Event }) {
+  const [copied, setCopied] = useState(false);
+  const url = publicWebsiteUrl(event.slug);
+
+  const handleCopy = async () => {
+    await copyToClipboard(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mb-4 font-jakarta">
+      <div className="flex items-center gap-2">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 min-w-0 truncate text-[12px] text-ds-accent hover:underline"
+        >
+          {url}
+        </a>
+        <button
+          type="button"
+          onClick={handleCopy}
+          aria-label={`Copy website link for ${event.name}`}
+          className="inline-flex items-center gap-1 h-8 px-2.5 shrink-0 rounded-lg border border-ds-line bg-white text-ds-ink hover:border-ds-accent hover:text-ds-accent text-[12px] font-semibold transition-colors"
+        >
+          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+            {copied ? 'check' : 'content_copy'}
+          </span>
+          <span aria-live="polite">{copied ? 'Copied' : 'Copy link'}</span>
+        </button>
+      </div>
+      {event.website?.status !== 'published' && (
+        <p className="mt-1 text-[11px] text-ds-muted">Website not published yet</p>
+      )}
+    </div>
   );
 }
 
@@ -158,6 +200,8 @@ export function EventGrid({ events }: EventGridProps) {
                     <span className="truncate">{event.location || 'Location TBA'}</span>
                   </div>
                 </div>
+
+                <EventWebsiteLink event={event} />
               </div>
 
               {/* 3. Card Footer Action */}

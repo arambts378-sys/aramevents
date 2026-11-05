@@ -171,8 +171,8 @@ export default function OrganizerRegisterPage() {
         return;
       }
 
-      // The account and organization now exist and the organizer is signed in.
-      router.push(typeof data?.redirect === 'string' ? data.redirect : '/app');
+      // Same destination whether the email is new, pending, or already registered.
+      router.push(`/organizer/verify?email=${encodeURIComponent(result.values.email)}`);
     } catch {
       setError('Network error. Please verify your internet connection and try again.');
     } finally {

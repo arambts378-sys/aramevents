@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { registrationsService } from '@/services/registrations';
+import { ticketService } from '@/services/ticketService';
+import { MoreOptions } from '@/components/ui/MoreOptions';
+import { FieldError, focusFirstError } from '@/components/ui/FieldError';
+import { FieldErrors, hasErrors, validateRegistrationSettings, withoutFieldError } from '@/lib/validation/forms';
+import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
 import { Registration, EventRegistrationSettings } from '@/types';
 import { downloadCsv } from '@/lib/csv';
 
@@ -19,10 +24,13 @@ export default function OrganizerRegistrationPage() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedNotice, setSavedNotice] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [ticketCount, setTicketCount] = useState(0);
+  const [isOpening, setIsOpening] = useState(false);
 
   // Settings Form State
   const [formData, setFormData] = useState({
-    is_enabled: false,
     title: '',
     description: '',
     capacity: '' as string | number,
@@ -39,16 +47,17 @@ export default function OrganizerRegistrationPage() {
     try {
       setLoading(true);
       setError(null);
-      const [regs, sets] = await Promise.all([
+      const [regs, sets, ticketTypes] = await Promise.all([
         registrationsService.getEventRegistrations(eventId),
-        registrationsService.getEventRegistrationSettings(eventId)
+        registrationsService.getEventRegistrationSettings(eventId),
+        ticketService.getEventTicketTypes(eventId)
       ]);
       setRegistrations(regs);
+      setTicketCount(ticketTypes.tickets?.length ?? 0);
       
       if (sets) {
         setSettings(sets);
         setFormData({
-          is_enabled: sets.is_enabled,
           title: sets.title || '',
           description: sets.description || '',
           capacity: sets.capacity || '',
@@ -71,23 +80,63 @@ export default function OrganizerRegistrationPage() {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    const found = validateRegistrationSettings(formData);
+    setFieldErrors(found);
+    if (hasErrors(found)) {
+      focusFirstError();
+      return;
+    }
+
     setIsSaving(true);
     setError(null);
+    setSavedNotice(false);
     try {
       const cap = formData.capacity === '' ? null : parseInt(formData.capacity as string, 10);
       const updated = await registrationsService.updateEventRegistrationSettings(eventId, {
-        is_enabled: true,
+        is_enabled: settings?.is_enabled ?? false,
         title: formData.title || null,
         description: formData.description || null,
         capacity: cap && cap >= 1 ? cap : null,
         confirmation_message: formData.confirmation_message || null
       });
       setSettings(updated);
-      alert('Settings saved successfully');
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 2500);
     } catch (err: any) {
       setError(err.message || 'Failed to save settings');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // A first ticket opens registration on its own (see ticketService.createTicketType).
+  const handleAddFreeTicket = async () => {
+    setIsOpening(true);
+    setError(null);
+    try {
+      await ticketService.createTicketType(eventId, {
+        name: 'General Admission',
+        ticket_type: 'free',
+        price_in_rupees: 0,
+        quantity_total: settings?.capacity || 100,
+      });
+      await fetchData();
+    } catch (err: any) {
+      setError(err.message || 'Could not add the ticket. Please try again.');
+    } finally {
+      setIsOpening(false);
+    }
+  };
+
+  const handleSetOpen = async (isOpen: boolean) => {
+    setIsOpening(true);
+    setError(null);
+    try {
+      setSettings(await registrationsService.updateEventRegistrationSettings(eventId, { is_enabled: isOpen }));
+    } catch (err: any) {
+      setError(err.message || 'Could not update registration. Please try again.');
+    } finally {
+      setIsOpening(false);
     }
   };
 
@@ -196,99 +245,138 @@ export default function OrganizerRegistrationPage() {
         
         {/* Left Column: Settings */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6">
-          {/* Tickets & Pricing Link Card */}
-          <Link
-            href={`/app/events/${eventId}/tickets`}
-            className="group bg-white border border-ds-line rounded-2xl p-5 shadow-xs hover:border-ds-accent hover:shadow-sm transition-all duration-150 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-ds-accent-soft text-ds-accent flex items-center justify-center border border-ds-line/60 group-hover:scale-105 transition-transform">
-                <span className="material-symbols-outlined text-[22px]">sell</span>
+          {/* Registration status */}
+          {!loading && (
+            <section className="bg-white border border-ds-line rounded-2xl p-5 shadow-xs space-y-3">
+              <div className="flex items-start gap-3">
+                <span
+                  className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${settings?.is_enabled ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <h2 className="text-[15px] font-bold text-ds-ink font-space">
+                    {settings?.is_enabled ? 'Registration is open' : 'Registration is not open yet'}
+                  </h2>
+                  <p className="text-[12px] text-ds-muted font-jakarta mt-0.5">
+                    {settings?.is_enabled
+                      ? 'Share this link so people can register.'
+                      : ticketCount > 0
+                        ? 'People can register as soon as you open it.'
+                        : 'Add a ticket and people can start registering.'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-[14px] font-bold text-ds-ink font-space group-hover:text-ds-accent transition-colors">
-                  Tickets &amp; Pricing
-                </h3>
-                <p className="text-[12px] text-ds-muted font-jakarta leading-tight mt-0.5">
-                  Create ticket types, set prices and manage availability.
-                </p>
-              </div>
-            </div>
-            <span className="material-symbols-outlined text-[20px] text-ds-muted group-hover:text-ds-accent group-hover:translate-x-0.5 transition-all">
-              arrow_forward
-            </span>
-          </Link>
 
-          <form onSubmit={handleSaveSettings} className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-6 flex flex-col gap-5">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-title-md font-bold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">settings</span>
-                Registration Details
-              </h2>
-              
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold font-mono uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Active
-              </span>
-            </div>
-            <p className="text-xs text-on-surface-variant leading-relaxed">
-              Registration opens automatically whenever tickets are available. Customize public details and optional capacity below.
-            </p>
+              {settings?.is_enabled ? (
+                <>
+                  <WebsiteLinkField slug={event.slug} path="/register" label="Registration link" />
+                  <div className="flex items-center justify-between text-[12px] font-semibold font-jakarta">
+                    <Link href={`/app/events/${eventId}/tickets`} className="text-ds-accent hover:text-ds-accent-strong">
+                      Manage tickets
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleSetOpen(false)}
+                      disabled={isOpening}
+                      className="text-ds-muted hover:text-ds-ink disabled:opacity-50"
+                    >
+                      Close registration
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={ticketCount > 0 ? () => handleSetOpen(true) : handleAddFreeTicket}
+                    disabled={isOpening}
+                    className="inline-flex items-center h-10 px-4 rounded-lg bg-ds-accent hover:bg-ds-accent-strong text-white text-[13px] font-semibold transition-colors disabled:opacity-60 font-jakarta"
+                  >
+                    {isOpening ? 'Opening...' : ticketCount > 0 ? 'Open registration' : 'Add a free ticket'}
+                  </button>
+                  <Link
+                    href={`/app/events/${eventId}/tickets`}
+                    className="inline-flex items-center h-10 px-4 rounded-lg border border-ds-line text-ds-ink text-[13px] font-semibold hover:border-ds-accent hover:text-ds-accent transition-colors font-jakarta"
+                  >
+                    {ticketCount > 0 ? 'Manage tickets' : 'Set up tickets'}
+                  </Link>
+                </div>
+              )}
+            </section>
+          )}
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-label-sm font-medium text-on-surface-variant">Public Title</label>
-              <input 
-                type="text" 
-                value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
-                placeholder="e.g. Register for Aram Events"
-                className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-label-sm font-medium text-on-surface-variant">Description</label>
-              <textarea 
-                value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                placeholder="Brief instructions for attendees..."
-                className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md resize-y min-h-[80px]"
-              />
-            </div>
+          <form onSubmit={handleSaveSettings} onChange={(e) => setFieldErrors((prev) => withoutFieldError(prev, (e.target as unknown as HTMLInputElement).name))} noValidate className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-6 flex flex-col gap-5">
+            <h2 className="text-title-md font-bold text-on-surface">Registration Details</h2>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-label-sm font-medium text-on-surface-variant">Capacity (Leave empty for unlimited)</label>
+              <label className="text-label-sm font-medium text-on-surface-variant">Maximum attendees (leave empty for no limit)</label>
               <input 
                 type="number" 
-                value={formData.capacity}
+                name="capacity"
+ aria-invalid={Boolean(fieldErrors.capacity)}
+ value={formData.capacity}
                 onChange={e => setFormData({...formData, capacity: e.target.value})}
                 placeholder="e.g. 500"
                 min="1"
                 className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md"
               />
+<FieldError message={fieldErrors.capacity} />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <label className="text-label-sm font-medium text-on-surface-variant">Confirmation Message</label>
               <textarea 
-                value={formData.confirmation_message}
+                name="confirmation_message"
+ aria-invalid={Boolean(fieldErrors.confirmation_message)}
+ value={formData.confirmation_message}
                 onChange={e => setFormData({...formData, confirmation_message: e.target.value})}
-                placeholder="Message shown after successful registration..."
+                placeholder="Shown to people after they register"
                 className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md resize-y min-h-[80px]"
               />
+<FieldError message={fieldErrors.confirmation_message} />
             </div>
+
+            <MoreOptions label="Customize the registration page" defaultOpen={Boolean(formData.title || formData.description)}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-label-sm font-medium text-on-surface-variant">Public Title</label>
+                <input 
+                  type="text" 
+                  name="title"
+ aria-invalid={Boolean(fieldErrors.title)}
+ value={formData.title}
+                  onChange={e => setFormData({...formData, title: e.target.value})}
+                  placeholder="e.g. Register for Aram Events"
+                  className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md"
+                />
+<FieldError message={fieldErrors.title} />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-label-sm font-medium text-on-surface-variant">Description</label>
+                <textarea 
+                  name="description"
+ aria-invalid={Boolean(fieldErrors.description)}
+ value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  placeholder="Brief instructions for attendees..."
+                  className="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary text-body-md resize-y min-h-[80px]"
+                />
+<FieldError message={fieldErrors.description} />
+              </div>
+            </MoreOptions>
 
             <button 
               type="submit" 
               disabled={isSaving}
               className="mt-2 w-full px-5 py-2.5 bg-primary text-white text-label-md font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
             >
-              {isSaving ? 'Saving...' : 'Save Settings'}
+              {isSaving ? 'Saving...' : savedNotice ? 'Saved' : 'Save'}
             </button>
             {error && <div className="text-error text-body-sm text-center">{error}</div>}
           </form>
 
           {/* Metrics Card */}
+          {metrics.total > 0 && (
           <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 shadow-sm">
             <h3 className="text-title-sm font-bold text-on-surface mb-4">Metrics</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -310,6 +398,7 @@ export default function OrganizerRegistrationPage() {
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* Right Column: Registration List */}
@@ -319,6 +408,7 @@ export default function OrganizerRegistrationPage() {
               Attendees{!loading && <span className="text-on-surface-variant font-medium"> ({filteredRegistrations.length})</span>}
             </h2>
             
+            {registrations.length > 0 && (
             <div className="flex gap-3 w-full sm:w-auto">
               <div className="relative w-full sm:w-64">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
@@ -354,6 +444,7 @@ export default function OrganizerRegistrationPage() {
                 <span className="hidden sm:inline">Download</span>
               </button>
             </div>
+            )}
           </div>
 
           <div className="bg-white border border-outline-variant/40 rounded-2xl overflow-hidden shadow-sm">
@@ -378,7 +469,9 @@ export default function OrganizerRegistrationPage() {
                   ) : filteredRegistrations.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-5 py-10 text-center text-on-surface-variant">
-                        No registrations found.
+                        {registrations.length === 0
+                          ? 'No one has registered yet. People who register will show up here.'
+                          : 'No registrations match your search.'}
                       </td>
                     </tr>
                   ) : (

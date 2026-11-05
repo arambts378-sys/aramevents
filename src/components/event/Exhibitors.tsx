@@ -8,9 +8,9 @@ interface ExhibitorsProps {
 export default function Exhibitors({ event, section }: ExhibitorsProps) {
   const content = section?.content || {};
   return (
-    <section id="exhibitors" className="bg-brand-white py-16 md:py-24 border-t border-brand-border">
+    <section id="exhibitors" className="bg-brand-white website-section border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
+        <div className="mb-8">
           <div className="inline-flex items-center space-x-2 mb-4">
             <span className="text-sm font-mono text-brand-maroon uppercase tracking-widest font-semibold">
               {content.heading || "Exhibitors"}

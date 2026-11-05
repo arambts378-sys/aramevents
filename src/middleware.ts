@@ -53,6 +53,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname === '/signup' ||
     request.nextUrl.pathname === '/organizer/register'
+  const isVerifyRoute = request.nextUrl.pathname === '/organizer/verify'
   const isAdminLogin = request.nextUrl.pathname === '/super-admin/login'
   const isSuperAdminRoute =
     request.nextUrl.pathname.startsWith('/super-admin') && !isAdminLogin
@@ -78,17 +79,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Unfinished (unconfirmed) account attempting to access protected route: registering
-  // again with the same email completes it.
+  // Authenticated but unverified user attempting to access protected route
   if ((isSuperAdminRoute || isAppProtectedRoute) && user && !user.email_confirmed_at) {
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/organizer/register'
+    redirectUrl.pathname = '/organizer/verify'
     redirectUrl.search = ''
+    if (user.email) {
+      redirectUrl.searchParams.set('email', user.email)
+    }
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Confirmed user visiting standard auth / register routes
-  if (isAuthRoute && user && user.email_confirmed_at) {
+  // Confirmed user visiting standard auth / register / verify routes
+  if ((isAuthRoute || isVerifyRoute) && user && user.email_confirmed_at) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/app'
     return NextResponse.redirect(redirectUrl)

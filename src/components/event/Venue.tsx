@@ -15,12 +15,12 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
   const imageUrl = content.image || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=2070&auto=format&fit=crop";
 
   return (
-    <section id="venue" className="bg-brand-white py-20 md:py-28 border-t border-brand-border/60">
+    <section id="venue" className="bg-brand-white website-section border-t border-brand-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* VARIANT: IMMERSIVE (Summit / Cinematic full-bleed venue banner) */}
         {variant === "immersive" && (
-          <div className="relative rounded-2xl overflow-hidden min-h-[460px] flex items-end p-6 md:p-12 shadow-lg">
+          <div className="relative rounded-2xl overflow-hidden min-h-[340px] flex items-end p-6 md:p-12 shadow-lg">
             <img
               src={imageUrl}
               alt="Venue"
@@ -137,7 +137,7 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
         {/* VARIANT: MAP & SPLIT (Default standard 2-column) */}
         {(variant === "split" || variant === "map") && (
           <div>
-            <div className="mb-14">
+            <div className="mb-8">
               <div className="inline-flex items-center space-x-2 mb-4">
                 <span className="w-8 h-[1px] bg-brand-maroon"></span>
                 <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">

@@ -112,7 +112,7 @@ export default async function LiveEventsPage() {
   const past = (events ?? []).filter((e) => e.start_date && (e.end_date || e.start_date) < today).reverse();
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
+    <div data-assist-tip="live-events" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
       <div className="mx-auto max-w-2xl text-center">
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-ds-accent-strong">Live events</p>
         <h1 className="mt-4 text-4xl font-bold tracking-tight text-ds-ink sm:text-5xl">Find an event</h1>

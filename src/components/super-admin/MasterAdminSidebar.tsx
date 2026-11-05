@@ -29,6 +29,7 @@ const navGroups = [
       { href: '/super-admin/activity', label: 'Activity', icon: 'bolt', exact: false },
       { href: '/super-admin/audit-logs', label: 'Audit log', icon: 'history', exact: false },
       { href: '/super-admin/monitoring', label: 'Monitoring', icon: 'database', exact: false },
+      { href: '/super-admin/exit-survey', label: 'Exit survey', icon: 'forum', exact: false },
     ],
   },
   {

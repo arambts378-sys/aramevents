@@ -13,6 +13,14 @@ import { AccessZoneModal } from '@/components/access-control/AccessZoneModal';
 import { DeleteZoneModal } from '@/components/access-control/DeleteZoneModal';
 import { AccessActivityTable, ScanRecord } from '@/components/access-control/AccessActivityTable';
 
+// Ready-made zones, so most events can be set up in a click or two.
+const QUICK_ZONES = [
+  { name: 'Main Entrance', zone_type: 'Gate', icon: 'door_front' },
+  { name: 'Food Counter', zone_type: 'Food Court', icon: 'restaurant' },
+  { name: 'VIP Area', zone_type: 'VIP', icon: 'star' },
+  { name: 'Workshop Room', zone_type: 'Workshop', icon: 'school' },
+];
+
 export default function AccessControlPage() {
   const routeParams = useParams();
   const eventId = routeParams?.eventId as string;
@@ -42,6 +50,7 @@ export default function AccessControlPage() {
 
   // Notification banners
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  const [quickZoneError, setQuickZoneError] = useState<string | null>(null);
 
   // Fetch all real access-control data
   const loadData = useCallback(async (isRefresh = false) => {
@@ -235,6 +244,15 @@ export default function AccessControlPage() {
     setZones((prev) => [...prev, zoneData]);
     setSuccessBanner(`Access zone "${zoneData.name}" created successfully.`);
     setTimeout(() => setSuccessBanner(null), 4000);
+  };
+
+  const handleQuickZone = async (quick: (typeof QUICK_ZONES)[number]) => {
+    setQuickZoneError(null);
+    try {
+      await handleCreateZone({ ...quick, requires_qr: true, allow_reentry: false, is_active: true });
+    } catch (err: any) {
+      setQuickZoneError(err.message || 'Could not add the zone. Please try again.');
+    }
   };
 
   // Handler: Edit Zone
@@ -451,7 +469,7 @@ export default function AccessControlPage() {
                     QR &amp; ACCESS
                   </h1>
                   <p className="text-[14px] text-ds-muted font-jakarta">
-                    Configure event access, checkpoints, entitlements, and volunteer permissions.
+                    Choose where QR passes get scanned at your event.
                   </p>
                 </div>
 
@@ -470,7 +488,7 @@ export default function AccessControlPage() {
                     >
                       sync
                     </span>
-                    <span>{syncing ? 'Syncing...' : 'Credential Sync'}</span>
+                    <span>{syncing ? 'Refreshing...' : 'Refresh'}</span>
                   </button>
 
                   <button
@@ -479,7 +497,7 @@ export default function AccessControlPage() {
                     className="px-5 py-2.5 rounded-xl bg-ds-accent hover:bg-ds-accent-strong text-white font-jakarta text-[13px] font-semibold transition-all duration-150 shadow-xs flex items-center gap-2 active:scale-[0.98]"
                   >
                     <span className="material-symbols-outlined text-[18px]">add</span>
-                    <span>+ Create Access Zone</span>
+                    <span>Add Zone</span>
                   </button>
                 </div>
               </div>
@@ -504,28 +522,59 @@ export default function AccessControlPage() {
               </div>
             )}
 
-            {/* KPI Metrics Section */}
-            <AccessControlMetrics
-              activeZones={activeZonesCount}
-              totalZones={totalZonesCount}
-              todayScans={todayScansCount}
-              activeVolunteers={activeVolunteersCount}
-            />
+            {/* Numbers and volunteers only mean something once a zone exists */}
+            {zones.length > 0 && (
+              <>
+                <AccessControlMetrics
+                  activeZones={activeZonesCount}
+                  totalZones={totalZonesCount}
+                  todayScans={todayScansCount}
+                  activeVolunteers={activeVolunteersCount}
+                />
+                <VolunteerAccessCard eventId={eventId} />
+              </>
+            )}
 
-            {/* Volunteer Access Feature Card */}
-            <VolunteerAccessCard eventId={eventId} />
+            {/* Ready-made zones */}
+            {QUICK_ZONES.some((q) => !zones.some((z) => z.name === q.name)) && (
+              <section className="bg-white border border-ds-line rounded-2xl p-5 shadow-xs space-y-3" aria-labelledby="quick-zones-title">
+                <div>
+                  <h2 id="quick-zones-title" className="font-space text-[15px] font-bold text-ds-ink">
+                    {zones.length === 0 ? 'Where should passes be scanned?' : 'Quick add'}
+                  </h2>
+                  <p className="font-jakarta text-[12px] text-ds-muted mt-0.5">
+                    Click to add. Everyone with a confirmed registration gets access, and you can change this later.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {QUICK_ZONES.filter((q) => !zones.some((z) => z.name === q.name)).map((quick) => (
+                    <button
+                      key={quick.name}
+                      type="button"
+                      onClick={() => handleQuickZone(quick)}
+                      className="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl border border-ds-line bg-white text-ds-ink font-jakarta text-[13px] font-semibold hover:border-ds-accent hover:text-ds-accent transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{quick.icon}</span>
+                      <span>{quick.name}</span>
+                      <span className="material-symbols-outlined text-[16px] text-ds-muted" aria-hidden="true">add</span>
+                    </button>
+                  ))}
+                </div>
+                {quickZoneError && (
+                  <p role="alert" className="text-[12px] text-rose-700 font-jakarta">{quickZoneError}</p>
+                )}
+              </section>
+            )}
 
             {/* Main Access Control Workspace Card */}
+            {(zones.length > 0 || recentScans.length > 0) && (
             <section className="ds-card p-6 lg:p-7 shadow-xs space-y-6">
               {/* Card Header & Tabs */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ds-line/60 pb-5">
                 <div>
                   <h2 className="font-space text-[20px] text-ds-ink font-bold tracking-tight">
-                    ACCESS CONTROL
+                    Your zones
                   </h2>
-                  <p className="font-jakarta text-[13px] text-ds-muted mt-0.5">
-                    Manage checkpoints, scanner zones, and access activity for this event.
-                  </p>
                 </div>
 
                 {/* Tab Navigation */}
@@ -582,7 +631,8 @@ export default function AccessControlPage() {
               {/* Tab 1: Access Zones */}
               {activeTab === 'zones' && (
                 <div className="space-y-5">
-                  {/* Toolbar */}
+                  {/* Toolbar, once there are enough zones to need it */}
+                  {zones.length > 3 && (
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     {/* Search & Filter Cluster */}
                     <div className="flex flex-wrap items-center gap-3">
@@ -649,17 +699,9 @@ export default function AccessControlPage() {
                         <span className="material-symbols-outlined text-[17px]">file_download</span>
                         <span>Export CSV</span>
                       </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="px-4 py-2 bg-ds-accent hover:bg-ds-accent-strong text-white font-jakarta text-[12px] font-semibold rounded-xl transition-colors flex items-center gap-1.5 shadow-xs active:scale-[0.98]"
-                      >
-                        <span className="material-symbols-outlined text-[17px]">add</span>
-                        <span>+ Create Access Zone</span>
-                      </button>
                     </div>
                   </div>
+                  )}
 
                   {/* Zones List */}
                   {filteredZones.length === 0 ? (
@@ -668,25 +710,11 @@ export default function AccessControlPage() {
                         <span className="material-symbols-outlined text-[24px]">door_sliding</span>
                       </div>
                       <h4 className="font-space text-[17px] font-bold text-ds-ink">
-                        {zones.length === 0 ? 'No access zones yet' : 'No matching access zones'}
+                        No matching zones
                       </h4>
                       <p className="font-jakarta text-[13px] text-ds-muted mt-1 max-w-md mx-auto">
-                        {zones.length === 0
-                          ? 'Create your first access zone to control where volunteers can scan and validate event tickets.'
-                          : 'Try modifying your search query or status filter.'}
+                        Try a different search or filter.
                       </p>
-                      {zones.length === 0 && (
-                        <div className="mt-5">
-                          <button
-                            type="button"
-                            onClick={() => setIsCreateModalOpen(true)}
-                            className="px-5 py-2.5 rounded-xl bg-ds-accent hover:bg-ds-accent-strong text-white font-jakarta text-[13px] font-semibold transition-all shadow-xs inline-flex items-center gap-2"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">add</span>
-                            <span>+ Create Access Zone</span>
-                          </button>
-                        </div>
-                      )}
                     </div>
                   ) : (
                     <div className="space-y-3.5 pt-1">
@@ -712,6 +740,7 @@ export default function AccessControlPage() {
                 <AccessActivityTable scans={recentScans} />
               )}
             </section>
+            )}
           </div>
         </main>
       </div>

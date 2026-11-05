@@ -1,6 +1,9 @@
-// Checks the platform SMTP settings that send team invitations and contact-form emails.
+// Checks the platform email settings that send organizer verification codes, team invitations
+// and contact-form emails.
 // Usage: node scripts/check-smtp.cjs [recipient@example.com]
-// Reads .env, logs in to the SMTP server, and (if a recipient is given) sends a test email.
+// Reads .env. With ZOHO_CPAAS_SEND_MAIL_TOKEN set it sends a test email through Zoho CPaaS (a
+// recipient is required). Otherwise it logs in to the SMTP server and, if a recipient is given,
+// sends a test email.
 const nodemailer = require('nodemailer');
 
 try {
@@ -10,6 +13,44 @@ try {
 }
 
 const env = process.env;
+
+const zohoToken = (env.ZOHO_CPAAS_SEND_MAIL_TOKEN || '').trim().replace(/^zoho-enczapikey\s+/i, '');
+if (zohoToken) {
+  const url = env.ZOHO_CPAAS_API_URL || 'https://cpaas.zoho.in/v1.1/email';
+  const address = env.ZOHO_CPAAS_FROM || 'arambts@aram.events';
+  const to = process.argv[2];
+  if (!to) {
+    console.error('Add a recipient: node scripts/check-smtp.cjs you@example.com');
+    process.exit(1);
+  }
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: `Zoho-enczapikey ${zohoToken}`,
+      'content-type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      from: { address, name: env.PLATFORM_SMTP_FROM_NAME || 'Aram Events' },
+      to: [{ email_address: { address: to } }],
+      subject: 'Aram Events email test',
+      textbody: 'If you can read this, verification codes will be delivered.',
+    }),
+  })
+    .then(async (res) => {
+      const body = await res.text();
+      if (!res.ok) {
+        console.error(`FAILED: ${url} returned ${res.status}: ${body.slice(0, 500)}`);
+        process.exit(1);
+      }
+      console.log(`Sent from ${address} to ${to}. Check the inbox and spam folder.`);
+    })
+    .catch((err) => {
+      console.error(`FAILED: ${err.message}`);
+      process.exit(1);
+    });
+  return;
+}
 const host = env.PLATFORM_SMTP_HOST || env.SMTP_HOST;
 const user = env.PLATFORM_SMTP_USER || env.SMTP_USER;
 const pass = env.PLATFORM_SMTP_PASS || env.SMTP_PASS;
@@ -48,7 +89,7 @@ if (missing.length) {
     from: `"${fromName}" <${fromEmail}>`,
     to,
     subject: 'Aram Events SMTP test',
-    text: 'If you can read this, platform emails will be delivered.',
+    text: 'If you can read this, verification codes will be delivered.',
   });
   console.log(`Sent test email to ${to} (id ${info.messageId}). Check the inbox and spam folder.`);
 })();

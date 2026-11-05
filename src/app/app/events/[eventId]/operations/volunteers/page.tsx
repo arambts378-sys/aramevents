@@ -1,5 +1,7 @@
 'use client';
 
+import { FieldError, focusFirstError } from '@/components/ui/FieldError';
+import { validateEmail } from '@/lib/validation/auth';
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 
@@ -18,6 +20,7 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ email: '', zones: '', expiresAt: '' });
   
   useEffect(() => {
     fetchData();
@@ -45,13 +48,21 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    const found = {
+      email: validateEmail(email) ?? '',
+      zones: selectedZones.size === 0 ? 'Choose at least one zone.' : '',
+      expiresAt: expiresAt && new Date(expiresAt) <= new Date() ? 'Expiry must be in the future.' : '',
+    };
+    setFieldErrors(found);
+    if (found.email || found.zones || found.expiresAt) {
+      focusFirstError();
+      return;
+    }
+
     setCreating(true);
 
     try {
-      if (selectedZones.size === 0) {
-        throw new Error('Please select at least one zone');
-      }
-
       const res = await fetch(`/api/events/${eventId}/scanner-sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,17 +154,20 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
       <div className="bg-surface-variant/30 p-6 rounded-2xl border border-outline-variant/30">
         <h2 className="text-lg font-bold mb-6">Create New Scanner Access</h2>
         
-        <form onSubmit={handleCreateSession} className="space-y-6">
+        <form onSubmit={handleCreateSession} noValidate className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-2">Volunteer Email</label>
             <input 
               type="email" 
               required
-              value={email}
+              name="email"
+ aria-invalid={Boolean(fieldErrors.email)}
+ value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="volunteer@example.com"
               className="w-full max-w-md px-4 py-2 border rounded-xl"
             />
+<FieldError message={fieldErrors.email} />
             <p className="text-xs text-on-surface-variant mt-1">The secure scanner link will be sent here.</p>
           </div>
 
@@ -191,16 +205,20 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
                 </label>
               ))}
             </div>
+<FieldError message={fieldErrors.zones} />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Expiration (Optional)</label>
             <input 
               type="datetime-local" 
-              value={expiresAt}
+              name="expiresAt"
+ aria-invalid={Boolean(fieldErrors.expiresAt)}
+ value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
               className="px-4 py-2 border rounded-xl"
             />
+<FieldError message={fieldErrors.expiresAt} />
           </div>
 
           <button 

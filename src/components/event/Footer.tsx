@@ -23,7 +23,7 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
   const copyrightText = content.copyrightText || `${logoText}. All rights reserved.`;
 
   return (
-    <footer className="bg-brand-dark py-14 md:py-20 text-brand-white border-t border-brand-white/10 select-none">
+    <footer className="bg-brand-dark py-8 md:py-10 text-brand-white border-t border-brand-white/10 select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* VARIANT: MINIMAL (Editorial / Single clean publication bar) */}

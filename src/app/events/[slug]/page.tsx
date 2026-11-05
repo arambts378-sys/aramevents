@@ -37,6 +37,15 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
 
   const publishedWebsite = websiteConfig.published;
 
+  // Only these columns may reach the page: this table also holds amounts and contact details.
+  const { data: sponsors } = await supabase
+    .from('event_sponsors')
+    .select('id,name,kind,tier,website_url')
+    .eq('event_id', appEvent.id)
+    .eq('show_on_website', true)
+    .eq('request_status', 'approved')
+    .order('created_at', { ascending: true });
+
   const mappedEventData = {
     id: appEvent.id,
     slug: appEvent.slug,
@@ -50,7 +59,7 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
     description: appEvent.description || "",
     speakers: [],
     agenda: [],
-    sponsors: [],
+    sponsors: sponsors || [],
     exhibitors: [],
     contact: {
       email: "contact@event.com",

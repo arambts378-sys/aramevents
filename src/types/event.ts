@@ -23,7 +23,9 @@ export interface AgendaDay {
 export interface Sponsor {
   id: string;
   name: string;
-  tier?: string;
+  kind?: 'sponsor' | 'partner';
+  website_url?: string | null;
+  tier?: string | null;
 }
 
 export interface Exhibitor {

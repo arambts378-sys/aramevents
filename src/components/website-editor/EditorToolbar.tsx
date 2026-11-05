@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { copyToClipboard, publicWebsiteUrl } from '@/components/website-editor/WebsiteLinkField';
 
 interface EditorToolbarProps {
   event: any;
@@ -9,14 +10,13 @@ interface EditorToolbarProps {
   publishing: boolean;
   setViewport: (viewport: string) => void;
   viewport: string;
-  setZoom: (zoom: number | 'fit') => void;
-  zoom: number | 'fit';
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  handleSave: () => void;
   saving: boolean;
+  saveFailed: boolean;
+  onRetrySave: () => void;
   isExpandedPreview: boolean;
   onToggleExpandPreview: () => void;
   activeMobileTab?: string;
@@ -29,14 +29,13 @@ export default function EditorToolbar({
   publishing,
   setViewport,
   viewport,
-  setZoom,
-  zoom,
   undo,
   redo,
   canUndo,
   canRedo,
-  handleSave,
   saving,
+  saveFailed,
+  onRetrySave,
   isExpandedPreview,
   onToggleExpandPreview,
   activeMobileTab,
@@ -44,14 +43,12 @@ export default function EditorToolbar({
 }: EditorToolbarProps) {
   const websiteStatus = (event.website?.status || 'draft').toLowerCase();
   const isPublished = websiteStatus === 'published';
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  const handleZoomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (val === 'fit') {
-      setZoom('fit');
-    } else {
-      setZoom(parseFloat(val));
-    }
+  const handleCopyLink = async () => {
+    await copyToClipboard(publicWebsiteUrl(event.slug));
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   return (
@@ -93,7 +90,7 @@ export default function EditorToolbar({
       </div>
 
       {/* ================================================================= */}
-      {/* CENTER: Device Viewport, Undo/Redo, Zoom, Fullscreen Focus Toggle */}
+      {/* CENTER: Device Viewport, Undo/Redo, Fullscreen Focus Toggle */}
       {/* ================================================================= */}
       <div className="order-3 flex w-full max-w-full items-center gap-2 overflow-x-auto py-1 lg:order-none lg:w-auto lg:gap-3">
         {/* Device Viewport Selector */}
@@ -169,31 +166,6 @@ export default function EditorToolbar({
 
         <div className="h-4 w-px bg-ds-line"></div>
 
-        {/* Zoom Selector (with FIT + 50% to 125%) */}
-        <div className="relative">
-          <select
-            value={zoom}
-            onChange={handleZoomChange}
-            className="min-h-11 appearance-none flex items-center gap-1 pl-3 pr-7 py-1.5 rounded-lg border border-ds-line text-[13px] font-semibold text-ds-ink bg-white hover:bg-ds-subtle transition-colors cursor-pointer outline-none font-jakarta"
-            aria-label="Preview zoom level"
-          >
-            <option value="fit">Fit to Screen</option>
-            <option value="0.5">50%</option>
-            <option value="0.6">60%</option>
-            <option value="0.75">75%</option>
-            <option value="0.8">80%</option>
-            <option value="0.9">90%</option>
-            <option value="1">100%</option>
-            <option value="1.1">110%</option>
-            <option value="1.25">125%</option>
-          </select>
-          <span className="material-symbols-outlined text-[16px] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-ds-muted">
-            arrow_drop_down
-          </span>
-        </div>
-
-        <div className="h-4 w-px bg-ds-line"></div>
-
         {/* Full-Screen Preview Focus Toggle (Expand Preview / Exit Preview) */}
         <button
           type="button"
@@ -208,33 +180,42 @@ export default function EditorToolbar({
           <span className="material-symbols-outlined text-[17px]">
             {isExpandedPreview ? 'fullscreen_exit' : 'fullscreen'}
           </span>
-          <span>{isExpandedPreview ? 'Exit Preview' : 'Expand Preview'}</span>
+          <span>{isExpandedPreview ? 'Exit Preview' : 'Preview'}</span>
         </button>
       </div>
 
       {/* ================================================================= */}
-      {/* RIGHT: Live Save Status, Save Button, Publish Website Button */}
+      {/* RIGHT: Autosave Status, Copy Link, Publish Website Button */}
       {/* ================================================================= */}
       <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
-        {/* Live save indicator */}
-        <div className="hidden xl:flex items-center gap-2 text-[13px] text-ds-muted font-jakarta">
-          <span
-            className={`w-2 h-2 rounded-full ${
-              saving ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'
-            }`}
-          ></span>
-          <span>{saving ? 'Saving changes...' : 'All changes saved'}</span>
-        </div>
+        {/* Autosave status */}
+        {saveFailed ? (
+          <button
+            type="button"
+            onClick={onRetrySave}
+            className="min-h-11 inline-flex items-center gap-1.5 text-[13px] font-semibold text-red-600 hover:underline font-jakarta"
+          >
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span>Not saved. Retry</span>
+          </button>
+        ) : (
+          <div className="hidden xl:flex items-center gap-2 text-[13px] text-ds-muted font-jakarta">
+            <span className={`w-2 h-2 rounded-full ${saving ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+            <span>{saving ? 'Saving…' : 'Saved'}</span>
+          </div>
+        )}
 
-        {/* Save button */}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="min-h-11 px-3.5 sm:px-4 py-2 rounded-lg border border-ds-line bg-white text-ds-ink font-semibold text-[13px] hover:bg-ds-subtle hover:border-ds-accent/40 transition-all disabled:opacity-50 shadow-xs font-jakarta"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+        {/* Copy public link */}
+        {isPublished && (
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="min-h-11 px-3.5 py-2 rounded-lg border border-ds-line bg-white text-ds-ink font-semibold text-[13px] hover:bg-ds-subtle hover:border-ds-accent/40 transition-all shadow-xs font-jakarta inline-flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-[17px]">{linkCopied ? 'check' : 'link'}</span>
+            <span className="hidden sm:inline" aria-live="polite">{linkCopied ? 'Copied' : 'Copy link'}</span>
+          </button>
+        )}
 
         {/* Publish Website button */}
         <button
@@ -247,10 +228,10 @@ export default function EditorToolbar({
             {publishing ? 'sync' : 'language'}
           </span>
           <span className="hidden sm:inline">
-            {publishing ? 'Publishing...' : 'Publish Website'}
+            {publishing ? 'Publishing...' : isPublished ? 'Update Website' : 'Publish Website'}
           </span>
           <span className="sm:hidden">
-            {publishing ? '...' : 'Publish'}
+            {publishing ? '...' : isPublished ? 'Update' : 'Publish'}
           </span>
         </button>
       </div>

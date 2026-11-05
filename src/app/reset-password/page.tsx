@@ -20,6 +20,27 @@ const INPUT_BASE =
 const INPUT_OK = 'border-ds-line focus:border-ds-accent focus:ring-ds-accent';
 const INPUT_BAD = 'border-ds-danger focus:border-ds-danger focus:ring-ds-danger';
 
+type BrowserSupabase = ReturnType<typeof createClient>;
+let implicitLinkResult: Promise<void> | null = null;
+
+// Links sent from the server (e.g. a Super Admin reset) use the implicit flow and carry the
+// session in the hash. The PKCE browser client rejects those, so set the session here. Shared
+// across effect runs, since the first run strips the hash (Strict Mode runs effects twice).
+// A rejected link just leaves recovery unverified, which shows the invalid-link message.
+function consumeImplicitRecoveryLink(supabase: BrowserSupabase): Promise<void> {
+  implicitLinkResult ??= (async () => {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    if (!params.has('access_token') && !params.has('error_code')) return;
+    window.history.replaceState(window.history.state, '', window.location.pathname);
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (params.get('type') !== 'recovery' || !accessToken || !refreshToken) return;
+    const { error: linkError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    if (!linkError) passwordRecoveryState.markRecovered();
+  })();
+  return implicitLinkResult;
+}
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -33,7 +54,20 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [updated, setUpdated] = useState(false);
+  const [accountEmail, setAccountEmail] = useState('');
   const submitGuard = useRef(false);
+
+  // Show which account is being reset, as Google does, once the recovery session is in place.
+  useEffect(() => {
+    if (!hasRecoverySession) return;
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setAccountEmail(data.session?.user.email ?? '');
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [hasRecoverySession, supabase]);
 
   useEffect(() => {
     let mounted = true;
@@ -41,7 +75,8 @@ export default function ResetPasswordPage() {
       if (mounted) setHasRecoverySession(verified);
     });
 
-    supabase.auth.getSession().then(({ error: sessionError }) => {
+    consumeImplicitRecoveryLink(supabase).then(async () => {
+      const { error: sessionError } = await supabase.auth.getSession();
       if (!mounted) return;
       if (sessionError) setError('We could not validate this reset link. Request a new one and try again.');
       setSessionChecked(true);
@@ -111,6 +146,17 @@ export default function ResetPasswordPage() {
 
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-ds-body">Choose a new password</h1>
+          {hasRecoverySession && accountEmail && (
+            <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full border border-ds-line py-1 pl-1 pr-3">
+              <span
+                aria-hidden="true"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ds-accent text-[11px] font-bold uppercase text-white"
+              >
+                {accountEmail.charAt(0)}
+              </span>
+              <span className="truncate text-xs font-semibold text-ds-body">{accountEmail}</span>
+            </div>
+          )}
           <p className="text-xs text-ds-muted mt-2">
             Use at least {PASSWORD_MIN_LENGTH} characters. Your password is case-sensitive.
           </p>
@@ -145,6 +191,17 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            {/* Lets password managers save the new password against this account's email. */}
+            <input
+              type="email"
+              name="username"
+              autoComplete="username"
+              value={accountEmail}
+              readOnly
+              tabIndex={-1}
+              aria-hidden="true"
+              className="sr-only"
+            />
             <div className="flex flex-col gap-1.5">
               <label htmlFor="new-password" className="text-xs font-semibold text-ds-body">
                 New password
