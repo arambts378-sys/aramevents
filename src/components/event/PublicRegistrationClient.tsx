@@ -255,7 +255,7 @@ export default function PublicRegistrationClient({ themeStyle, paymentsEnabled =
                 <>Your spot is saved. Download or print your ticket below.</>
               ) : (
                 <>
-                  We&rsquo;ve emailed your ticket to <strong className="font-semibold text-on-surface">{formData.email}</strong>.
+                  We&rsquo;ve emailed your ticket{successData.invoiceUrl ? ' and invoice' : ''} to <strong className="font-semibold text-on-surface">{formData.email}</strong>.
                 </>
               )}
             </p>

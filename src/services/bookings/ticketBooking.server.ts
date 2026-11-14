@@ -7,6 +7,7 @@ import { qrCredentialsService } from '@/services/qrCredentials';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { refundUnusedTicketPayment } from '@/lib/payments/razorpay';
 import { issueInvoice } from '@/lib/payments/invoices.server';
+import { sendTicketEmail } from '@/services/purchaseEmails.server';
 import { getActivityCorrelationId, recordPlatformActivity, resolveActivityWorkspace } from '@/services/platformActivity.server';
 
 export type RegistrationActionResult =
@@ -176,9 +177,20 @@ export async function completeTicketRegistration(
       .eq('is_active', true)
       .maybeSingle();
 
-    // An order finished twice sends the ticket email once: the first finisher already sent it.
-    if (integrations && alreadyBooked) {
+    if (alreadyBooked) {
+      // An order finished twice (browser and webhook) emails once: the first finisher already sent it.
       emailQueued = true;
+    } else if (personData.payment_order_id || !integrations) {
+      // Paid tickets always get Aram's ticket + invoice email; free tickets get it when the event has
+      // no email integration of its own. Sent to the email typed on the form.
+      emailQueued = true;
+      const sent = await sendTicketEmail({
+        eventId,
+        registrationId: result.registration_id,
+        qrToken,
+        invoiceUrl,
+      });
+      if (!sent) throw new Error('Ticket email could not be sent');
     } else if (integrations) {
       emailQueued = true;
       const payload = {

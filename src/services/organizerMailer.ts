@@ -67,12 +67,24 @@ export async function describePlatformSmtp(): Promise<string> {
   return smtp ? `route=smtp host=${JSON.stringify(smtp.host)} port=${smtp.port} secure=${smtp.secure}` : 'not configured';
 }
 
+export interface MailFile {
+  name: string;
+  mimeType: string;
+  /** File content, base64 encoded */
+  contentBase64: string;
+}
+
 export interface OutgoingMail {
   to: string;
   subject: string;
   text: string;
   html?: string;
   replyTo?: string;
+  /** Sender name shown in the inbox, e.g. the event name (the address stays the verified sender) */
+  fromName?: string;
+  attachments?: MailFile[];
+  /** Images shown inside the HTML with <img src="cid:..."> */
+  inlineImages?: (MailFile & { cid: string })[];
 }
 
 interface HttpMailConfig {
@@ -102,12 +114,16 @@ async function sendViaBrevo(cfg: HttpMailConfig, mail: OutgoingMail) {
     method: 'POST',
     headers: { 'api-key': cfg.apiKey, 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({
-      sender: { name: cfg.fromName, email: cfg.fromEmail },
+      sender: { name: mail.fromName || cfg.fromName, email: cfg.fromEmail },
       to: [{ email: mail.to }],
       ...(mail.replyTo ? { replyTo: { email: mail.replyTo } } : {}),
       subject: mail.subject,
       textContent: mail.text,
       ...(mail.html ? { htmlContent: mail.html } : {}),
+      // Brevo has no inline images: they go as attachments (the HTML also says what is attached).
+      ...([...(mail.attachments ?? []), ...(mail.inlineImages ?? [])].length
+        ? { attachment: [...(mail.attachments ?? []), ...(mail.inlineImages ?? [])].map((f) => ({ name: f.name, content: f.contentBase64 })) }
+        : {}),
     }),
   });
   if (!res.ok) {
@@ -155,12 +171,18 @@ async function sendViaZoho(cfg: ZohoMailConfig, mail: OutgoingMail) {
       accept: 'application/json',
     },
     body: JSON.stringify({
-      from: { address: cfg.fromEmail, name: cfg.fromName },
+      from: { address: cfg.fromEmail, name: mail.fromName || cfg.fromName },
       to: [{ email_address: { address: mail.to } }],
       ...(mail.replyTo ? { reply_to: [{ address: mail.replyTo }] } : {}),
       subject: mail.subject,
       textbody: mail.text,
       ...(mail.html ? { htmlbody: mail.html } : {}),
+      ...(mail.attachments?.length
+        ? { attachments: mail.attachments.map((f) => ({ name: f.name, mime_type: f.mimeType, content: f.contentBase64 })) }
+        : {}),
+      ...(mail.inlineImages?.length
+        ? { inline_images: mail.inlineImages.map((f) => ({ cid: f.cid, mime_type: f.mimeType, content: f.contentBase64 })) }
+        : {}),
     }),
   });
   if (!res.ok) {
@@ -195,12 +217,16 @@ async function deliver(mail: OutgoingMail): Promise<{ success: boolean; messageI
     auth: { user: smtp.user, pass: smtp.pass },
   });
   const info = await transporter.sendMail({
-    from: `"${smtp.fromName}" <${smtp.fromEmail}>`,
+    from: `"${(mail.fromName || smtp.fromName).replace(/["\r\n]/g, '')}" <${smtp.fromEmail}>`,
     to: mail.to,
     replyTo: mail.replyTo,
     subject: mail.subject,
     text: mail.text,
     html: mail.html,
+    attachments: [
+      ...(mail.attachments ?? []).map((f) => ({ filename: f.name, contentType: f.mimeType, content: Buffer.from(f.contentBase64, 'base64') })),
+      ...(mail.inlineImages ?? []).map((f) => ({ filename: f.name, contentType: f.mimeType, cid: f.cid, content: Buffer.from(f.contentBase64, 'base64') })),
+    ],
   });
   return { success: true, messageId: info.messageId };
 }
@@ -531,6 +557,14 @@ If you keep getting these emails, contact ${SUPPORT_EMAIL}.
 /** True when Aram's own mail route (Zoho, Brevo or SMTP) is set up, so platform emails can be sent. */
 export async function isPlatformMailConfigured(): Promise<boolean> {
   return isMailConfigured();
+}
+
+/** Sends a transactional email (tickets, invoices) through Aram's own mail route. Throws if none is set up. */
+export async function sendTransactionalEmail(mail: OutgoingMail) {
+  if (!(await isMailConfigured())) {
+    throw new Error('Platform email delivery is not configured.');
+  }
+  return deliver(mail);
 }
 
 /** Sends a plain platform email (team invitations, contact form). Throws if SMTP is not configured. */
