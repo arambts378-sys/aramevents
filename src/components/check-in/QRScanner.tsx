@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 
 interface QRScannerProps {
@@ -24,6 +24,15 @@ export interface ScanLog {
 // Module-level lock for Strict Mode mount/unmount sequencing
 let globalScannerCleanupPromise: Promise<void> | null = null;
 
+/** How long a result stays on screen before the camera scans again. */
+const RESULT_VISIBLE_MS = 2500;
+/**
+ * After a result, the same QR is ignored this long. The camera reads ~10 frames a second, so a
+ * ticket still held in front of it would otherwise be sent again and again and show "already
+ * checked in" over the successful check-in.
+ */
+const SAME_TICKET_COOLDOWN_MS = 8000;
+
 export default function QRScanner({ eventId, accessZoneId, onScanResult, disabled, scannerToken }: QRScannerProps) {
   const containerId = "qr-reader";
   
@@ -39,7 +48,15 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
   const [currentResult, setCurrentResult] = useState<{ result: string, message: string, reason?: string | null } | null>(null);
 
-  const [isProcessing, setIsProcessing] = useState(false);
+  // The camera library keeps the scan callback it was started with, so everything that callback
+  // reads must be a ref: React state captured at start-up would never change inside it.
+  const processingRef = useRef(false);
+  const lastScanRef = useRef<{ text: string; at: number } | null>(null);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestRef = useRef({ eventId, accessZoneId, scannerToken, onScanResult, disabled });
+  useLayoutEffect(() => {
+    latestRef.current = { eventId, accessZoneId, scannerToken, onScanResult, disabled };
+  });
 
   const startScanner = async (cameraId?: string) => {
     const scanner = scannerRef.current;
@@ -196,9 +213,34 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
     }
   }, [disabled, activeCameraId, status]);
 
-  const onScanSuccess = async (decodedText: string) => {
-    if (isProcessing || disabled || isStoppingRef.current) return;
-    setIsProcessing(true);
+  /** Clears the result and lets the camera scan again. */
+  const readyForNextScan = () => {
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+    if (isStoppingRef.current) return;
+    // The cooldown for the same ticket counts from when scanning resumes.
+    if (lastScanRef.current) lastScanRef.current = { ...lastScanRef.current, at: Date.now() };
+    processingRef.current = false;
+    setCurrentResult(null);
+    setStatus('ready');
+    if (scannerRef.current && scannerRef.current.getState() === 3) {
+      try { scannerRef.current.resume(); } catch(e) {}
+    }
+  };
+
+  const onScanSuccess = async (rawText: string) => {
+    const { eventId, accessZoneId, scannerToken, onScanResult, disabled } = latestRef.current;
+    const decodedText = rawText.trim();
+    if (!decodedText || processingRef.current || disabled || isStoppingRef.current) return;
+
+    // The same ticket still in front of the camera: ignore it for a few seconds.
+    const last = lastScanRef.current;
+    if (last && last.text === decodedText && Date.now() - last.at < SAME_TICKET_COOLDOWN_MS) return;
+
+    processingRef.current = true;
+    lastScanRef.current = { text: decodedText, at: Date.now() };
     setStatus('validating');
 
     const scanner = scannerRef.current;
@@ -235,6 +277,8 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
       });
 
     } catch (err: any) {
+      // Not a verdict on the ticket: let the same QR be retried straight away.
+      lastScanRef.current = null;
       setStatus('network_error');
       setCurrentResult({
         result: 'denied',
@@ -242,16 +286,14 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
       });
     }
 
-    setTimeout(() => {
-      if (isStoppingRef.current) return;
-      setIsProcessing(false);
-      setCurrentResult(null);
-      setStatus('ready');
-      if (scannerRef.current && scannerRef.current.getState() === 3) {
-        try { scannerRef.current.resume(); } catch(e) {}
-      }
-    }, 2500);
+    resumeTimerRef.current = setTimeout(readyForNextScan, RESULT_VISIBLE_MS);
   };
+
+  useEffect(() => () => {
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+  }, []);
+
+  const alreadyCheckedIn = currentResult?.reason === 'already_checked_in';
 
   const switchCamera = () => {
     if (cameras.length > 1 && !isStartingRef.current && !isStoppingRef.current) {
@@ -304,18 +346,38 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
 
         {/* Overlay States */}
         {status === 'allowed' && currentResult && (
-          <div className="absolute inset-0 bg-green-700/90 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
+          <div role="status" className="absolute inset-0 bg-green-700/90 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
             <span className="material-symbols-outlined text-[64px] mb-2">check_circle</span>
             <h2 className="text-display-sm font-bold uppercase mb-2">CHECK-IN SUCCESSFUL</h2>
             <p className="text-body-lg opacity-90">{currentResult.message}</p>
+            <ScanNextButton onClick={readyForNextScan} />
           </div>
         )}
 
-        {status === 'denied' && currentResult && (
-          <div className="absolute inset-0 bg-error/90 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
+        {status === 'denied' && currentResult && alreadyCheckedIn && (
+          <div role="status" className="absolute inset-0 bg-amber-600/95 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
+            <span className="material-symbols-outlined text-[64px] mb-2">history</span>
+            <h2 className="text-title-lg font-bold uppercase mb-2">ALREADY CHECKED IN</h2>
+            <p className="text-body-lg opacity-90">This ticket was already scanned in at this zone. Re-entry is not allowed here.</p>
+            <ScanNextButton onClick={readyForNextScan} />
+          </div>
+        )}
+
+        {status === 'denied' && currentResult && !alreadyCheckedIn && (
+          <div role="alert" className="absolute inset-0 bg-error/90 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
             <span className="material-symbols-outlined text-[64px] mb-2">cancel</span>
             <h2 className="text-title-lg font-bold uppercase mb-2">CHECK-IN DENIED</h2>
             <p className="text-body-lg opacity-90">{currentResult.message}</p>
+            <ScanNextButton onClick={readyForNextScan} />
+          </div>
+        )}
+
+        {status === 'network_error' && currentResult && (
+          <div role="alert" className="absolute inset-0 bg-neutral-800/95 z-20 flex flex-col items-center justify-center text-white p-6 text-center animate-in fade-in duration-200">
+            <span className="material-symbols-outlined text-[64px] mb-2">wifi_off</span>
+            <h2 className="text-title-lg font-bold uppercase mb-2">NOT CHECKED</h2>
+            <p className="text-body-lg opacity-90">{currentResult.message} Scan the ticket again.</p>
+            <ScanNextButton onClick={readyForNextScan} />
           </div>
         )}
 
@@ -346,3 +408,16 @@ export default function QRScanner({ eventId, accessZoneId, onScanResult, disable
   );
 }
 
+
+function ScanNextButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/20 px-5 py-2.5 text-[15px] font-semibold text-white hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+    >
+      <span className="material-symbols-outlined text-[20px]" aria-hidden="true">qr_code_scanner</span>
+      Scan next
+    </button>
+  );
+}
