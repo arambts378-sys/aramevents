@@ -9,20 +9,20 @@ export default function Exhibitors({ event, section }: ExhibitorsProps) {
   const content = section?.content || {};
   return (
     <section id="exhibitors" className="bg-brand-white website-section border-t border-brand-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         <div className="mb-8">
           <div className="inline-flex items-center space-x-2 mb-4">
             <span className="text-sm font-mono text-brand-maroon uppercase tracking-widest font-semibold">
               {content.heading || "Exhibitors"}
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-medium text-brand-dark">
+          <h2 className="text-2xl @min-[48rem]:text-3xl font-medium text-brand-dark">
             {content.title || "Explore the people and organizations behind the ideas."}
           </h2>
         </div>
 
         {event.exhibitors && event.exhibitors.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[48rem]:grid-cols-4 gap-4">
             {event.exhibitors.map((exhibitor: any) => (
               <div key={exhibitor.id} className="p-6 border border-brand-border bg-brand-soft hover:bg-brand-border/30 transition-colors">
                 <span className="text-lg font-medium text-brand-dark">

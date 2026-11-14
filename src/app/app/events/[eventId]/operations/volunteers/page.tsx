@@ -19,6 +19,8 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
   
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  /** Local development without email: the link to copy by hand */
+  const [devLink, setDevLink] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ email: '', zones: '', expiresAt: '' });
   
@@ -80,7 +82,8 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
         throw new Error(data.error || 'Failed to create scanner session');
       }
       
-      setSuccessMsg('Scanner access created and email sent!');
+      setSuccessMsg(data.message || 'Scanner access sent.');
+      setDevLink(typeof data.scannerLink === 'string' ? data.scannerLink : null);
       setEmail('');
       setSelectedZones(new Set());
       setSelectedDistances(new Set());
@@ -145,8 +148,20 @@ export default function VolunteersPage({ params }: { params: Promise<{ eventId: 
       )}
 
       {successMsg && (
-        <div className="p-4 bg-green-100 text-green-800 rounded-xl">
-          {successMsg}
+        <div className="p-4 bg-green-100 text-green-800 rounded-xl space-y-2" role="status">
+          <p>{successMsg}</p>
+          {devLink && (
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded-lg bg-white/70 px-2 py-1 text-[12px]">{devLink}</code>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard?.writeText(devLink).catch(() => {})}
+                className="rounded-lg bg-green-700 px-3 py-1 text-[12px] font-medium text-white hover:bg-green-800"
+              >
+                Copy link
+              </button>
+            </div>
+          )}
         </div>
       )}
 

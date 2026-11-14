@@ -140,12 +140,41 @@ export interface SponsorRequestValues {
   contact_phone: string;
   website_url: string;
   message: string;
+  /** Rupees, for the custom choice (package_id 'custom') */
+  custom_amount?: string;
+  /** The sponsor's GSTIN, for a GST invoice they can claim credit on */
+  gstin?: string;
 }
 
-/** Runs in the browser for feedback and again on the server, which is what enforces it. */
-export function validateSponsorRequest(form: SponsorRequestValues): FieldErrors {
+/**
+ * Runs in the browser for feedback and again on the server, which is what enforces it.
+ * `custom` describes the custom choice: sponsors must pay at least `minPaise`; partners may leave
+ * the amount empty (a request without a fee).
+ */
+export function validateSponsorRequest(
+  form: SponsorRequestValues,
+  custom?: { required: boolean; minPaise: number },
+): FieldErrors {
+  let customAmount: string | null = null;
+  if (form.package_id === 'custom') {
+    const value = text(form.custom_amount);
+    if (!value) {
+      customAmount = custom?.required ? 'Enter the amount you would like to contribute.' : null;
+    } else if (!/^\d+(\.\d{1,2})?$/.test(value)) {
+      customAmount = 'Enter an amount in rupees, like 25000.';
+    } else if (Number(value) > MAX_RUPEES) {
+      customAmount = 'This amount is too large.';
+    } else if (custom && Math.round(Number(value) * 100) < custom.minPaise && (custom.required || Number(value) > 0)) {
+      customAmount = `The minimum amount is ₹${(custom.minPaise / 100).toLocaleString('en-IN')}.`;
+    }
+  }
   return collect({
     package_id: text(form.package_id) ? null : 'Choose a package.',
+    custom_amount: customAmount,
+    gstin:
+      text(form.gstin) && !/^[0-9]{2}[A-Z0-9]{13}$/.test(text(form.gstin).toUpperCase())
+        ? 'Enter a valid 15-character GSTIN, like 33ABCDE1234F1Z5.'
+        : null,
     organization: requiredText(form.organization, 'Organization name', 120),
     contact_name: requiredText(form.contact_name, 'Your name', 120),
     contact_email: validateEmail(form.contact_email),

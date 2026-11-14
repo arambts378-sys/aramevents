@@ -503,6 +503,58 @@ export async function setOrganizerBlocked(userId: string, block: boolean, reason
   }
 }
 
+/**
+ * Permanently deletes an organizer account. Workspaces they own are deleted
+ * too (which cascades to those workspaces' events, registrations, check-ins and
+ * team), because `workspaces.owner_id` would otherwise block the delete. Their
+ * memberships in other people's workspaces are removed by cascade.
+ */
+export async function deleteOrganizer(userId: string, reason: string): Mutation {
+  try {
+    const { db, actor } = await context('customers.manage');
+    if (userId === actor.id) return { ok: false, message: 'You can’t delete your own account.' };
+    if (reason.trim().length < 3) return { ok: false, message: 'Add a reason so other admins know why.' };
+    const dir = await loadDirectory();
+    if (dir.platformRoles.some((r) => r.user_id === userId)) {
+      return { ok: false, message: 'This person has platform admin access. Remove it in Settings first.' };
+    }
+    const account = (await listAccounts()).find((a) => a.id === userId);
+    if (!account) return { ok: false, message: 'This account no longer exists.' };
+
+    const owned = dir.workspaces.filter((w) => w.owner_id === userId);
+    const ownedIds = owned.map((w) => w.id);
+    const eventCount = dir.events.filter((e) => ownedIds.includes(e.workspace_id)).length;
+
+    // Clear references that don't cascade and would block deleting the user.
+    const clears = await Promise.all([
+      db.from('workspaces').update({ suspended_by: null }).eq('suspended_by', userId),
+      db.from('events').update({ moderated_by: null }).eq('moderated_by', userId),
+      db.from('platform_roles').update({ granted_by: null }).eq('granted_by', userId),
+      db.from('platform_settings').update({ updated_by: null }).eq('updated_by', userId),
+      db.from('event_attendee_imports').delete().eq('imported_by', userId),
+    ]);
+    const clearError = clears.find((r) => r.error)?.error;
+    if (clearError && !isMissingColumn(clearError)) return { ok: false, message: clearError.message };
+
+    if (ownedIds.length) {
+      const { error } = await db.from('workspaces').delete().in('id', ownedIds);
+      if (error) return { ok: false, message: `Their workspaces could not be deleted: ${error.message}` };
+    }
+
+    const { error } = await db.auth.admin.deleteUser(userId);
+    if (error) return { ok: false, message: error.message };
+
+    await audit(db, actor.id, 'organizer.deleted', 'user', userId, reason.trim(), {
+      email: account.email,
+      workspaces: owned.map((w) => ({ id: w.id, name: w.name })),
+      eventCount,
+    });
+    return { ok: true, message: `${account.email ?? 'Account'} deleted.` };
+  } catch (err) {
+    return fail(err, 'The account could not be deleted.');
+  }
+}
+
 export async function confirmOrganizerEmail(userId: string): Mutation {
   try {
     const { db, actor } = await context('customers.manage');
@@ -679,6 +731,21 @@ export async function setEventStatus(eventId: string, status: 'published' | 'dra
     return { ok: true, message: `Event ${EVENT_STATUS_VERB[status]}.` };
   } catch (err) {
     return fail(err, 'The event could not be updated.');
+  }
+}
+
+/** Permanently deletes an event; registrations, tickets and check-ins cascade. */
+export async function deleteEvent(eventId: string, reason: string): Mutation {
+  try {
+    const { db, actor } = await context('events.moderate');
+    if (reason.trim().length < 3) return { ok: false, message: 'Add a reason so other admins know why.' };
+    const { data, error } = await db.from('events').delete().eq('id', eventId).select('id, name, slug, workspace_id').maybeSingle();
+    if (error) return { ok: false, message: error.message };
+    if (!data) return { ok: false, message: 'This event no longer exists.' };
+    await audit(db, actor.id, 'event.deleted', 'event', eventId, reason.trim(), { name: data.name, slug: data.slug, workspaceId: data.workspace_id });
+    return { ok: true, message: `${data.name} deleted.` };
+  } catch (err) {
+    return fail(err, 'The event could not be deleted.');
   }
 }
 

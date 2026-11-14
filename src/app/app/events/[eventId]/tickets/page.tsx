@@ -28,6 +28,14 @@ export default function OrganizerTicketsPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tickets, setTickets] = useState<EventTicketType[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Whether paid tickets can be bought online: Razorpay keys set and the payments migration applied */
+  const [payments, setPayments] = useState<{ ready: boolean; keys: boolean; database: boolean; mode: 'test' | 'live' | null } | null>(null);
+  useEffect(() => {
+    fetch('/api/payments/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setPayments)
+      .catch(() => setPayments(null));
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isMigrationPending, setIsMigrationPending] = useState(false);
@@ -538,13 +546,25 @@ export default function OrganizerTicketsPage() {
             )}
 
             {/* 3. Paid tickets can't be sold until a payment provider is connected */}
-            {tickets.some((t) => t.ticket_type === 'paid') && (
-              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[13px] font-jakarta flex items-start gap-3">
-                <span className="material-symbols-outlined text-amber-600 text-[20px]">info</span>
-                <span>
-                  Online payments are not connected yet, so people can&apos;t buy paid tickets on your website. Free tickets work right away.
-                </span>
-              </div>
+            {tickets.some((t) => t.ticket_type === 'paid') && payments && (
+              payments.ready ? (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-[13px] font-jakarta flex items-start gap-3">
+                  <span className="material-symbols-outlined text-emerald-600 text-[20px]">verified</span>
+                  <span>
+                    Online payments are connected through Razorpay
+                    {payments.mode === 'test' ? ' in test mode: payments use test cards and no real money is charged.' : '. People can buy paid tickets on your website.'}
+                  </span>
+                </div>
+              ) : (
+                <div className="p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[13px] font-jakarta flex items-start gap-3">
+                  <span className="material-symbols-outlined text-amber-600 text-[20px]">info</span>
+                  <span>
+                    {payments.keys
+                      ? "Razorpay keys are set, but the payments database update has not been applied yet, so paid tickets can't be bought yet."
+                      : "Online payments are not connected yet, so people can't buy paid tickets on your website. Free tickets work right away."}
+                  </span>
+                </div>
+              )
             )}
 
             {/* 4. Ticket Types List / Table */}
@@ -973,9 +993,11 @@ export default function OrganizerTicketsPage() {
                       />
                     </div>
 <FieldError message={fieldErrors.price_in_rupees} />
-                    <p className="text-[12px] text-amber-800">
-                      Online payments are not connected yet, so this ticket can&apos;t be bought on your website until they are.
-                    </p>
+                    {payments && !payments.ready && (
+                      <p className="text-[12px] text-amber-800">
+                        Online payments are not connected yet, so this ticket can&apos;t be bought on your website until they are.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

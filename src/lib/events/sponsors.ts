@@ -18,6 +18,70 @@ export interface SponsorPackage {
 
 export type PublicSponsorPackage = Pick<SponsorPackage, 'id' | 'kind' | 'name' | 'amount' | 'description'>;
 
+/** The "package" a sponsor picks to pay an amount of their choice, or a partner to apply without one. */
+export const CUSTOM_PACKAGE_ID = 'custom';
+
+/** What the organizer allows on the public form, from event_registration_settings. */
+export interface SponsorOptions {
+  /** Sponsors may pay an amount of their choice */
+  acceptCustomSponsorship: boolean;
+  /** Smallest custom sponsorship, in paise */
+  customSponsorshipMin: number;
+  /** Partners may apply without a package */
+  acceptPartnerRequests: boolean;
+}
+
+export const DEFAULT_SPONSOR_OPTIONS: SponsorOptions = {
+  acceptCustomSponsorship: true,
+  customSponsorshipMin: 50000,
+  acceptPartnerRequests: true,
+};
+
+/** Reads the options from a settings row; columns missing before the migration fall back to off. */
+export function sponsorOptionsFrom(settings: Record<string, unknown> | null | undefined): SponsorOptions {
+  return {
+    acceptCustomSponsorship: settings?.accept_custom_sponsorship === true,
+    customSponsorshipMin: Number(settings?.custom_sponsorship_min) >= 100 ? Number(settings?.custom_sponsorship_min) : DEFAULT_SPONSOR_OPTIONS.customSponsorshipMin,
+    acceptPartnerRequests: settings?.accept_partner_requests === true,
+  };
+}
+
+/** Which kinds can be requested on the public form: a package exists, or the organizer allows custom. */
+export function sponsorKindsOffered(packages: Pick<PublicSponsorPackage, 'kind'>[], options: SponsorOptions) {
+  return {
+    sponsor: options.acceptCustomSponsorship || packages.some((p) => p.kind === 'sponsor'),
+    partner: options.acceptPartnerRequests || packages.some((p) => p.kind === 'partner'),
+  };
+}
+
+/** GST added on top of sponsor and partner amounts, in percent. */
+export const SPONSOR_GST_RATE = 18;
+
+/** A sponsor/partner amount before tax, the GST on it, and what is charged (all paise). */
+export function withSponsorGst(base: number) {
+  const gst = Math.round((base * SPONSOR_GST_RATE) / 100);
+  return { base, gst, total: base + gst };
+}
+
+/** GSTIN: 2-digit state code + 13 characters, upper case. */
+export const GSTIN_PATTERN = /^[0-9]{2}[A-Z0-9]{13}$/;
+
+/**
+ * How the GST is split on the invoice: CGST + SGST when organizer and sponsor are in the same
+ * state (or the sponsor gave no GSTIN), IGST when their GSTINs show different states.
+ */
+export function splitGst(gst: number, sellerGstin?: string | null, buyerGstin?: string | null) {
+  const interState = Boolean(sellerGstin && buyerGstin && sellerGstin.slice(0, 2) !== buyerGstin.slice(0, 2));
+  if (interState) return { cgst: 0, sgst: 0, igst: gst };
+  const cgst = Math.floor(gst / 2);
+  return { cgst, sgst: gst - cgst, igst: 0 };
+}
+
+/** Name shown for a custom choice on the form, the sponsor list and the invoice. */
+export function customPackageName(kind: SponsorKind) {
+  return kind === 'sponsor' ? 'Custom sponsorship' : 'Partnership';
+}
+
 export interface EventSponsor {
   id: string;
   event_id: string;

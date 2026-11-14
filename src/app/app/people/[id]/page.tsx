@@ -10,6 +10,7 @@ import {
   PersonDetailData,
 } from '@/services/peopleService';
 import { PersonDetailHeader } from '@/components/people/PersonDetailHeader';
+import { RemovePersonDialog } from '@/components/people/RemovePersonDialog';
 import { PersonOverviewCards } from '@/components/people/PersonOverviewCards';
 import { PersonEventHistory } from '@/components/people/PersonEventHistory';
 import { PersonModal } from '@/components/people/PersonModal';
@@ -17,6 +18,7 @@ import { PeopleSkeleton } from '@/components/people/PeopleSkeleton';
 import { PeopleErrorState } from '@/components/people/PeopleErrorState';
 
 export default function PersonDetailPage() {
+  const [removeOpen, setRemoveOpen] = useState(false);
   const router = useRouter();
   const routeParams = useParams();
   const personId = routeParams?.id as string;
@@ -118,6 +120,7 @@ export default function PersonDetailPage() {
                 organization={data.person.organization}
                 jobTitle={data.person.job_title}
                 onEdit={() => setIsEditModalOpen(true)}
+                onRemove={() => setRemoveOpen(true)}
                 onOpenMobileMenu={() => setMobileMenuOpen(true)}
               />
 
@@ -137,6 +140,16 @@ export default function PersonDetailPage() {
           )}
         </main>
       </div>
+
+      <RemovePersonDialog
+        person={
+          removeOpen && data?.person
+            ? { id: data.person.id, fullName: data.person.fullName, email: data.person.email, eventsCount: data.stats.registrationsCount }
+            : null
+        }
+        onClose={() => setRemoveOpen(false)}
+        onRemoved={() => router.push('/app/people')}
+      />
 
       {/* Edit Person Modal */}
       {activeWorkspace?.id && data?.person && (

@@ -10,6 +10,7 @@ import { MoreOptions } from '@/components/ui/MoreOptions';
 import { SponsorPackagesPanel } from '@/components/sponsors/SponsorPackagesPanel';
 import { formatPaiseToINR } from '@/services/ticketService';
 import { sponsorsService } from '@/services/sponsors';
+import { createClient } from '@/lib/supabase/client';
 import {
   EventSponsor,
   SPONSOR_PAYMENT_LABELS,
@@ -83,11 +84,23 @@ export default function SponsorsPage() {
   const [paymentErrors, setPaymentErrors] = useState<FieldErrors>({});
 
   const [deleting, setDeleting] = useState<EventSponsor | null>(null);
+  /** Invoice links for sponsors who paid online, by sponsor id */
+  const [invoices, setInvoices] = useState<Record<string, { url: string; number: string }>>({});
 
   const load = useCallback(async () => {
     try {
       setPageError(null);
       setSponsors(await sponsorsService.list(eventId));
+      const { data: invoiceRows } = await createClient()
+        .from('payment_invoices')
+        .select('sponsor_id, access_token, invoice_number')
+        .eq('event_id', eventId)
+        .not('sponsor_id', 'is', null);
+      setInvoices(
+        Object.fromEntries(
+          (invoiceRows ?? []).map((row) => [row.sponsor_id as string, { url: `/invoices/${row.access_token}`, number: row.invoice_number as string }]),
+        ),
+      );
     } catch (err) {
       console.error('Failed to load sponsors:', err);
       const tableMissing = (err as { code?: string })?.code === 'PGRST205';
@@ -339,6 +352,15 @@ export default function SponsorsPage() {
                           {[request.contact_name, request.contact_email, request.contact_phone].filter(Boolean).join(' · ')}
                         </p>
                         {request.notes && <p className="text-[12px] text-ds-ink mt-1">{request.notes}</p>}
+                        {invoices[request.id] && (
+                          <p className="text-[12px] text-emerald-700 mt-1">
+                            Paid online ·{' '}
+                            <a href={invoices[request.id].url} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                              Invoice {invoices[request.id].number}
+                            </a>
+                            <span className="text-ds-muted"> · Declining does not refund it: refund from your Razorpay dashboard.</span>
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button
@@ -450,6 +472,17 @@ export default function SponsorsPage() {
                               {SPONSOR_PAYMENT_LABELS[status]}
                             </span>
                             <div className="flex items-center gap-1">
+                              {invoices[sponsor.id] && (
+                                <a
+                                  href={invoices[sponsor.id].url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label={`Invoice ${invoices[sponsor.id].number} for ${sponsor.name}`}
+                                  className="px-2.5 py-1.5 rounded-lg border border-ds-line text-[12px] font-semibold text-ds-ink hover:border-ds-accent hover:text-ds-accent transition-colors font-jakarta"
+                                >
+                                  Invoice
+                                </a>
+                              )}
                               {balance > 0 && (
                                 <button
                                   type="button"

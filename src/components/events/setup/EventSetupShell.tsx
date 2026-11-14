@@ -6,6 +6,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { SETUP_STEPS, setupStepHref, setupStepIndex, type SetupProgress } from '@/lib/events/setupSteps';
 import { useEventSetupProgress } from './useEventSetupProgress';
+import { Sidebar } from '@/components/dashboard/Sidebar';
 
 /**
  * Wraps the event pages. While an event is a draft, each setup step gets a floating
@@ -23,10 +24,100 @@ export function EventSetupShell({ children }: { children: React.ReactNode }) {
   // The website editor fills the screen, so only the essentials fit over its canvas.
   const compact = SETUP_STEPS[index]?.id === 'website';
 
-  return (
-    <div className={`contents ${showBar && !compact ? '[&_main]:pb-28' : ''}`}>
+  const framed = framedPage(pathname, eventId);
+  const content = framed ? (
+    <EventPageFrame eventId={eventId} eventName={event?.name} section={framed}>
       {children}
+    </EventPageFrame>
+  ) : (
+    children
+  );
+
+  return (
+    <div className={`contents ${showBar && !compact ? '[&_main]:pb-28 [&_.event-page-body]:pb-28' : ''}`}>
+      {content}
       {showBar && <EventSetupBar eventId={eventId} index={index} progress={progress} compact={compact} />}
+    </div>
+  );
+}
+
+/**
+ * Event pages that do not draw the app sidebar themselves. The others (the workspace, tickets,
+ * speakers, sponsors, QR & Access) include it already, and the website editor and the check-in
+ * scanner are full screen on purpose.
+ */
+const FRAMED_PAGES: { path: string; label: string; parent?: { path: string; label: string } }[] = [
+  { path: 'registration', label: 'Registration' },
+  { path: 'people', label: 'People' },
+  { path: 'integrations', label: 'Integrations' },
+  { path: 'analytics', label: 'Analytics' },
+  { path: 'operations/volunteers', label: 'Volunteers', parent: { path: 'operations/access-control', label: 'QR & Access' } },
+];
+
+function framedPage(pathname: string | null, eventId: string) {
+  if (!pathname || !eventId) return null;
+  const rest = pathname.replace(/\/+$/, '').split(`/app/events/${eventId}/`)[1];
+  return FRAMED_PAGES.find((p) => p.path === rest) ?? null;
+}
+
+/** The app sidebar plus a breadcrumb back to the event, for pages that would otherwise have neither. */
+function EventPageFrame({
+  eventId,
+  eventName,
+  section,
+  children,
+}: {
+  eventId: string;
+  eventName?: string;
+  section: (typeof FRAMED_PAGES)[number];
+  children: React.ReactNode;
+}) {
+  const { currentUser } = useAppContext();
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const workspace = `/app/events/${eventId}`;
+
+  return (
+    <div className="min-h-screen w-full bg-ds-canvas text-ds-ink antialiased">
+      <div className="flex min-h-screen w-full flex-row">
+        <Sidebar currentUser={currentUser} mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+        <div className="event-page-body flex min-w-0 flex-1 flex-col">
+          <div className="sticky top-0 z-20 flex h-12 shrink-0 items-center gap-2 border-b border-ds-line bg-ds-canvas/90 px-3 backdrop-blur sm:px-6">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ds-muted hover:bg-ds-subtle hover:text-ds-ink md:hidden"
+            >
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">menu</span>
+            </button>
+            <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
+              <ol className="flex min-w-0 items-center gap-1.5 text-[13px] text-ds-muted">
+                <li className="hidden shrink-0 sm:block">
+                  <Link href="/app/events" className="hover:text-ds-ink">Events</Link>
+                </li>
+                <li className="hidden shrink-0 sm:block" aria-hidden="true">/</li>
+                <li className="min-w-0">
+                  <Link href={workspace} className="flex min-w-0 items-center gap-1 hover:text-ds-ink">
+                    <span className="material-symbols-outlined text-[16px] sm:hidden" aria-hidden="true">arrow_back</span>
+                    <span className="truncate">{eventName || 'Event'}</span>
+                  </Link>
+                </li>
+                {section.parent && (
+                  <>
+                    <li className="shrink-0" aria-hidden="true">/</li>
+                    <li className="shrink-0">
+                      <Link href={`${workspace}/${section.parent.path}`} className="hover:text-ds-ink">{section.parent.label}</Link>
+                    </li>
+                  </>
+                )}
+                <li className="shrink-0" aria-hidden="true">/</li>
+                <li className="shrink-0 font-medium text-ds-ink" aria-current="page">{section.label}</li>
+              </ol>
+            </nav>
+          </div>
+          <div className="min-w-0 flex-1">{children}</div>
+        </div>
+      </div>
     </div>
   );
 }

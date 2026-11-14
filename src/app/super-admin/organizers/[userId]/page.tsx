@@ -8,6 +8,8 @@ import { STATUS_PILL, fmtAgo, fmtDate, roleLabel } from '@/components/super-admi
 import { getOrganizer } from '@/services/superAdminLive.server';
 import {
   confirmOrganizerEmailAction,
+  deleteEventAction,
+  deleteOrganizerAction,
   removeMemberAction,
   revokeInvitationAction,
   sendOrganizerPasswordResetAction,
@@ -111,6 +113,34 @@ export default async function OrganizerDetailPage({ params }: { params: Promise<
               action={setOrganizerBlockedAction.bind(null, account.id, true)}
             />
           )}
+          <ActionDialog
+            label="Delete account"
+            icon="delete_forever"
+            variant="danger"
+            tone="danger"
+            title={`Permanently delete ${display}?`}
+            description={(() => {
+              const owned = workspaces.filter((w) => w.isOwner);
+              const ownedEvents = owned.reduce((s, w) => s + w.events.length, 0);
+              return (
+                <>
+                  This can’t be undone. The sign-in account is removed
+                  {owned.length > 0 ? (
+                    <>, along with the {owned.length === 1 ? 'workspace' : `${owned.length} workspaces`} they own (<strong className="text-ds-ink">{owned.map((w) => w.name).join(', ')}</strong>) and {ownedEvents === 1 ? 'its 1 event' : `${ownedEvents} events`}, including every registration, ticket and check-in.</>
+                  ) : (
+                    <>. They own no workspaces, so no events are deleted.</>
+                  )}{' '}
+                  They’re also removed from any team they belong to.
+                </>
+              );
+            })()}
+            confirmLabel="Delete permanently"
+            reason="required"
+            confirmPhrase={account.email ?? 'DELETE'}
+            disabled={account.isPlatformAdmin}
+            redirectTo="/super-admin/organizers"
+            action={deleteOrganizerAction.bind(null, account.id)}
+          />
         </div>
       </header>
 
@@ -289,6 +319,17 @@ export default async function OrganizerDetailPage({ params }: { params: Promise<
                                 action={setEventStatusAction.bind(null, e.id, 'published')}
                               />
                             )}
+                            <ActionDialog
+                              label="Delete"
+                              variant="ghost"
+                              tone="danger"
+                              title={`Permanently delete ${e.name}?`}
+                              description={<>This can’t be undone. The event and its {e.registrations.toLocaleString('en')} registrations, tickets and check-ins are deleted. To hide it but keep the data, unpublish or archive it instead.</>}
+                              confirmLabel="Delete permanently"
+                              reason="required"
+                              confirmPhrase="DELETE"
+                              action={deleteEventAction.bind(null, e.id)}
+                            />
                           </td>
                         </tr>
                       ))}

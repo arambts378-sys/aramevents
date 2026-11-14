@@ -47,9 +47,9 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
 
   return (
     <section id="agenda" className="bg-brand-white website-section border-t border-brand-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         {/* Header */}
-        <div className={`mb-8 md:mb-10 ${variant === "daily-rhythm" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
+        <div className={`mb-8 @min-[48rem]:mb-10 ${variant === "daily-rhythm" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
           <div className={`inline-flex items-center space-x-2 mb-4 ${variant === "daily-rhythm" ? "justify-center" : ""}`}>
             <span className="w-8 h-[1px] bg-brand-maroon"></span>
             <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">
@@ -57,7 +57,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
             </span>
             {variant === "daily-rhythm" && <span className="w-8 h-[1px] bg-brand-maroon"></span>}
           </div>
-          <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
+          <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
             {titleText}
           </h2>
         </div>
@@ -80,7 +80,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 gap-6">
                       {day.items.map((item, idx) => (
                         <div
                           key={item.id}
@@ -123,13 +123,13 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
             {variant === "race-day" && (
               <div className="space-y-10">
                 {event.agenda!.map((day) => (
-                  <div key={day.id} className="bg-brand-soft border-2 border-brand-dark rounded-2xl p-6 md:p-10 shadow-sm">
+                  <div key={day.id} className="bg-brand-soft border-2 border-brand-dark rounded-2xl p-6 @min-[48rem]:p-10 shadow-sm">
                     <div className="flex items-center justify-between pb-6 mb-8 border-b-2 border-brand-dark">
                       <div>
                         <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold block mb-1">
                           OFFICIAL TIMETABLE
                         </span>
-                        <h3 className="text-2xl md:text-3xl font-black uppercase text-brand-dark">
+                        <h3 className="text-2xl @min-[48rem]:text-3xl font-black uppercase text-brand-dark">
                           Race Day {day.dayNumber}
                         </h3>
                       </div>
@@ -142,13 +142,13 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
 
                     <div className="divide-y divide-brand-border">
                       {day.items.map((item, idx) => (
-                        <div key={item.id} className="py-4 md:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 group">
+                        <div key={item.id} className="py-4 @min-[48rem]:py-6 flex flex-col @min-[48rem]:flex-row @min-[48rem]:items-center justify-between gap-4 group">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-brand-dark text-white font-mono font-bold flex items-center justify-center shrink-0 group-hover:bg-brand-maroon transition-colors text-sm">
                               {idx + 1}
                             </div>
                             <div>
-                              <h4 className="text-lg md:text-xl font-bold uppercase text-brand-dark group-hover:text-brand-maroon transition-colors">
+                              <h4 className="text-lg @min-[48rem]:text-xl font-bold uppercase text-brand-dark group-hover:text-brand-maroon transition-colors">
                                 {item.title}
                               </h4>
                               {item.description && (
@@ -158,7 +158,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                               )}
                             </div>
                           </div>
-                          <div className="pl-14 md:pl-0 flex items-center gap-3">
+                          <div className="pl-14 @min-[48rem]:pl-0 flex items-center gap-3">
                             <span className="px-3 py-1 bg-brand-white border border-brand-border rounded font-mono text-base font-bold text-brand-dark tracking-wide">
                               {item.time}
                             </span>
@@ -189,9 +189,9 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                       {day.items.map((item) => (
                         <div
                           key={item.id}
-                          className="bg-brand-soft/60 border border-brand-border/60 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-brand-soft transition-colors"
+                          className="bg-brand-soft/60 border border-brand-border/60 rounded-2xl p-6 @min-[48rem]:p-8 flex flex-col @min-[48rem]:flex-row @min-[48rem]:items-center justify-between gap-6 hover:bg-brand-soft transition-colors"
                         >
-                          <div className="md:w-32 shrink-0">
+                          <div className="@min-[48rem]:w-32 shrink-0">
                             <span className="text-xs font-mono text-brand-maroon font-bold tracking-widest uppercase block mb-1">
                               Session
                             </span>
@@ -199,7 +199,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                               {item.time}
                             </span>
                           </div>
-                          <div className="flex-1 md:border-l md:border-brand-border/60 md:pl-8">
+                          <div className="flex-1 @min-[48rem]:border-l @min-[48rem]:border-brand-border/60 @min-[48rem]:pl-8">
                             <h4 className="text-xl font-medium text-brand-dark mb-2">
                               {item.title}
                             </h4>
@@ -231,7 +231,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 @min-[64rem]:grid-cols-3 gap-6">
                       {day.items.map((item) => (
                         <div
                           key={item.id}
@@ -268,7 +268,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
               <div className="space-y-8">
                 {event.agenda!.map((day) => (
                   <div key={day.id} className="border-2 border-brand-dark rounded-xl overflow-hidden shadow-sm">
-                    <div className="bg-brand-dark text-white p-4 md:px-6 flex items-center justify-between">
+                    <div className="bg-brand-dark text-white p-4 @min-[48rem]:px-6 flex items-center justify-between">
                       <h3 className="font-black uppercase tracking-wider text-lg">
                         Day {day.dayNumber} · Festival Stages
                       </h3>
@@ -278,8 +278,8 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                     </div>
                     <div className="divide-y divide-brand-border bg-brand-white">
                       {day.items.map((item, idx) => (
-                        <div key={item.id} className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-brand-soft/40 transition-colors">
-                          <div className="flex items-start md:items-center gap-4">
+                        <div key={item.id} className="p-4 @min-[48rem]:p-6 flex flex-col @min-[48rem]:flex-row @min-[48rem]:items-center justify-between gap-4 hover:bg-brand-soft/40 transition-colors">
+                          <div className="flex items-start @min-[48rem]:items-center gap-4">
                             <span className="text-xs font-mono font-bold bg-brand-maroon text-white px-2.5 py-1 rounded">
                               SET {idx + 1}
                             </span>
@@ -324,7 +324,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 gap-6">
                       {day.items.map((item, idx) => {
                         const trackName = idx % 2 === 0 ? "Track A: Keynote & Strategy" : "Track B: Tech & Practice";
                         return (
@@ -359,7 +359,7 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
 
             {/* VARIANT: TIMELINE / CHRONOLOGICAL (Editorial long-form vertical timeline) */}
             {(variant === "timeline" || variant === "chronological") && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
+              <div className="grid grid-cols-1 @min-[64rem]:grid-cols-2 gap-16 @min-[64rem]:gap-24">
                 {event.agenda!.map((day) => (
                   <div key={day.id}>
                     <div className="mb-10 pb-6 border-b-2 border-brand-dark">
@@ -373,18 +373,18 @@ export default function Agenda({ event, section, variant = "timeline" }: AgendaP
 
                     <div className="space-y-8">
                       {day.items.map((item) => (
-                        <div key={item.id} className="relative pl-8 md:pl-0">
-                          <div className="absolute left-[7px] top-2 bottom-[-24px] w-[1px] bg-brand-border md:hidden last:hidden"></div>
-                          <div className="absolute left-1 top-2 w-3 h-3 rounded-full bg-brand-maroon md:hidden"></div>
+                        <div key={item.id} className="relative pl-8 @min-[48rem]:pl-0">
+                          <div className="absolute left-[7px] top-2 bottom-[-24px] w-[1px] bg-brand-border @min-[48rem]:hidden last:hidden"></div>
+                          <div className="absolute left-1 top-2 w-3 h-3 rounded-full bg-brand-maroon @min-[48rem]:hidden"></div>
 
-                          <div className="flex flex-col md:flex-row md:items-baseline group">
-                            <div className="md:w-32 flex-shrink-0 mb-2 md:mb-0">
-                              <span className="text-lg font-mono text-brand-maroon font-semibold md:group-hover:text-brand-deep-maroon transition-colors">
+                          <div className="flex flex-col @min-[48rem]:flex-row @min-[48rem]:items-baseline group">
+                            <div className="@min-[48rem]:w-32 flex-shrink-0 mb-2 @min-[48rem]:mb-0">
+                              <span className="text-lg font-mono text-brand-maroon font-semibold @min-[48rem]:group-hover:text-brand-deep-maroon transition-colors">
                                 {item.time}
                               </span>
                             </div>
-                            <div className="md:flex-grow md:pl-8 md:border-l border-brand-border md:group-hover:border-brand-maroon transition-colors">
-                              <h4 className="text-xl md:text-2xl font-medium text-brand-dark leading-tight">
+                            <div className="@min-[48rem]:flex-grow @min-[48rem]:pl-8 @min-[48rem]:border-l border-brand-border @min-[48rem]:group-hover:border-brand-maroon transition-colors">
+                              <h4 className="text-xl @min-[48rem]:text-2xl font-medium text-brand-dark leading-tight">
                                 {item.title}
                               </h4>
                               {item.description && (

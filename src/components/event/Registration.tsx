@@ -7,6 +7,7 @@ import { registrationsService } from '@/services/registrations';
 import { ticketService, formatPaiseToINR } from '@/services/ticketService';
 import { EventRegistrationSettings, PublicTicketAvailability } from '@/types';
 import { RegistrationVariant } from '@/data/templates';
+import { SponsorButtons } from './Sponsors';
 
 interface RegistrationProps {
   event?: any;
@@ -75,15 +76,15 @@ export default function Registration({ event, section, variant = "split" }: Regi
 
   return (
     <section id="registration" className="bg-brand-soft website-section border-t border-brand-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         
         {/* VARIANT: INVITATION (Summit / Executive) */}
         {variant === "invitation" && (
-          <div className="max-w-3xl mx-auto bg-brand-white border-2 border-brand-dark p-8 md:p-14 rounded-2xl shadow-md text-center space-y-6">
+          <div className="max-w-3xl mx-auto bg-brand-white border-2 border-brand-dark p-8 @min-[48rem]:p-14 rounded-2xl shadow-md text-center space-y-6">
             <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold bg-brand-soft px-3 py-1 rounded">
               {headingText}
             </span>
-            <h2 className="text-3xl md:text-5xl font-serif text-brand-dark leading-tight">
+            <h2 className="text-3xl @min-[48rem]:text-5xl font-serif text-brand-dark leading-tight">
               {titleText}
             </h2>
             <p className="text-lg text-brand-muted max-w-xl mx-auto leading-relaxed">
@@ -119,7 +120,7 @@ export default function Registration({ event, section, variant = "split" }: Regi
               <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-bold block mb-3">
                 {headingText}
               </span>
-              <h2 className="text-3xl md:text-5xl font-bold text-brand-dark leading-tight mb-4">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-bold text-brand-dark leading-tight mb-4">
                 {titleText}
               </h2>
               <p className="text-base text-brand-muted">
@@ -128,11 +129,11 @@ export default function Registration({ event, section, variant = "split" }: Regi
             </div>
 
             {tickets.length > 0 ? (
-              <div className={`grid grid-cols-1 md:grid-cols-${Math.min(tickets.length, 3)} gap-6 items-stretch max-w-5xl mx-auto`}>
+              <div className={`grid grid-cols-1 @min-[48rem]:grid-cols-${Math.min(tickets.length, 3)} gap-6 items-stretch max-w-5xl mx-auto`}>
                 {tickets.map((t, idx) => (
                   <div
                     key={t.id}
-                    className={`bg-brand-white border rounded-2xl p-6 md:p-8 flex flex-col justify-between shadow-xs transition-all ${
+                    className={`bg-brand-white border rounded-2xl p-6 @min-[48rem]:p-8 flex flex-col justify-between shadow-xs transition-all ${
                       idx === 0 ? "border-brand-maroon ring-1 ring-brand-maroon" : "border-brand-border"
                     }`}
                   >
@@ -149,7 +150,7 @@ export default function Registration({ event, section, variant = "split" }: Regi
                       {t.description && (
                         <p className="text-xs text-brand-muted mb-6 leading-relaxed">{t.description}</p>
                       )}
-                      <div className="text-3xl md:text-4xl font-black font-mono text-brand-dark mb-6">
+                      <div className="text-3xl @min-[48rem]:text-4xl font-black font-mono text-brand-dark mb-6">
                         {formatPaiseToINR(t.price_amount)}
                       </div>
                     </div>
@@ -182,13 +183,13 @@ export default function Registration({ event, section, variant = "split" }: Regi
               <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold block mb-2">
                 // {headingText}
               </span>
-              <h2 className="text-3xl md:text-5xl font-black uppercase text-brand-dark leading-none tracking-tight">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-black uppercase text-brand-dark leading-none tracking-tight">
                 {titleText}
               </h2>
             </div>
 
             {tickets.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 @min-[48rem]:grid-cols-3 gap-6">
                 {tickets.map((t) => (
                   <div key={t.id} className="border-2 border-brand-dark bg-brand-white p-6 rounded-xl shadow-sm flex flex-col justify-between">
                     <div>
@@ -218,12 +219,12 @@ export default function Registration({ event, section, variant = "split" }: Regi
 
         {/* VARIANT: BANNER (Sports / High-tempo full-width callout) */}
         {variant === "banner" && (
-          <div className="bg-brand-dark text-white p-8 md:p-14 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-8 shadow-md">
-            <div className="max-w-xl text-center lg:text-left">
+          <div className="bg-brand-dark text-white p-8 @min-[48rem]:p-14 rounded-2xl flex flex-col @min-[64rem]:flex-row items-center justify-between gap-8 shadow-md">
+            <div className="max-w-xl text-center @min-[64rem]:text-left">
               <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon bg-white/10 px-2.5 py-1 rounded inline-block mb-3 font-bold">
                 {headingText}
               </span>
-              <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-2">
+              <h2 className="text-3xl @min-[48rem]:text-4xl font-black uppercase tracking-tight mb-2">
                 {titleText}
               </h2>
               <p className="text-sm text-white/80 leading-relaxed">
@@ -244,8 +245,8 @@ export default function Registration({ event, section, variant = "split" }: Regi
 
         {/* VARIANT: CENTERED & SPLIT (Default 2-column & Centered) */}
         {(variant === "split" || variant === "centered") && (
-          <div className={`flex flex-col ${variant === "centered" ? "items-center text-center max-w-3xl mx-auto" : "lg:flex-row lg:items-center lg:justify-between lg:space-x-12"}`}>
-            <div className={`max-w-2xl mb-12 ${variant === "centered" ? "mb-8" : "lg:mb-0"}`}>
+          <div className={`flex flex-col ${variant === "centered" ? "items-center text-center max-w-3xl mx-auto" : "@min-[64rem]:flex-row @min-[64rem]:items-center @min-[64rem]:justify-between @min-[64rem]:space-x-12"}`}>
+            <div className={`max-w-2xl mb-12 ${variant === "centered" ? "mb-8" : "@min-[64rem]:mb-0"}`}>
               <div className="inline-flex items-center space-x-2 mb-6">
                 <span className="w-8 h-[1px] bg-brand-maroon"></span>
                 <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">
@@ -253,7 +254,7 @@ export default function Registration({ event, section, variant = "split" }: Regi
                 </span>
                 {variant === "centered" && <span className="w-8 h-[1px] bg-brand-maroon"></span>}
               </div>
-              <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-6">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-6">
                 {titleText}
               </h2>
               <p className="text-lg text-brand-muted leading-relaxed whitespace-pre-line">
@@ -261,9 +262,9 @@ export default function Registration({ event, section, variant = "split" }: Regi
               </p>
             </div>
 
-            <div className={`w-full ${variant === "centered" ? "max-w-md" : "lg:w-[460px]"}`}>
+            <div className={`w-full ${variant === "centered" ? "max-w-md" : "@min-[64rem]:w-[460px]"}`}>
               {tickets && tickets.length > 0 ? (
-                <div className="bg-brand-white p-6 md:p-8 border border-brand-border shadow-sm space-y-4 rounded-xl text-left">
+                <div className="bg-brand-white p-6 @min-[48rem]:p-8 border border-brand-border shadow-sm space-y-4 rounded-xl text-left">
                   <div className="border-b border-brand-border pb-3">
                     <h3 className="text-xl font-medium text-brand-dark">Available Passes</h3>
                     <p className="text-xs text-brand-muted mt-0.5">Select a pass during registration</p>
@@ -315,6 +316,22 @@ export default function Registration({ event, section, variant = "split" }: Regi
           </div>
         )}
 
+        {/* Sponsors and partners join from the same place attendees do. */}
+        {(event?.sponsorOffers?.sponsor || event?.sponsorOffers?.partner) && (
+          <div className="mt-12 pt-8 border-t border-brand-border flex flex-col @min-[48rem]:flex-row @min-[48rem]:items-center @min-[48rem]:justify-between gap-5 text-center @min-[48rem]:text-left">
+            <div>
+              <h3 className="text-lg font-medium text-brand-dark">Want to support this event?</h3>
+              <p className="text-sm text-brand-muted mt-1">
+                {event.sponsorOffers.sponsor && event.sponsorOffers.partner
+                  ? 'Become a sponsor or partner. Pay online and get an invoice right away.'
+                  : event.sponsorOffers.sponsor
+                    ? 'Become a sponsor. Pay online and get an invoice right away.'
+                    : 'Become a partner and tell the organizer how you would like to work together.'}
+              </p>
+            </div>
+            <SponsorButtons event={event} centered={false} />
+          </div>
+        )}
       </div>
     </section>
   );

@@ -30,8 +30,11 @@ export default function WebsitePreview({
   const template = templates.find((t) => t.id === draft.templateId) || templates[0];
 
   // Target viewport CSS widths
-  const targetWidth =
-    viewport === 'mobile' ? 390 : viewport === 'tablet' ? 768 : 1280;
+  // The site inside the frame gets exactly the device width; the frame's border is added outside it,
+  // so a 768px tablet really reaches the site's 768px (48rem) layout. The sections use container
+  // queries, so they lay out for this width rather than for the editor's browser window.
+  const siteWidth = viewport === 'mobile' ? 390 : viewport === 'tablet' ? 768 : 1280;
+  const targetWidth = siteWidth + (viewport === 'mobile' ? 16 : 2);
 
   // Track canvas container width for responsive 'fit' calculation
   useEffect(() => {

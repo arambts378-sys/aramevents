@@ -151,6 +151,15 @@ test('conversation: greetings, help and small talk', () => {
   assert.match(localChatTurn(null, 'Hi', opts).reply, /Paste or upload your event flyer/);
   assert.match(localChatTurn(null, 'what can you do?', opts).reply, /Ctrl\+V/);
   assert.match(localChatTurn(null, 'asdf qwerty', opts).reply, /did not catch an event detail/);
+  // Typos in a greeting are still greetings, and a repeated greeting is not answered word for word.
+  for (const hi of ['hellow', 'helo', 'hii', 'hlo', 'heyy']) {
+    assert.match(localChatTurn(null, hi, opts).reply, /^Hello!/, hi);
+  }
+  assert.notEqual(localChatTurn(null, 'hi', { ...opts, turn: 0 }).reply, localChatTurn(null, 'hi', { ...opts, turn: 1 }).reply);
+  assert.notEqual(localChatTurn(null, 'asdf', { ...opts, turn: 0 }).reply, localChatTurn(null, 'asdf', { ...opts, turn: 1 }).reply);
+  assert.match(localChatTurn(null, 'how are you?', opts).reply, /doing well/);
+  // Words that only start like a greeting are not greetings.
+  assert.doesNotMatch(localChatTurn(null, 'hiking trip', opts).reply, /^Hello!/);
   assert.match(localChatTurn(null, 'create it', opts).reply, /nothing to create yet/);
 });
 

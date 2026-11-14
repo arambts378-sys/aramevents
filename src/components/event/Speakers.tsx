@@ -63,9 +63,9 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
   return (
     <section id="speakers" className="bg-brand-soft website-section border-t border-brand-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         {/* Section Header */}
-        <div className={`mb-8 md:mb-10 ${variant === "circular" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
+        <div className={`mb-8 @min-[48rem]:mb-10 ${variant === "circular" ? "text-center max-w-2xl mx-auto" : "max-w-2xl"}`}>
           <div className={`inline-flex items-center space-x-2 mb-4 ${variant === "circular" ? "justify-center" : ""}`}>
             <span className="w-8 h-[1px] bg-brand-maroon"></span>
             <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">
@@ -73,7 +73,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
             </span>
             {variant === "circular" && <span className="w-8 h-[1px] bg-brand-maroon"></span>}
           </div>
-          <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
+          <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
             {titleText}
           </h2>
         </div>
@@ -90,8 +90,8 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
             {variant === "spotlight" && (
               <div className="space-y-12">
                 {speakers[0] && (
-                  <div className="bg-brand-white border border-brand-border p-6 md:p-10 rounded-2xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center shadow-sm">
-                    <div className="lg:col-span-5 aspect-[4/5] rounded-xl overflow-hidden bg-brand-border/40 relative">
+                  <div className="bg-brand-white border border-brand-border p-6 @min-[48rem]:p-10 rounded-2xl grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-8 items-center shadow-sm">
+                    <div className="@min-[64rem]:col-span-5 aspect-[4/5] rounded-xl overflow-hidden bg-brand-border/40 relative">
                       {speakers[0].person?.avatar_url ? (
                         <img
                           src={speakers[0].person.avatar_url}
@@ -107,12 +107,12 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
                         Keynote Spotlight
                       </div>
                     </div>
-                    <div className="lg:col-span-7 flex flex-col justify-center space-y-4">
+                    <div className="@min-[64rem]:col-span-7 flex flex-col justify-center space-y-4">
                       <div className="space-y-1">
                         <span className="text-xs font-mono text-brand-muted uppercase tracking-widest">
                           01 / Featured Speaker
                         </span>
-                        <h3 className="text-3xl md:text-4xl font-semibold text-brand-dark">
+                        <h3 className="text-3xl @min-[48rem]:text-4xl font-semibold text-brand-dark">
                           {speakers[0].person?.first_name} {speakers[0].person?.last_name}
                         </h3>
                         {showRole && speakers[0].person?.job_title && (
@@ -127,7 +127,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
                         )}
                       </div>
                       {speakers[0].speaker_profile?.bio && (
-                        <p className="text-brand-muted leading-relaxed text-sm md:text-base border-t border-brand-border/60 pt-4">
+                        <p className="text-brand-muted leading-relaxed text-sm @min-[48rem]:text-base border-t border-brand-border/60 pt-4">
                           {speakers[0].speaker_profile.bio}
                         </p>
                       )}
@@ -136,7 +136,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
                 )}
 
                 {speakers.length > 1 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+                  <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[64rem]:grid-cols-3 gap-6 pt-6">
                     {speakers.slice(1).map((speaker, idx) => (
                       <div
                         key={speaker.id}
@@ -182,7 +182,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: EXECUTIVE (Leadership cards with corporate title / org prominence) */}
             {variant === "executive" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 @min-[64rem]:grid-cols-3 gap-6">
                 {speakers.map((speaker) => (
                   <div
                     key={speaker.id}
@@ -231,7 +231,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: LINEUP (Poster-style high-impact festival presentation) */}
             {variant === "lineup" && (
-              <div className="bg-brand-white/80 border-2 border-brand-dark p-8 md:p-14 rounded-2xl shadow-sm">
+              <div className="bg-brand-white/80 border-2 border-brand-dark p-8 @min-[48rem]:p-14 rounded-2xl shadow-sm">
                 <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center divide-brand-maroon">
                   {speakers.map((speaker, idx) => {
                     const isHeadliner = idx < 2;
@@ -252,8 +252,8 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
                           <span
                             className={`font-black uppercase tracking-tight block group-hover:text-brand-maroon transition-colors ${
                               isHeadliner
-                                ? "text-2xl md:text-4xl text-brand-dark"
-                                : "text-lg md:text-xl text-brand-dark/90"
+                                ? "text-2xl @min-[48rem]:text-4xl text-brand-dark"
+                                : "text-lg @min-[48rem]:text-xl text-brand-dark/90"
                             }`}
                           >
                             {speaker.person?.first_name} {speaker.person?.last_name}
@@ -283,10 +283,10 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: CIRCULAR (Wellness / Serene retreat avatars) */}
             {variant === "circular" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 md:gap-14 text-center">
+              <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[48rem]:grid-cols-3 @min-[64rem]:grid-cols-4 gap-10 @min-[48rem]:gap-14 text-center">
                 {speakers.map((speaker) => (
                   <div key={speaker.id} className="flex flex-col items-center group">
-                    <div className="relative w-36 h-36 md:w-44 md:h-44 rounded-full overflow-hidden mb-5 border-4 border-brand-white shadow-md bg-brand-border/40 group-hover:border-brand-maroon transition-all duration-500">
+                    <div className="relative w-36 h-36 @min-[48rem]:w-44 @min-[48rem]:h-44 rounded-full overflow-hidden mb-5 border-4 border-brand-white shadow-md bg-brand-border/40 group-hover:border-brand-maroon transition-all duration-500">
                       {speaker.person?.avatar_url ? (
                         <img
                           src={speaker.person.avatar_url}
@@ -319,7 +319,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: COMPACT (Workshop / Instructor row cards) */}
             {variant === "compact" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 gap-6">
                 {speakers.map((speaker) => (
                   <div
                     key={speaker.id}
@@ -363,14 +363,14 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: ASYMMETRIC (Creative / Experimental masonry vibe) */}
             {variant === "asymmetric" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[64rem]:grid-cols-3 gap-8">
                 {speakers.map((speaker, index) => {
                   const isTall = index % 3 === 0;
                   return (
                     <div
                       key={speaker.id}
                       className={`group border-b-2 border-brand-dark pb-6 ${
-                        isTall ? "lg:translate-y-4" : ""
+                        isTall ? "@min-[64rem]:translate-y-4" : ""
                       }`}
                     >
                       <div
@@ -414,7 +414,7 @@ export default function Speakers({ event, section, variant = "grid" }: SpeakersP
 
             {/* VARIANT: GRID (Balanced classic conference grid) */}
             {variant === "grid" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+              <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[64rem]:grid-cols-4 gap-8 @min-[64rem]:gap-10">
                 {speakers.map((speaker) => (
                   <div key={speaker.id} className="group cursor-default">
                     <div className="relative aspect-[3/4] mb-5 overflow-hidden bg-brand-border rounded-xl">

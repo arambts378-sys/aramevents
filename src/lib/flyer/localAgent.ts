@@ -26,7 +26,15 @@ import {
  * /api/agent, plus an optional action, so the page treats both the same way.
  */
 
-type Options = { today: string; timeZone: string };
+type Options = {
+  today: string;
+  timeZone: string;
+  /** How many messages the organizer sent before this one, so repeated replies can vary */
+  turn?: number;
+};
+
+/** Picks a wording by turn so the same situation does not get the identical reply twice in a row. */
+const vary = (options: string[], turn = 0) => options[turn % options.length];
 
 const LABELS: Partial<Record<keyof Details, string>> = {
   name: 'name',
@@ -330,7 +338,9 @@ function valueFor(target: Target, raw: string, d: Details, opts: Options): { set
 
 /* ───────────── what the organizer wants ───────────── */
 
-const GREETING = /^\s*(hi+|hello+|hey+|hai|hola|namaste|vanakkam|good\s+(morning|afternoon|evening)|yo)\b/i;
+// Forgiving about typos people make in a greeting: "hii", "helo", "hellow", "hlo", "heyy".
+const GREETING = /^\s*(h+i+|h+e+l+o+w*|helo|hlo|hey+|hai|hola|namaste|vanakkam|howdy|good\s+(morning|afternoon|evening)|yo|sup)\b/i;
+const SMALL_TALK = /\b(how\s+are\s+(you|u)|how'?s\s+it\s+going|what'?s\s+up|wassup|who\s+are\s+you|what\s+are\s+you|are\s+you\s+(a\s+)?(bot|ai|human|real))\b/i;
 const THANKS = /\b(thanks|thank\s*you|thx|ty|great\s+job|awesome|nice\s+work|cool)\b/i;
 const HELP = /\b(help|what can you do|how (does|do) (this|you|it) work|how do i|guide me|what should i (do|say)|instructions)\b/i;
 const CREATE = /\b(create|publish|submit|confirm|proceed|finali[sz]e|go ahead|book it|save (it|the event))\b/i;
@@ -523,6 +533,16 @@ export function localChatTurn(current: Partial<Details> | null, message: string,
     return { reply: `Creating **${d.name}** as a draft now.`, details: d, action: 'create' };
   }
 
+  if (SMALL_TALK.test(text) && !hasAnything(d)) {
+    const who = /\b(who|what)\s+are\s+you\b|\bare\s+you\s+(a\s+)?(bot|ai|human|real)\b/i.test(text);
+    return {
+      reply: who
+        ? "I'm Aram's event setup assistant. Give me a flyer or a few details about your event and I'll turn them into a draft you can review and create."
+        : "I'm doing well, thanks for asking! Shall we set up your event? Tell me what it is, when and where, or drop in the flyer.",
+      details: d,
+    };
+  }
+
   if (isQuestion) {
     if (STATUS.test(text) && !answer(text.replace(STATUS, ''), d)) {
       return { reply: hasAnything(d) ? `Here is the draft so far: ${summary(d)}. ${askFor(still)}` : 'Nothing yet. Paste or upload a flyer, or describe your event, and I will fill in the draft.', details: d };
@@ -545,12 +565,20 @@ export function localChatTurn(current: Partial<Details> | null, message: string,
     };
   }
 
-  if (GREETING.test(text)) {
-    const hello = 'Hello!';
+  if (GREETING.test(text) || SMALL_TALK.test(text)) {
+    const t = opts.turn ?? 0;
+    if (hasAnything(d)) {
+      return { reply: `${vary(['Hello!', 'Hi again!', 'Hey!'], t)} We are working on ${summary(d)}. ${askFor(still)}`, details: d };
+    }
     return {
-      reply: hasAnything(d)
-        ? `${hello} We are working on ${summary(d)}. ${askFor(still)}`
-        : `${hello} Paste or upload your event flyer, or describe the event (name, date, time and venue) and I will build the draft for you.`,
+      reply: vary(
+        [
+          'Hello! Paste or upload your event flyer, or describe the event (name, date, time and venue) and I will build the draft for you.',
+          'Hi again! Whenever you are ready, tell me about the event, for example "Founders meetup at T-Hub, Hyderabad on 14 Dec, 6 PM to 9 PM", or drop the flyer here.',
+          'Hey! What are we setting up today? A conference, workshop, walkathon or something else? Share the date, time and venue and I will take it from there.',
+        ],
+        t,
+      ),
       details: d,
     };
   }
@@ -570,10 +598,25 @@ export function localChatTurn(current: Partial<Details> | null, message: string,
     return { reply: `Here is the draft so far: ${summary(d)}. ${askFor(still)}`, details: d };
   }
 
+  const t = opts.turn ?? 0;
   return {
     reply: hasAnything(d)
-      ? `I did not catch an event detail in that. ${askFor(still)} You can also ask "what is missing?" or say "help".`
-      : 'I did not catch an event detail in that. Paste or upload your flyer, or describe the event, for example "Product launch at The Grand Convention Centre, Chennai on 25 Nov, 10 AM to 1 PM".',
+      ? vary(
+          [
+            `I did not catch an event detail in that. ${askFor(still)} You can also ask "what is missing?" or say "help".`,
+            `Sorry, I didn't follow that one. ${askFor(still)}`,
+            `I'm not sure how that fits the draft. ${askFor(still)} Or click any field in the draft to edit it yourself.`,
+          ],
+          t,
+        )
+      : vary(
+          [
+            'I did not catch an event detail in that. Paste or upload your flyer, or describe the event, for example "Product launch at The Grand Convention Centre, Chennai on 25 Nov, 10 AM to 1 PM".',
+            'Sorry, I didn\'t follow. Try something like "Charity walk in Bengaluru on 8 March, 6 AM to 9 AM", or paste your flyer with Ctrl+V.',
+            'I work best with event details: what the event is, when it starts and ends, and where it happens. A flyer works too, just drop it in.',
+          ],
+          t,
+        ),
     details: d,
   };
 }

@@ -15,6 +15,7 @@ import Contact from "@/components/event/Contact";
 import FinalCTA from "@/components/event/FinalCTA";
 import Footer from "@/components/event/Footer";
 import { templates } from "@/data/templates";
+import { resolveWebsiteTheme } from "@/lib/events/websiteTheme";
 
 export type WebsiteRendererMode = 'editor' | 'preview' | 'public';
 
@@ -41,48 +42,19 @@ export default function EventWebsiteRenderer({
   const typography = theme.typography || template.typography;
   const layout = theme.layout || template.layout;
 
-  // Resolve CSS font-family variables
-  const resolveFont = (fontName?: string) => {
-    switch (fontName) {
-      case 'Space Grotesk':
-        return 'var(--font-space-grotesk), sans-serif';
-      case 'Plus Jakarta Sans':
-        return 'var(--font-plus-jakarta-sans), sans-serif';
-      case 'Inter':
-        return 'var(--font-inter), sans-serif';
-      default:
-        return 'var(--font-plus-jakarta-sans), sans-serif';
-    }
-  };
+  // Fonts and corner radii, shared with the public registration page so both look the same.
+  const { headingFont, bodyFont, buttonRadius, cardRadius } = resolveWebsiteTheme(websiteConfig);
 
-  const headingFont = resolveFont(typography.headingFont);
-  const bodyFont = resolveFont(typography.bodyFont);
-
-  // Button radius
-  const buttonRadius =
-    layout.buttonStyle === 'pill'
-      ? '9999px'
-      : layout.buttonStyle === 'sharp'
-      ? '0px'
-      : '8px';
-
-  // Card radius
-  const cardRadius =
-    layout.cardStyle === 'elevated'
-      ? '16px'
-      : layout.cardStyle === 'bordered'
-      ? '12px'
-      : '8px';
-
-  // Content max-width
+  // Content max-width. Each preset keeps its old pixel width as a floor and
+  // then grows with the screen, so large monitors don't get wide empty gutters.
   const contentWidth =
     layout.contentWidth === 'compact'
-      ? '1024px'
+      ? 'max(1024px, 72%)'
       : layout.contentWidth === 'wide'
-      ? '1440px'
+      ? 'max(1440px, 90%)'
       : layout.contentWidth === 'full'
       ? '100%'
-      : '1240px';
+      : 'max(1240px, 82%)';
 
   // Typography scale factors
   const headingScale =
@@ -194,7 +166,7 @@ export default function EventWebsiteRenderer({
   return (
     <div
       style={themeStyle}
-      className="website-renderer-root w-full flex flex-col relative transition-colors duration-200"
+      className="website-renderer-root @container w-full flex flex-col relative transition-colors duration-200"
     >
       <style>{`
         .website-renderer-root h1, 
@@ -208,13 +180,15 @@ export default function EventWebsiteRenderer({
           border-radius: var(--website-button-radius) !important;
         }
         .website-renderer-root .max-w-7xl,
+        .website-renderer-root .max-w-6xl,
+        .website-renderer-root .max-w-5xl,
         .website-renderer-root .max-w-4xl {
           max-width: var(--website-content-width) !important;
         }
         .website-renderer-root .website-section {
           padding-block: calc(2.5rem * var(--website-spacing));
         }
-        @media (min-width: 768px) {
+        @container (min-width: 768px) {
           .website-renderer-root .website-section {
             padding-block: calc(3.5rem * var(--website-spacing));
           }

@@ -45,6 +45,8 @@ export interface EventData {
   speakers: Speaker[];
   agenda: AgendaDay[];
   sponsors: Sponsor[];
+  /** Which "Become a sponsor/partner" buttons to show: the organizer has active packages of that kind */
+  sponsorOffers?: { sponsor: boolean; partner: boolean };
   exhibitors: Exhibitor[];
   contact: {
     email: string;

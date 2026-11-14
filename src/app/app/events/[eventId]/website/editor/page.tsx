@@ -10,6 +10,7 @@ import TemplateGallery from '@/components/website-editor/TemplateGallery';
 import SectionPropertiesPanel from '@/components/website-editor/SectionPropertiesPanel';
 import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
 import { createClient } from '@/lib/supabase/client';
+import { sponsorKindsOffered, sponsorOptionsFrom } from '@/lib/events/sponsors';
 import { templates, ThemeColors, ThemeTypography, ThemeLayout } from '@/data/templates';
 
 const defaultSections = [
@@ -78,6 +79,7 @@ export default function EventWebsiteEditorPage() {
   const [leftPanelView, setLeftPanelView] = useState<'sections' | 'properties'>('sections');
   const [saveFailed, setSaveFailed] = useState(false);
   const [sponsors, setSponsors] = useState<any[]>([]);
+  const [sponsorOffers, setSponsorOffers] = useState({ sponsor: false, partner: false });
   const [showLiveDialog, setShowLiveDialog] = useState(false);
   // The last draft written to the database, and the latest state for saving on the way out.
   const savedDraft = useRef<any>(null);
@@ -144,6 +146,17 @@ export default function EventWebsiteEditorPage() {
       .eq('request_status', 'approved')
       .order('created_at', { ascending: true })
       .then(({ data }) => setSponsors(data || []));
+    const db = createClient();
+    Promise.all([
+      db.from('event_sponsor_packages').select('kind').eq('event_id', eventId).eq('is_active', true),
+      db.from('event_registration_settings').select('*').eq('event_id', eventId).maybeSingle(),
+    ]).then(([{ data: packages }, { data: settings }]) =>
+      setSponsorOffers(
+        settings?.is_enabled
+          ? sponsorKindsOffered(packages || [], sponsorOptionsFrom(settings))
+          : { sponsor: false, partner: false },
+      ),
+    );
   }, [eventId]);
 
   // Save changes automatically, shortly after the organizer stops editing
@@ -655,7 +668,7 @@ export default function EventWebsiteEditorPage() {
           }`}
         >
           <WebsitePreview
-            event={{ ...event, sponsors }}
+            event={{ ...event, sponsors, sponsorOffers }}
             draft={draft}
             viewport={viewport}
             zoom="fit"

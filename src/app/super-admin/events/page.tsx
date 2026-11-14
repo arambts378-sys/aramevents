@@ -5,7 +5,7 @@ import { FilterTabs, Pager, SearchBox } from '@/components/super-admin/Pager';
 import { ActionDialog } from '@/components/super-admin/controls/ActionDialog';
 import { fmtDate } from '@/components/super-admin/fmt';
 import { listEvents } from '@/services/superAdminLive.server';
-import { setEventStatusAction } from '@/app/actions/superAdminActions';
+import { deleteEventAction, setEventStatusAction } from '@/app/actions/superAdminActions';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -26,7 +26,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
     <div className="space-y-5">
       <PageHeader
         title="Events"
-        description="Every event on Aram, across all workspaces. Take an event offline if it breaks the rules or was published by mistake."
+        description="Every event on Aram, across all workspaces. Take an event offline if it breaks the rules or was published by mistake, or delete it permanently."
       />
 
       {!result.ok ? (
@@ -141,6 +141,17 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
                                   action={setEventStatusAction.bind(null, e.id, 'archived')}
                                 />
                               )}
+                              <ActionDialog
+                                label="Delete"
+                                variant="ghost"
+                                tone="danger"
+                                title={`Permanently delete ${e.name}?`}
+                                description={<>This can’t be undone. The event and its {e.registrations.toLocaleString('en')} registrations, tickets and check-ins are deleted. To hide it but keep the data, unpublish or archive it instead.</>}
+                                confirmLabel="Delete permanently"
+                                reason="required"
+                                confirmPhrase="DELETE"
+                                action={deleteEventAction.bind(null, e.id)}
+                              />
                             </span>
                           </td>
                         </tr>

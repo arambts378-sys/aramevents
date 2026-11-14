@@ -120,6 +120,12 @@ async function withRefresh<T extends { ok: boolean }>(p: Promise<T>) {
 export async function setOrganizerBlockedAction(userId: string, block: boolean, reason: string) {
   return withRefresh(live.setOrganizerBlocked(userId, block, reason));
 }
+export async function deleteOrganizerAction(userId: string, reason: string) {
+  return withRefresh(live.deleteOrganizer(userId, reason));
+}
+export async function deleteEventAction(eventId: string, reason: string) {
+  return withRefresh(live.deleteEvent(eventId, reason));
+}
 export async function confirmOrganizerEmailAction(userId: string) {
   return withRefresh(live.confirmOrganizerEmail(userId));
 }
