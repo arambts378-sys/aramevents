@@ -21,6 +21,13 @@
 		// Image optimization for next/image. See https://opennext.js.org/cloudflare/howtos/image
 		"binding": "IMAGES"
 	},
+	"previews": {
+		// Bindings for pull-request previews (`wrangler preview`). The WORKER_SELF_REFERENCE service
+		// binding is left out: previews don't support it, and OpenNext only needs it for caching.
+		"images": {
+			"binding": "IMAGES"
+		}
+	},
 	"observability": {
 		"logs": {
 			"enabled": true,

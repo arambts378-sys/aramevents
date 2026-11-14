@@ -5,8 +5,8 @@
   "scripts": {
     "predev": "node scripts/copy-tesseract.cjs",
     "dev": "next dev",
-    "prebuild": "node scripts/copy-tesseract.cjs",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
+    "build:next": "node scripts/copy-tesseract.cjs && next build",
     "start": "next start",
     "lint": "eslint",
     "test:plans": "node scripts/run-plan-tests.cjs",
