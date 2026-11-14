@@ -6,9 +6,10 @@ import { checkSponsorRequest } from '@/lib/events/sponsorRequests.server';
 import { CUSTOM_PACKAGE_ID, type SponsorKind } from '@/lib/events/sponsors';
 import { razorpayStatus, refundUnusedSponsorPayment, type RefundOutcome } from '@/lib/payments/razorpay';
 import { issueInvoice } from '@/lib/payments/invoices.server';
+import { sendSponsorEmail } from '@/services/purchaseEmails.server';
 
 export type SponsorRequestResult =
-  | { ok: true; packageName: string; amount: number; paid: boolean; invoiceUrl?: string | null }
+  | { ok: true; packageName: string; amount: number; paid: boolean; invoiceUrl?: string | null; emailed?: boolean }
   | { ok: false; message?: string; fieldErrors?: FieldErrors; payment?: RefundOutcome };
 type RequestResult = SponsorRequestResult;
 
@@ -168,7 +169,15 @@ export async function completeSponsorRequest(
       });
     }
 
-    return { ok: true, packageName: choice.name, amount: choice.amount, paid: Boolean(paymentRowId), invoiceUrl };
+    // Confirmation to the email on the form; with the GST invoice when they paid. Never blocks the request.
+    const emailed = await sendSponsorEmail({
+      eventId,
+      sponsorId: sponsor.id,
+      paidTotal: paymentRowId ? choice.amount : null,
+      invoiceUrl,
+    });
+
+    return { ok: true, packageName: choice.name, amount: choice.amount, paid: Boolean(paymentRowId), invoiceUrl, emailed };
   } catch (err) {
     console.error('Sponsor request failed:', err);
     return fail({ ok: false, message: 'We could not send your request. Please try again.' });

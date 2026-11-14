@@ -66,7 +66,7 @@ export default function SponsorRequestForm({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [sent, setSent] = useState<{ packageName: string; amount: number; paid: boolean; invoiceUrl?: string | null } | null>(null);
+  const [sent, setSent] = useState<{ packageName: string; amount: number; paid: boolean; invoiceUrl?: string | null; emailed?: boolean } | null>(null);
 
   const isCustom = form.package_id === CUSTOM_PACKAGE_ID;
   const selected = packages.find((p) => p.id === form.package_id);
@@ -138,7 +138,7 @@ export default function SponsorRequestForm({
     try {
       const result = await submitSponsorRequestAction(eventId, kind, form, trap, paidOrderId);
       if (result.ok) {
-        setSent({ packageName: result.packageName, amount: result.amount, paid: result.paid, invoiceUrl: result.invoiceUrl });
+        setSent({ packageName: result.packageName, amount: result.amount, paid: result.paid, invoiceUrl: result.invoiceUrl, emailed: result.emailed });
         return;
       }
       setErrors(result.fieldErrors ?? {});
@@ -174,6 +174,11 @@ export default function SponsorRequestForm({
             <>Thank you. Your request for {sent.packageName} ({priceLabel(sent.amount)}{sent.amount > 0 ? ' incl. GST' : ''}) has been sent to the organizer.</>
           )}
         </p>
+        {sent.emailed && (
+          <p className="text-body-sm text-on-surface-variant mt-3">
+            We&apos;ve emailed a confirmation{sent.invoiceUrl ? ' and your invoice' : ''} to <strong className="text-on-surface">{form.contact_email}</strong>.
+          </p>
+        )}
         {sent.amount > 0 && !sent.paid && (
           <p className="text-body-sm text-on-surface-variant mt-3">
             Nothing has been charged. The organizer will contact you with payment details.
