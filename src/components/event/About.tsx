@@ -38,22 +38,22 @@ export default function About({ event, section, variant = "split" }: AboutProps)
 
   return (
     <section id="about" className="bg-brand-white website-section border-t border-brand-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         
         {/* VARIANT: MANIFESTO (Creative / Experimental Typography) */}
         {variant === "manifesto" && (
-          <div className="border-4 border-brand-dark p-8 md:p-16 bg-brand-soft/40 relative">
+          <div className="border-4 border-brand-dark p-8 @min-[48rem]:p-16 bg-brand-soft/40 relative">
             <span className="font-mono text-xs uppercase tracking-widest text-brand-maroon font-bold block mb-4">
               // {headingText}
             </span>
-            <h2 className="text-3xl md:text-6xl font-black text-brand-dark tracking-tighter leading-none mb-8 uppercase">
+            <h2 className="text-3xl @min-[48rem]:text-6xl font-black text-brand-dark tracking-tighter leading-none mb-8 uppercase">
               {titleText}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-8 border-t-2 border-brand-dark items-start">
-              <div className="md:col-span-8 text-lg md:text-2xl font-light text-brand-dark leading-relaxed whitespace-pre-wrap">
+            <div className="grid grid-cols-1 @min-[48rem]:grid-cols-12 gap-8 pt-8 border-t-2 border-brand-dark items-start">
+              <div className="@min-[48rem]:col-span-8 text-lg @min-[48rem]:text-2xl font-light text-brand-dark leading-relaxed whitespace-pre-wrap">
                 {descriptionText}
               </div>
-              <div className="md:col-span-4 bg-brand-dark text-white p-6 font-mono text-xs uppercase tracking-wider space-y-3">
+              <div className="@min-[48rem]:col-span-4 bg-brand-dark text-white p-6 font-mono text-xs uppercase tracking-wider space-y-3">
                 <div className="text-brand-maroon font-bold">// PRINCIPLE</div>
                 <p className="normal-case font-sans text-sm text-gray-300">
                   Real change happens when theory is tested against practice. Experience this ethos across every session at {event.name}.
@@ -73,13 +73,13 @@ export default function About({ event, section, variant = "split" }: AboutProps)
                   {headingText}
                 </span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-brand-dark leading-tight tracking-tight mb-6">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-bold text-brand-dark leading-tight tracking-tight mb-6">
                 {titleText}
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              <div className="lg:col-span-7 bg-brand-soft border border-brand-border p-8 md:p-10 rounded-xl flex flex-col justify-between">
+            <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-8 items-stretch">
+              <div className="@min-[64rem]:col-span-7 bg-brand-soft border border-brand-border p-8 @min-[48rem]:p-10 rounded-xl flex flex-col justify-between">
                 <div className="prose prose-lg text-brand-dark whitespace-pre-wrap leading-relaxed">
                   {descriptionText}
                 </div>
@@ -92,7 +92,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
                 </div>
               </div>
 
-              <div className="lg:col-span-5 flex flex-col gap-4">
+              <div className="@min-[64rem]:col-span-5 flex flex-col gap-4">
                 <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-brand-soft border border-brand-border">
                   <img src={imageUrl} alt="Event briefing" className="w-full h-full object-cover filter contrast-105" />
                 </div>
@@ -116,7 +116,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-bold block mb-3">
                 {headingText}
               </span>
-              <h2 className="text-3xl md:text-5xl font-bold text-brand-dark leading-tight tracking-tight mb-4">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-bold text-brand-dark leading-tight tracking-tight mb-4">
                 {titleText}
               </h2>
               <p className="text-lg text-brand-muted max-w-2xl mx-auto">
@@ -124,7 +124,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+            <div className="grid grid-cols-1 @min-[48rem]:grid-cols-3 gap-6 pt-4">
               <div className="p-6 rounded-xl border border-brand-border bg-brand-soft">
                 <div className="w-10 h-10 rounded-lg bg-brand-maroon text-white flex items-center justify-center font-bold mb-4">
                   01
@@ -168,7 +168,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
                   {headingText}
                 </span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase text-brand-dark leading-none tracking-tight mb-6">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-black uppercase text-brand-dark leading-none tracking-tight mb-6">
                 {titleText}
               </h2>
               <p className="text-lg text-brand-muted leading-relaxed whitespace-pre-wrap">
@@ -176,11 +176,11 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-7 aspect-[16/9] rounded-2xl overflow-hidden border-2 border-brand-dark shadow-md">
+            <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-8 items-center">
+              <div className="@min-[64rem]:col-span-7 aspect-[16/9] rounded-2xl overflow-hidden border-2 border-brand-dark shadow-md">
                 <img src={imageUrl} alt="Event experience" className="w-full h-full object-cover" />
               </div>
-              <div className="lg:col-span-5 space-y-4">
+              <div className="@min-[64rem]:col-span-5 space-y-4">
                 <div className="p-6 bg-brand-soft border-2 border-brand-dark rounded-xl">
                   <span className="text-xs font-mono uppercase tracking-widest font-bold text-brand-maroon block mb-1">
                     Event Format
@@ -209,7 +209,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold block mb-3">
                 {headingText}
               </span>
-              <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight">
                 {titleText}
               </h2>
             </div>
@@ -218,7 +218,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               <img src={imageUrl} alt="Community story" className="w-full h-full object-cover" />
             </div>
 
-            <div className="max-w-2xl mx-auto text-lg text-brand-dark leading-relaxed whitespace-pre-wrap text-left md:text-center">
+            <div className="max-w-2xl mx-auto text-lg text-brand-dark leading-relaxed whitespace-pre-wrap text-left @min-[48rem]:text-center">
               {descriptionText}
             </div>
           </div>
@@ -226,8 +226,8 @@ export default function About({ event, section, variant = "split" }: AboutProps)
 
         {/* VARIANT: EDITORIAL & SPLIT (Default Magazine & Clean Split) */}
         {(variant === "editorial" || variant === "split") && (
-          <div className={`flex flex-col lg:items-start lg:space-x-16 xl:space-x-24 ${content.imagePosition === 'left' ? 'lg:flex-row-reverse lg:space-x-reverse' : 'lg:flex-row'}`}>
-            <div className="w-full lg:w-1/2 mb-12 lg:mb-0">
+          <div className={`flex flex-col @min-[64rem]:items-start @min-[64rem]:space-x-16 @min-[80rem]:space-x-24 ${content.imagePosition === 'left' ? '@min-[64rem]:flex-row-reverse @min-[64rem]:space-x-reverse' : '@min-[64rem]:flex-row'}`}>
+            <div className="w-full @min-[64rem]:w-1/2 mb-12 @min-[64rem]:mb-0">
               <div className="inline-flex items-center space-x-2 mb-6">
                 <span className="w-8 h-[1px] bg-brand-maroon"></span>
                 <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">
@@ -235,7 +235,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
                 </span>
               </div>
               
-              <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-8">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-8">
                 {titleText}
               </h2>
               
@@ -244,7 +244,7 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               </div>
             </div>
 
-            <div className="w-full lg:w-1/2">
+            <div className="w-full @min-[64rem]:w-1/2">
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-brand-soft rounded-xl shadow-xs">
                 <img
                   src={imageUrl}

@@ -2,6 +2,7 @@ import React from 'react';
 import EventWebsiteRenderer from "@/components/event/EventWebsiteRenderer";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from 'next/link';
+import { sponsorKindsOffered, sponsorOptionsFrom } from '@/lib/events/sponsors';
 
 export default async function EventPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
@@ -46,6 +47,16 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
     .eq('request_status', 'approved')
     .order('created_at', { ascending: true });
 
+  // Kinds of sponsor/partner packages on offer, for the "Become a sponsor" buttons. Prices stay on
+  // the request form.
+  const [{ data: packages }, { data: regSettings }] = await Promise.all([
+    supabase.from('event_sponsor_packages').select('kind').eq('event_id', appEvent.id).eq('is_active', true),
+    supabase.from('event_registration_settings').select('*').eq('event_id', appEvent.id).maybeSingle(),
+  ]);
+  const sponsorOffers = regSettings?.is_enabled
+    ? sponsorKindsOffered(packages || [], sponsorOptionsFrom(regSettings))
+    : { sponsor: false, partner: false };
+
   const mappedEventData = {
     id: appEvent.id,
     slug: appEvent.slug,
@@ -60,6 +71,7 @@ export default async function EventPublicPage({ params }: { params: Promise<{ sl
     speakers: [],
     agenda: [],
     sponsors: sponsors || [],
+    sponsorOffers,
     exhibitors: [],
     contact: {
       email: "contact@event.com",

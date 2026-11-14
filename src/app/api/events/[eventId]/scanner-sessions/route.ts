@@ -102,47 +102,70 @@ export async function POST(
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const scannerLink = `${appUrl}/volunteer/scanner/${rawToken}`;
 
-    // Get email integration
-    const { data: integrations } = await adminSupabase
+    const { data: fullZones } = await supabase.from('access_zones').select('name').in('id', zoneIds);
+    const zoneNames = fullZones?.map(z => z.name) || [];
+
+    const { data: fullDistances } = distanceCategoryIds.length > 0
+      ? await supabase.from('walkathon_distance_categories').select('name').in('id', distanceCategoryIds)
+      : { data: [] };
+    const distanceNames = fullDistances?.map(d => d.name) || [];
+
+    const details = {
+      volunteerEmail: volunteerEmail.trim().toLowerCase(),
+      scannerLink,
+      allowedZones: zoneNames,
+      allowedDistances: distanceNames,
+      expiresAt: expDate.toISOString(),
+    };
+
+    // The event's own email settings (Integrations page) are used when they are set up. Otherwise,
+    // or if that server rejects the send, the access link goes out through Aram's platform mailer,
+    // so organizers do not have to configure SMTP just to invite a volunteer.
+    const { data: integration } = await adminSupabase
       .from('event_integrations')
       .select('config')
       .eq('event_id', eventId)
       .eq('provider', 'email')
       .eq('is_active', true)
-      .single();
+      .limit(1)
+      .maybeSingle();
 
-    if (!integrations || !integrations.config) {
-      // Rollback session if email is not configured
-      await adminSupabase.from('volunteer_scanner_sessions').delete().eq('id', session.id);
-      return NextResponse.json({ error: 'Email integration is not configured for this event.' }, { status: 400 });
+    const { emailProvider, buildScannerAccessEmail } = await import('@/services/integrations/providers/email');
+    let sentVia: 'event' | 'platform' | 'simulated' | null = null;
+    let eventSmtpError: string | null = null;
+
+    if (integration?.config?.host) {
+      try {
+        await emailProvider.sendScannerAccess(integration.config, event, details);
+        sentVia = 'event';
+      } catch (err) {
+        eventSmtpError = (err as Error)?.message || 'unknown error';
+        console.warn(`[SCANNER_SESSION] Event email settings failed for event ${event.id}; trying the platform mailer`);
+      }
     }
 
-    const { data: fullZones } = await supabase.from('access_zones').select('name').in('id', zoneIds);
-    const zoneNames = fullZones?.map(z => z.name) || [];
-
-    const { data: fullDistances } = distanceCategoryIds.length > 0 
-      ? await supabase.from('walkathon_distance_categories').select('name').in('id', distanceCategoryIds)
-      : { data: [] };
-    const distanceNames = fullDistances?.map(d => d.name) || [];
-
-    try {
-      const { emailProvider } = await import('@/services/integrations/providers/email');
-      await emailProvider.sendScannerAccess(
-        integrations.config,
-        event,
-        {
-          volunteerEmail: volunteerEmail.trim().toLowerCase(),
-          scannerLink,
-          allowedZones: zoneNames,
-          allowedDistances: distanceNames,
-          expiresAt: expDate.toISOString()
+    if (!sentVia) {
+      const { sendPlatformEmail, isPlatformMailConfigured } = await import('@/services/organizerMailer');
+      if (await isPlatformMailConfigured()) {
+        try {
+          const mail = buildScannerAccessEmail(event, details);
+          await sendPlatformEmail({ to: details.volunteerEmail, ...mail, replyTo: user.email ?? undefined });
+          sentVia = 'platform';
+        } catch (err) {
+          console.error(`[SCANNER_SESSION] Platform mailer failed for event ${event.id}:`, (err as Error)?.message);
         }
-      );
-    } catch (emailErr: any) {
-      // Rollback session if email fails
+      } else if (process.env.NODE_ENV === 'development') {
+        // Local development without any mail route: keep the session and hand the link to the organizer.
+        sentVia = 'simulated';
+      }
+    }
+
+    if (!sentVia) {
       await adminSupabase.from('volunteer_scanner_sessions').delete().eq('id', session.id);
-      console.error('Failed to send scanner access email');
-      return NextResponse.json({ error: 'Failed to send email. Session was not created.' }, { status: 500 });
+      const reason = eventSmtpError === 'EMAIL_INTEGRATION_NOT_CONFIGURED'
+        ? 'The email settings for this event could not be read. Save them again on the Integrations page.'
+        : 'The access email could not be sent. Check the volunteer\'s address, or the email settings on the Integrations page, and try again.';
+      return NextResponse.json({ error: reason }, { status: 502 });
     }
 
     // Retain only safe metadata in logs; never log raw tokens or full secret URLs (M7)
@@ -150,7 +173,12 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: 'Scanner session created successfully and email sent.',
+      sentVia,
+      message: sentVia === 'simulated'
+        ? 'Scanner access created. Email is not set up on this computer, so copy the link below and send it yourself.'
+        : `Scanner access sent to ${details.volunteerEmail}.`,
+      // Only in local development with no mail route, so the link can still be tested.
+      ...(sentVia === 'simulated' ? { scannerLink } : {}),
     });
 
   } catch (error: any) {

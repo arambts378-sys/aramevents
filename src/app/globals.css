@@ -634,3 +634,72 @@ select[aria-invalid="true"],
 textarea[aria-invalid="true"] {
   border-color: #e11d48 !important;
 }
+
+/* ── AI Event Agent chat ─────────────────────────────────────── */
+@keyframes agent-dot {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+.agent-dot { animation: agent-dot 1.1s ease-in-out infinite; }
+
+@keyframes agent-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.agent-msg-in { animation: agent-msg-in 220ms ease-out both; }
+
+@keyframes agent-caret { 50% { opacity: 0; } }
+/* Blinking caret at the end of a reply that is still being written */
+.agent-streaming > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.7;
+  animation: agent-caret 1s steps(1) infinite;
+}
+.agent-streaming > ul:last-child > li:last-child::after,
+.agent-streaming > ol:last-child > li:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.7;
+  animation: agent-caret 1s steps(1) infinite;
+}
+.agent-streaming > ul:last-child::after,
+.agent-streaming > ol:last-child::after { content: none; }
+
+@keyframes agent-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.agent-shimmer {
+  background: linear-gradient(90deg, currentColor 40%, var(--color-ds-ink, #111113) 50%, currentColor 60%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: agent-shimmer 2.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-dot, .agent-msg-in, .agent-shimmer, .agent-streaming > :last-child::after { animation: none; }
+  .agent-shimmer { -webkit-text-fill-color: currentColor; }
+}
+
+@keyframes agent-avatar-ring {
+  0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.28); }
+  70% { box-shadow: 0 0 0 7px rgba(108, 92, 231, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+}
+.agent-avatar-active { animation: agent-avatar-ring 1.6s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { .agent-avatar-active { animation: none; } }

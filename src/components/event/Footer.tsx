@@ -23,12 +23,12 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
   const copyrightText = content.copyrightText || `${logoText}. All rights reserved.`;
 
   return (
-    <footer className="bg-brand-dark py-8 md:py-10 text-brand-white border-t border-brand-white/10 select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-brand-dark py-8 @min-[48rem]:py-10 text-brand-white border-t border-brand-white/10 select-none">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         
         {/* VARIANT: MINIMAL (Editorial / Single clean publication bar) */}
         {variant === "minimal" && (
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-4">
+          <div className="flex flex-col @min-[48rem]:flex-row items-center justify-between gap-6 py-4">
             <div className="flex items-center gap-3">
               <span className="text-lg font-serif font-bold text-white tracking-tight">{logoText}</span>
               <span className="text-xs font-mono text-brand-cream/40">/ {new Date().getFullYear()}</span>
@@ -49,12 +49,12 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
         {/* VARIANT: ARTISTIC (Creative / Experimental huge brand watermark) */}
         {variant === "artistic" && (
           <div className="space-y-12">
-            <div className="border-b-2 border-brand-white/20 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div className="border-b-2 border-brand-white/20 pb-8 flex flex-col @min-[48rem]:flex-row justify-between items-start @min-[48rem]:items-end gap-6">
               <div>
                 <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold block mb-2">
                   // OFFICIAL GATHERING
                 </span>
-                <h3 className="text-4xl md:text-7xl font-black uppercase text-white tracking-tighter">
+                <h3 className="text-4xl @min-[48rem]:text-7xl font-black uppercase text-white tracking-tighter">
                   {logoText}
                 </h3>
               </div>
@@ -66,7 +66,7 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
                 ))}
               </nav>
             </div>
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs font-mono text-brand-cream/40 gap-4">
+            <div className="flex flex-col @min-[40rem]:flex-row justify-between items-center text-xs font-mono text-brand-cream/40 gap-4">
               <span>DESIGNED FOR HIGH-IMPACT EXPERIENCES</span>
               <span>&copy; {new Date().getFullYear()} {copyrightText}</span>
             </div>
@@ -76,8 +76,8 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
         {/* VARIANT: CORPORATE / MULTI-COLUMN (Executive & Enterprise) */}
         {(variant === "corporate" || variant === "multi-column") && (
           <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-brand-white/10">
-              <div className="md:col-span-2 space-y-3">
+            <div className="grid grid-cols-1 @min-[48rem]:grid-cols-4 gap-10 pb-12 border-b border-brand-white/10">
+              <div className="@min-[48rem]:col-span-2 space-y-3">
                 <h3 className="text-xl font-bold text-white tracking-tight">
                   {logoText}
                 </h3>
@@ -115,7 +115,7 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center text-xs text-brand-cream/40 gap-4">
+            <div className="flex flex-col @min-[40rem]:flex-row justify-between items-center text-xs text-brand-cream/40 gap-4">
               <p>&copy; {new Date().getFullYear()} {copyrightText}</p>
               <div className="flex gap-4">
                 <span>Chatham House Rule</span>
@@ -151,8 +151,8 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
         {/* VARIANT: SPLIT (Default 2-column) */}
         {variant === "split" && (
           <div>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16">
-              <div className="mb-8 md:mb-0 max-w-sm">
+            <div className="flex flex-col @min-[48rem]:flex-row justify-between items-start @min-[48rem]:items-center mb-16">
+              <div className="mb-8 @min-[48rem]:mb-0 max-w-sm">
                 <h3 className="text-2xl font-bold text-brand-maroon tracking-tight mb-2">
                   {logoText}
                 </h3>
@@ -174,11 +174,11 @@ export default function Footer({ event, section, variant = "split" }: FooterProp
               </nav>
             </div>
 
-            <div className="pt-8 border-t border-brand-white/10 flex flex-col md:flex-row justify-between items-center text-sm text-brand-cream/40">
+            <div className="pt-8 border-t border-brand-white/10 flex flex-col @min-[48rem]:flex-row justify-between items-center text-sm text-brand-cream/40">
               <p>
                 &copy; {new Date().getFullYear()} {copyrightText}
               </p>
-              <div className="mt-4 md:mt-0 flex space-x-6">
+              <div className="mt-4 @min-[48rem]:mt-0 flex space-x-6">
                 <Link href="#" className="hover:text-brand-cream/80 transition-colors">Privacy Policy</Link>
                 <Link href="#" className="hover:text-brand-cream/80 transition-colors">Terms of Service</Link>
               </div>

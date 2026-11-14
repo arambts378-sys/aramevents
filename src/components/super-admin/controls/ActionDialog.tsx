@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useId, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 
 type ActionResult = { ok: boolean; message: string };
 
@@ -17,6 +18,10 @@ interface ActionDialogProps {
   reason?: 'required' | 'optional' | 'none';
   reasonLabel?: string;
   disabled?: boolean;
+  /** When set, the confirm button stays disabled until this exact text is typed. */
+  confirmPhrase?: string;
+  /** Navigate here after a successful action (e.g. after deleting the page's subject). */
+  redirectTo?: string;
   action: (reason: string) => Promise<ActionResult>;
 }
 
@@ -32,8 +37,14 @@ export function ActionDialog({
   reason = 'none',
   reasonLabel = 'Reason',
   disabled,
+  confirmPhrase,
+  redirectTo,
   action,
 }: ActionDialogProps) {
+  const router = useRouter();
+  const confirmId = useId();
+  const [typed, setTyped] = useState('');
+  const phraseOk = !confirmPhrase || typed.trim() === confirmPhrase;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const reasonId = useId();
   const [text, setText] = useState('');
@@ -43,6 +54,7 @@ export function ActionDialog({
 
   const open = () => {
     setText('');
+    setTyped('');
     setError(null);
     dialogRef.current?.showModal();
   };
@@ -53,10 +65,18 @@ export function ActionDialog({
       setError('Add a short reason (at least 3 characters).');
       return;
     }
+    if (!phraseOk) {
+      setError('Type the confirmation text exactly to continue.');
+      return;
+    }
     startTransition(async () => {
       const result = await action(text.trim());
       if (result.ok) {
         dialogRef.current?.close();
+        if (redirectTo) {
+          router.push(redirectTo);
+          return;
+        }
         setDone(result.message);
         setTimeout(() => setDone(null), 6000);
       } else {
@@ -109,6 +129,22 @@ export function ActionDialog({
             </div>
           )}
 
+          {confirmPhrase && (
+            <div className="mt-4">
+              <label htmlFor={confirmId} className="ds-label">
+                Type <strong className="font-semibold text-ds-ink">{confirmPhrase}</strong> to confirm
+              </label>
+              <input
+                id={confirmId}
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                autoComplete="off"
+                spellCheck={false}
+                className="ds-input"
+              />
+            </div>
+          )}
+
           {error && (
             <p role="alert" className="mt-3 text-[13px] text-ds-danger">
               {error}
@@ -119,7 +155,7 @@ export function ActionDialog({
             <button type="button" className="ds-btn ds-btn-ghost" onClick={() => dialogRef.current?.close()}>
               Cancel
             </button>
-            <button type="submit" className={`ds-btn ${tone === 'danger' ? 'ds-btn-danger' : 'ds-btn-primary'}`} disabled={pending}>
+            <button type="submit" className={`ds-btn ${tone === 'danger' ? 'ds-btn-danger' : 'ds-btn-primary'}`} disabled={pending || !phraseOk}>
               {pending ? 'Working…' : confirmLabel ?? label}
             </button>
           </div>

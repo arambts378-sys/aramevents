@@ -528,6 +528,11 @@ If you keep getting these emails, contact ${SUPPORT_EMAIL}.
   return deliver({ to: toEmail, replyTo: SUPPORT_EMAIL, subject, text, html });
 }
 
+/** True when Aram's own mail route (Zoho, Brevo or SMTP) is set up, so platform emails can be sent. */
+export async function isPlatformMailConfigured(): Promise<boolean> {
+  return isMailConfigured();
+}
+
 /** Sends a plain platform email (team invitations, contact form). Throws if SMTP is not configured. */
 export async function sendPlatformEmail(message: {
   to: string;

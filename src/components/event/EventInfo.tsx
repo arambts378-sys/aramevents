@@ -27,13 +27,13 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
 
   return (
     <section className="bg-brand-soft website-section border-b border-brand-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         
         {/* VARIANT: EDITORIAL-META (Publication metadata columns) */}
         {variant === "editorial-meta" && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-brand-border/60">
+          <div className="grid grid-cols-1 @min-[48rem]:grid-cols-4 gap-8 divide-y @min-[48rem]:divide-y-0 @min-[48rem]:divide-x divide-brand-border/60">
             {showDate && (
-              <div className="pt-4 md:pt-0 md:px-6">
+              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
                 <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
                   // Date &amp; Season
                 </span>
@@ -43,7 +43,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
               </div>
             )}
             {showTime && (
-              <div className="pt-4 md:pt-0 md:px-6">
+              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
                 <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
                   // Schedule Hours
                 </span>
@@ -53,7 +53,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
               </div>
             )}
             {showLocation && (
-              <div className="pt-4 md:pt-0 md:px-6">
+              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
                 <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
                   // Host City &amp; Venue
                 </span>
@@ -63,7 +63,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
               </div>
             )}
             {showFormat && (
-              <div className="pt-4 md:pt-0 md:px-6">
+              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
                 <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
                   // Assembly Format
                 </span>
@@ -77,7 +77,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
 
         {/* VARIANT: METRIC-CARDS (Executive / Summit cards) */}
         {variant === "metric-cards" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @min-[64rem]:grid-cols-4 gap-4">
             {showDate && (
               <div className="bg-brand-white p-6 rounded-xl border border-brand-border shadow-xs">
                 <span className="text-[11px] font-mono uppercase tracking-wider text-brand-muted block mb-2">
@@ -157,32 +157,32 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
 
         {/* VARIANT: HIGHLIGHTS-GRID (Creative / Staggered blocks) */}
         {variant === "highlights-grid" && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-left">
+          <div className="grid grid-cols-2 @min-[48rem]:grid-cols-4 gap-6 text-left">
             {showDate && (
               <div className="border-t-2 border-brand-dark pt-4">
                 <span className="text-xs font-mono uppercase text-brand-muted block mb-1">DATE</span>
-                <span className="text-2xl md:text-3xl font-black text-brand-dark block">{dateRange}</span>
+                <span className="text-2xl @min-[48rem]:text-3xl font-black text-brand-dark block">{dateRange}</span>
                 <span className="text-sm font-mono text-brand-maroon uppercase">{monthYear}</span>
               </div>
             )}
             {showTime && (
               <div className="border-t-2 border-brand-dark pt-4">
                 <span className="text-xs font-mono uppercase text-brand-muted block mb-1">HOURS</span>
-                <span className="text-xl md:text-2xl font-black text-brand-dark block">{startTime}</span>
+                <span className="text-xl @min-[48rem]:text-2xl font-black text-brand-dark block">{startTime}</span>
                 <span className="text-sm font-mono text-brand-muted">{endTime}</span>
               </div>
             )}
             {showLocation && (
               <div className="border-t-2 border-brand-dark pt-4">
                 <span className="text-xs font-mono uppercase text-brand-muted block mb-1">VENUE</span>
-                <span className="text-lg md:text-xl font-bold text-brand-dark block truncate">{event.venue || event.location}</span>
+                <span className="text-lg @min-[48rem]:text-xl font-bold text-brand-dark block truncate">{event.venue || event.location}</span>
                 <span className="text-xs text-brand-muted block truncate">{event.location}</span>
               </div>
             )}
             {showFormat && (
               <div className="border-t-2 border-brand-dark pt-4">
                 <span className="text-xs font-mono uppercase text-brand-muted block mb-1">TYPE</span>
-                <span className="text-lg md:text-xl font-bold uppercase text-brand-dark block">{event.type}</span>
+                <span className="text-lg @min-[48rem]:text-xl font-bold uppercase text-brand-dark block">{event.type}</span>
                 <span className="text-xs font-mono uppercase text-brand-maroon font-bold">{event.format}</span>
               </div>
             )}
@@ -191,11 +191,11 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
 
         {/* VARIANT: STATS-STRIP (Classic default strip) */}
         {variant === "stats-strip" && (
-          <div className="flex flex-col md:flex-row md:flex-wrap justify-around gap-12 md:gap-8 divide-y md:divide-y-0 md:divide-x divide-brand-border/60">
+          <div className="flex flex-col @min-[48rem]:flex-row @min-[48rem]:flex-wrap justify-around gap-12 @min-[48rem]:gap-8 divide-y @min-[48rem]:divide-y-0 @min-[48rem]:divide-x divide-brand-border/60">
             {showDate && (
-              <div className="flex flex-col flex-1 pt-8 md:pt-0 md:px-8 text-left items-start">
+              <div className="flex flex-col flex-1 pt-8 @min-[48rem]:pt-0 @min-[48rem]:px-8 text-left items-start">
                 <span className="text-sm font-mono text-brand-muted uppercase tracking-wider mb-4">Date</span>
-                <div className="text-4xl md:text-5xl font-light text-brand-dark mb-2">
+                <div className="text-4xl @min-[48rem]:text-5xl font-light text-brand-dark mb-2">
                   {dateRange}
                 </div>
                 <div className="text-xl text-brand-maroon font-medium">
@@ -205,7 +205,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
             )}
 
             {(showTime || showFormat) && (
-              <div className="flex flex-col flex-1 pt-8 md:pt-0 md:px-8 text-left items-start">
+              <div className="flex flex-col flex-1 pt-8 @min-[48rem]:pt-0 @min-[48rem]:px-8 text-left items-start">
                 {showTime && (
                   <>
                     <span className="text-sm font-mono text-brand-muted uppercase tracking-wider mb-4">Time</span>
@@ -229,7 +229,7 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
             )}
 
             {showLocation && (
-              <div className="flex flex-col flex-1 pt-8 md:pt-0 md:px-8 text-left items-start">
+              <div className="flex flex-col flex-1 pt-8 @min-[48rem]:pt-0 @min-[48rem]:px-8 text-left items-start">
                 <span className="text-sm font-mono text-brand-muted uppercase tracking-wider mb-4">Location</span>
                 <div className="text-2xl font-light text-brand-dark mb-2">
                   {event.venue || event.location}

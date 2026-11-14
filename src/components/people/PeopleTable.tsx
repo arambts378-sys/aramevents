@@ -7,6 +7,7 @@ import { WorkspacePersonRow } from '@/services/peopleService';
 interface PeopleTableProps {
   people: WorkspacePersonRow[];
   onEditPerson: (person: WorkspacePersonRow) => void;
+  onRemovePerson?: (person: WorkspacePersonRow) => void;
 }
 
 function formatDate(isoString: string): string {
@@ -33,7 +34,7 @@ function getInitials(name: string): string {
   return name.substring(0, 2).toUpperCase();
 }
 
-export function PeopleTable({ people, onEditPerson }: PeopleTableProps) {
+export function PeopleTable({ people, onEditPerson, onRemovePerson }: PeopleTableProps) {
   return (
     <div className="w-full">
       {/* ============================================================ */}
@@ -167,6 +168,16 @@ export function PeopleTable({ people, onEditPerson }: PeopleTableProps) {
                         >
                           Edit
                         </button>
+                        {onRemovePerson && (
+                          <button
+                            type="button"
+                            onClick={() => onRemovePerson(person)}
+                            className="px-2 py-1 text-xs font-semibold text-ds-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title={`Remove ${person.fullName}`}
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -221,6 +232,16 @@ export function PeopleTable({ people, onEditPerson }: PeopleTableProps) {
                   >
                     <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>
+                  {onRemovePerson && (
+                    <button
+                      type="button"
+                      onClick={() => onRemovePerson(person)}
+                      className="p-1.5 text-ds-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label={`Remove ${person.fullName}`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">person_remove</span>
+                    </button>
+                  )}
                   <Link
                     href={`/app/people/${person.id}`}
                     className="px-2.5 py-1 bg-ds-accent/10 hover:bg-ds-accent/20 text-ds-accent font-semibold text-xs rounded-lg transition-colors"

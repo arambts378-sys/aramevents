@@ -13,19 +13,19 @@ export default function FinalCTA({ event, section }: any) {
   const secondaryCtaDest = content.secondaryCtaDest || "#agenda";
   return (
     <section className="bg-brand-maroon website-section">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl lg:text-7xl font-medium text-brand-white leading-tight tracking-tight mb-6">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8 text-center">
+        <h2 className="text-4xl @min-[48rem]:text-5xl @min-[64rem]:text-7xl font-medium text-brand-white leading-tight tracking-tight mb-6">
           {title}
         </h2>
-        <p className="text-xl md:text-2xl text-brand-cream/80 mb-8 max-w-2xl mx-auto font-light">
+        <p className="text-xl @min-[48rem]:text-2xl text-brand-cream/80 mb-8 max-w-2xl mx-auto font-light">
           Join {event?.name} and be part of this amazing experience.
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <div className="flex flex-col @min-[40rem]:flex-row justify-center items-center space-y-4 @min-[40rem]:space-y-0 @min-[40rem]:space-x-6">
           {showPrimaryCta && (
             <Link
               href={primaryCtaDest}
-              className="inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-brand-maroon bg-brand-white hover:bg-brand-soft transition-colors shadow-lg hover:shadow-xl rounded-sm w-full sm:w-auto"
+              className="inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-brand-maroon bg-brand-white hover:bg-brand-soft transition-colors shadow-lg hover:shadow-xl rounded-sm w-full @min-[40rem]:w-auto"
             >
               {primaryCtaText}
             </Link>
@@ -34,7 +34,7 @@ export default function FinalCTA({ event, section }: any) {
           {showSecondaryCta && (
             <Link
               href={secondaryCtaDest}
-              className="inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-brand-white border border-brand-white hover:bg-brand-white/10 transition-colors shadow-lg hover:shadow-xl rounded-sm w-full sm:w-auto"
+              className="inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-brand-white border border-brand-white hover:bg-brand-white/10 transition-colors shadow-lg hover:shadow-xl rounded-sm w-full @min-[40rem]:w-auto"
             >
               {secondaryCtaText}
             </Link>

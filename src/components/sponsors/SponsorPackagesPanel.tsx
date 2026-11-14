@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FieldError, focusFirstError } from '@/components/ui/FieldError';
 import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
+import { SponsorOptionsPanel } from './SponsorOptionsPanel';
 import { formatPaiseToINR } from '@/services/ticketService';
 import { sponsorsService } from '@/services/sponsors';
 import { SponsorKind, SponsorPackage, rupeesToPaiseAmount } from '@/lib/events/sponsors';
@@ -159,12 +160,13 @@ export function SponsorPackagesPanel({ eventId, slug }: { eventId: string; slug:
         </ul>
       )}
 
-      {live.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-[12px] font-semibold text-ds-ink font-jakarta">Link to send to sponsors</p>
-          <WebsiteLinkField slug={slug} path={`/register?as=${live[0].kind}`} label="Sponsor sign-up link" />
-        </div>
-      )}
+      <SponsorOptionsPanel eventId={eventId} />
+
+      <div className="space-y-1.5">
+        <p className="text-[12px] font-semibold text-ds-ink font-jakarta">Links to send to sponsors and partners</p>
+        <WebsiteLinkField slug={slug} path="/register?as=sponsor" label="Sponsor sign-up link" />
+        <WebsiteLinkField slug={slug} path="/register?as=partner" label="Partner sign-up link" />
+      </div>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs overflow-y-auto">

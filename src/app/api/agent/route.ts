@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { AgentTurnSchema, EVENT_FORMATS, EVENT_TYPES } from '@/lib/ai/eventDraft';
 import { FLYER_SYSTEM_PROMPT, FlyerExtractionSchema, RECHECK_INSTRUCTIONS, type FlyerExtraction } from '@/lib/ai/flyerExtraction';
 import { validateFlyerDraft } from '@/lib/ai/validateFlyerDraft';
+import { partialReply } from '@/lib/ai/partialReply';
 
 const MODEL = 'claude-opus-5-5';
 const MAX_HISTORY = 30;
@@ -84,6 +85,8 @@ export async function POST(req: NextRequest) {
     /** The flyer's transcription from the extraction turn, so later turns stay grounded in it */
     flyerText?: unknown;
     timeZone?: unknown;
+    /** Stream the reply as newline-delimited JSON events instead of one JSON body */
+    stream?: unknown;
   };
   try {
     body = await req.json();
@@ -145,17 +148,21 @@ export async function POST(req: NextRequest) {
         : ''),
   } as unknown as Anthropic.Beta.BetaMessageParam);
 
+  const params = {
+    model: MODEL,
+    max_tokens: 16000,
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default' as const,
+    cache_control: { type: 'ephemeral' as const },
+    output_config: { effort: 'medium' as const, format: zodOutputFormat(AgentTurnSchema) },
+    system: SYSTEM_PROMPT,
+    messages,
+  };
+
+  if (body.stream === true) return streamTurn(client, params);
+
   try {
-    const response = await client.beta.messages.parse({
-      model: MODEL,
-      max_tokens: 16000,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      cache_control: { type: 'ephemeral' },
-      output_config: { effort: 'medium', format: zodOutputFormat(AgentTurnSchema) },
-      system: SYSTEM_PROMPT,
-      messages,
-    });
+    const response = await client.beta.messages.parse(params);
 
     if (response.stop_reason === 'refusal') {
       return NextResponse.json({ error: 'The assistant could not help with that request. Try describing the event differently.' }, { status: 422 });
@@ -167,6 +174,61 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     return errorResponse(err);
   }
+}
+
+type StreamEvent =
+  | { type: 'delta'; text: string }
+  | { type: 'done'; turn: unknown }
+  | { type: 'error'; error: string; status: number };
+
+/** Streams one chat turn: `delta` events carry new reply text, `done` carries the whole parsed turn. */
+function streamTurn(client: Anthropic, params: Parameters<Anthropic['beta']['messages']['parse']>[0]) {
+  const encoder = new TextEncoder();
+  const stream = client.beta.messages.stream(params);
+  const body = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (e: StreamEvent) => controller.enqueue(encoder.encode(`${JSON.stringify(e)}\n`));
+      let raw = '';
+      let sent = 0;
+      try {
+        for await (const event of stream) {
+          if (event.type === 'content_block_start' && event.content_block.type === 'fallback') {
+            // A fallback model restarts the answer from scratch.
+            raw = '';
+          }
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            raw += event.delta.text;
+            const reply = partialReply(raw);
+            if (reply.length > sent) {
+              send({ type: 'delta', text: reply.slice(sent) });
+              sent = reply.length;
+            }
+          }
+        }
+        const final = await stream.finalMessage();
+        if (final.stop_reason === 'refusal') {
+          send({ type: 'error', error: 'The assistant could not help with that request. Try describing the event differently.', status: 422 });
+        } else if (!final.parsed_output) {
+          send({ type: 'error', error: 'The assistant returned an incomplete answer. Please try again.', status: 502 });
+        } else {
+          send({ type: 'done', turn: final.parsed_output });
+        }
+      } catch (err) {
+        if (stream.aborted) return controller.close();
+        const res = errorResponse(err);
+        const json = (await res.json()) as { error: string };
+        send({ type: 'error', error: json.error, status: res.status });
+      }
+      controller.close();
+    },
+    cancel() {
+      // The organizer pressed Stop or left the page: stop generating.
+      stream.abort();
+    },
+  });
+  return new Response(body, {
+    headers: { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' },
+  });
 }
 
 class ExtractionError extends Error {

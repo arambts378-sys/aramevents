@@ -3,6 +3,22 @@
 import React, { useMemo, useState } from 'react';
 import { groupConversations, type ConversationSummary } from '@/lib/ai/conversationHistory';
 
+/** "now", "5m", "3h", "Yesterday", "Mon", "12 Oct" */
+function shortTime(iso: string, now = Date.now()) {
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return '';
+  const mins = Math.round((now - t) / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const today = new Date(now);
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  if (t >= startOfToday) return `${Math.round(mins / 60)}h`;
+  if (t >= startOfToday - 86_400_000) return 'Yesterday';
+  const d = new Date(t);
+  if (t >= startOfToday - 6 * 86_400_000) return d.toLocaleDateString(undefined, { weekday: 'short' });
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+
 interface Props {
   items: ConversationSummary[];
   activeId: string | null;
@@ -21,6 +37,8 @@ interface Props {
 
 function HistoryList({ items, activeId, loading, unavailable, onSelect, onNew, onDelete }: Omit<Props, 'mobileOpen' | 'onMobileClose' | 'collapsed'>) {
   const [query, setQuery] = useState('');
+  /** The chat whose delete is waiting for a second click */
+  const [confirming, setConfirming] = useState<string | null>(null);
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     return groupConversations(q ? items.filter((c) => c.title.toLowerCase().includes(q)) : items);
@@ -28,16 +46,18 @@ function HistoryList({ items, activeId, loading, unavailable, onSelect, onNew, o
 
   return (
     <div className="flex h-full flex-col">
-      <div className="space-y-2 p-3">
+      <div className="space-y-2.5 p-3">
         <button
           type="button"
           onClick={onNew}
-          className="flex w-full items-center gap-2 rounded-lg border border-ds-line bg-white px-3 py-2 text-[13.5px] font-medium text-ds-ink transition-colors hover:bg-ds-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
+          className="flex w-full items-center gap-2.5 rounded-xl border border-ds-line bg-white px-3 py-2.5 text-[13.5px] font-medium text-ds-ink shadow-[0_1px_2px_rgba(17,17,19,0.04)] transition-all hover:border-ds-accent/40 hover:shadow-[0_2px_8px_rgba(17,17,19,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent"
         >
-          <span className="material-symbols-outlined text-[18px] text-ds-muted" aria-hidden="true">edit_square</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ds-accent-soft text-ds-accent" aria-hidden="true">
+            <span className="material-symbols-outlined text-[16px]">add</span>
+          </span>
           New chat
         </button>
-        {items.length > 4 && (
+        {items.length > 0 && (
           <div className="relative">
             <span className="material-symbols-outlined pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[17px] text-ds-muted" aria-hidden="true">search</span>
             <input
@@ -45,8 +65,18 @@ function HistoryList({ items, activeId, loading, unavailable, onSelect, onNew, o
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search chats"
               aria-label="Search chats"
-              className="w-full rounded-lg border border-ds-line bg-white py-1.5 pl-8 pr-2.5 text-[13px] text-ds-ink placeholder:text-ds-muted focus:border-ds-accent focus:outline-none"
+              className="w-full rounded-lg border border-transparent bg-ds-ink/[0.04] py-1.5 pl-8 pr-7 text-[13px] text-ds-ink placeholder:text-ds-muted transition-colors focus:border-ds-accent focus:bg-white focus:outline-none"
             />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label="Clear search"
+                className="absolute right-1.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded text-ds-muted hover:text-ds-ink"
+              >
+                <span className="material-symbols-outlined text-[15px]" aria-hidden="true">close</span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -71,35 +101,73 @@ function HistoryList({ items, activeId, loading, unavailable, onSelect, onNew, o
         ) : (
           groups.map((g) => (
             <div key={g.label} className="mt-3 first:mt-1">
-              <p className="px-2 pb-1 text-[11.5px] font-medium text-ds-muted">{g.label}</p>
-              <ul>
+              <p className="px-2.5 pb-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-ds-muted">{g.label}</p>
+              <ul className="space-y-0.5">
                 {g.items.map((c) => {
                   const active = c.id === activeId;
+                  if (confirming === c.id) {
+                    return (
+                      <li key={c.id} className="flex items-center gap-1 rounded-lg bg-ds-danger-soft py-1 pl-2.5 pr-1" role="group" aria-label={`Delete ${c.title}?`}>
+                        <span className="min-w-0 flex-1 truncate text-[13px] text-ds-danger">Delete this chat?</span>
+                        <button
+                          type="button"
+                          autoFocus
+                          onClick={() => {
+                            setConfirming(null);
+                            onDelete(c.id);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Escape') setConfirming(null);
+                          }}
+                          className="rounded-md bg-ds-danger px-2 py-1 text-[12px] font-medium text-white hover:opacity-90"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirming(null)}
+                          className="rounded-md px-2 py-1 text-[12px] text-ds-body hover:bg-white/60"
+                        >
+                          Cancel
+                        </button>
+                      </li>
+                    );
+                  }
                   return (
                     <li key={c.id} className="group relative">
                       <button
                         type="button"
                         onClick={() => onSelect(c.id)}
                         aria-current={active ? 'page' : undefined}
-                        className={`flex w-full items-center gap-2 rounded-lg py-2 pl-2.5 pr-8 text-left text-[13.5px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent ${
-                          active ? 'bg-ds-accent-soft font-medium text-ds-ink' : 'text-ds-body hover:bg-ds-ink/[0.04] hover:text-ds-ink'
+                        className={`relative flex w-full items-center gap-2.5 rounded-lg py-2 pl-2.5 pr-10 text-left text-[13.5px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ds-accent ${
+                          active
+                            ? 'bg-white font-medium text-ds-ink shadow-[0_1px_3px_rgba(17,17,19,0.08)]'
+                            : 'text-ds-body hover:bg-ds-ink/[0.045] hover:text-ds-ink'
                         }`}
                       >
-                        {c.created_event_id && (
-                          <span className="material-symbols-outlined shrink-0 text-[15px] text-ds-success" title="Event created" aria-label="Event created">
+                        {active && <span className="absolute left-0 top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-ds-accent" aria-hidden="true" />}
+                        {c.created_event_id ? (
+                          <span className="material-symbols-outlined shrink-0 text-[16px] text-ds-success" title="Event created" aria-label="Event created">
                             check_circle
                           </span>
+                        ) : (
+                          <span className={`material-symbols-outlined shrink-0 text-[16px] ${active ? 'text-ds-accent' : 'text-ds-muted'}`} aria-hidden="true">
+                            chat_bubble
+                          </span>
                         )}
-                        <span className="truncate">{c.title}</span>
+                        <span className="min-w-0 flex-1 truncate">{c.title}</span>
+                        <span className="absolute right-2.5 text-[11px] font-normal tabular-nums text-ds-muted transition-opacity group-hover:opacity-0 group-focus-within:opacity-0">
+                          {shortTime(c.updated_at)}
+                        </span>
                       </button>
                       <button
                         type="button"
-                        onClick={() => onDelete(c.id)}
+                        onClick={() => setConfirming(c.id)}
                         aria-label={`Delete chat ${c.title}`}
                         title="Delete chat"
                         className="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-ds-muted opacity-0 transition-opacity hover:bg-ds-ink/[0.06] hover:text-ds-danger focus-visible:opacity-100 group-hover:opacity-100"
                       >
-                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                        <span className="material-symbols-outlined text-[17px]" aria-hidden="true">delete</span>
                       </button>
                     </li>
                   );

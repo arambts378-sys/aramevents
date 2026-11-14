@@ -3,6 +3,8 @@ import PublicRegistrationClient from '@/components/event/PublicRegistrationClien
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isPublicRegistrationEnabled } from '@/lib/security/publicRegistration';
 import Link from 'next/link';
+import { resolveWebsiteTheme, websiteThemeTokens } from '@/lib/events/websiteTheme';
+import { razorpayStatus } from '@/lib/payments/razorpay';
 
 export default async function PublicRegistrationPage({
   params,
@@ -123,9 +125,18 @@ export default async function PublicRegistrationPage({
     .eq('is_active', true)
     .order('amount', { ascending: false });
 
+  // The registration page wears the event website's theme: the published version, or the draft
+  // the organizer is still editing when the site is not published yet.
+  const { data: websiteRow } = await supabase.from('events').select('website').eq('id', event.id).maybeSingle();
+  const website = (websiteRow?.website ?? null) as { published?: unknown; draft?: unknown; templateId?: string } | null;
+  const websiteConfig = website?.published ?? website?.draft ?? (website?.templateId ? website : null);
+  const themeStyle = websiteConfig ? websiteThemeTokens(resolveWebsiteTheme(websiteConfig)) : undefined;
+
   return (
-    <PublicRegistrationClient 
-      event={event} 
+    <PublicRegistrationClient
+      themeStyle={themeStyle}
+      paymentsEnabled={(await razorpayStatus()).ready}
+      event={event}
       settings={settings} 
       slug={slug} 
       walkathonDistances={walkathonDistances} 

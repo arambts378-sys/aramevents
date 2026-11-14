@@ -46,6 +46,56 @@ interface JobPayload {
   payload: Record<string, unknown>;
 }
 
+export interface ScannerAccessDetails {
+  volunteerEmail: string;
+  scannerLink: string;
+  allowedZones: string[];
+  allowedDistances: string[];
+  expiresAt: string;
+}
+
+/** Subject, text and HTML of the scanner access email, shared by the event's SMTP and the platform mailer. */
+export function buildScannerAccessEmail(event: { name: string }, details: ScannerAccessDetails, subject?: string) {
+  const { scannerLink, allowedZones, allowedDistances, expiresAt } = details;
+  const safeEventName = escapeHtml(event.name);
+  const safeScannerLink = escapeHtml(scannerLink);
+  const safeZones = (allowedZones || []).map(escapeHtml).join(', ');
+  const safeDistances = (allowedDistances && allowedDistances.length > 0)
+    ? allowedDistances.map(escapeHtml).join(', ')
+    : 'All Participants';
+  const safeExpires = expiresAt ? escapeHtml(new Date(expiresAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata' })) : '';
+  return {
+    subject: sanitizeHeader(subject || `Scanner Access — ${event.name}`),
+    text: `You have been granted scanner access for ${event.name}.\nAllowed Zones: ${safeZones}\nAllowed Distances: ${safeDistances}\n${safeExpires ? `Expires: ${safeExpires}\n` : ''}\nOpen Scanner Link: ${scannerLink}\n\nSECURITY WARNING: Do not share this link with anyone.\nRegards,\nThe ${event.name} Team`,
+    html: `
+        <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px 0;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            
+            <div style="padding: 30px; text-align: center; border-bottom: 1px solid #e5e7eb;">
+              <h1 style="color: #4F46E5; margin: 0 0 10px 0; font-size: 24px;">Event Scanner Access</h1>
+              <p style="margin: 0; color: #4b5563; font-size: 16px;">You have been granted scanner access for <strong>${safeEventName}</strong>.</p>
+            </div>
+
+            <div style="padding: 30px;">
+              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Zones:</strong> ${safeZones}</p>
+              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Distances:</strong> ${safeDistances}</p>
+              ${safeExpires ? `<p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Expires:</strong> ${safeExpires}</p>` : ''}
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="${safeScannerLink}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">Open Scanner</a>
+              </div>
+            </div>
+
+            <div style="padding: 0 30px 30px 30px; text-align: center;">
+              <p style="margin-bottom: 20px; font-size: 14px; color: #ef4444; font-weight: bold;">SECURITY WARNING: Do not share this link with anyone. It provides direct scanning authorization without a password.</p>
+              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${safeEventName} Team</p>
+            </div>
+          </div>
+        </div>
+      `,
+  };
+}
+
 export const emailProvider = {
   process: async (job: JobPayload, event: EventPayload, config: EmailConfig) => {
     if (!config || !config.host) {
@@ -328,15 +378,8 @@ export const emailProvider = {
       throw new Error('EMAIL_INTEGRATION_NOT_CONFIGURED');
     }
 
-    const { volunteerEmail, scannerLink, allowedZones, allowedDistances, expiresAt } = sessionData as {
-      volunteerEmail: string;
-      scannerLink: string;
-      allowedZones: string[];
-      allowedDistances: string[];
-      expiresAt: string;
-    };
-
-    if (!volunteerEmail || !isValidEmail(volunteerEmail)) {
+    const details = sessionData as unknown as ScannerAccessDetails;
+    if (!details.volunteerEmail || !isValidEmail(details.volunteerEmail)) {
       throw new Error('INVALID_VOLUNTEER_EMAIL');
     }
 
@@ -348,51 +391,12 @@ export const emailProvider = {
       connectionTimeout: 10000,
     });
 
-    const safeFromName = sanitizeHeader(fromName || event.name);
-    const safeFromEmail = sanitizeHeader(fromEmail || user);
-    const safeSubject = sanitizeHeader(subject || `Scanner Access — ${event.name}`);
-    const safeEventName = escapeHtml(event.name);
-    const safeScannerLink = escapeHtml(scannerLink);
-    const safeZones = (allowedZones || []).map(escapeHtml).join(', ');
-    const safeDistances = (allowedDistances && allowedDistances.length > 0)
-      ? allowedDistances.map(escapeHtml).join(', ')
-      : 'All Participants';
-    const safeExpires = expiresAt ? escapeHtml(new Date(expiresAt).toLocaleString()) : '';
-
-    const mailOptions = {
-      from: `"${safeFromName}" <${safeFromEmail}>`,
-      to: volunteerEmail.trim(),
-      subject: safeSubject,
-      text: `You have been granted scanner access for ${event.name}.\nAllowed Zones: ${safeZones}\nAllowed Distances: ${safeDistances}\n${safeExpires ? `Expires: ${safeExpires}\n` : ''}\nOpen Scanner Link: ${scannerLink}\n\nSECURITY WARNING: Do not share this link with anyone.\nRegards,\nThe ${event.name} Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; padding: 20px 0;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            
-            <div style="padding: 30px; text-align: center; border-bottom: 1px solid #e5e7eb;">
-              <h1 style="color: #4F46E5; margin: 0 0 10px 0; font-size: 24px;">Event Scanner Access</h1>
-              <p style="margin: 0; color: #4b5563; font-size: 16px;">You have been granted scanner access for <strong>${safeEventName}</strong>.</p>
-            </div>
-
-            <div style="padding: 30px;">
-              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Zones:</strong> ${safeZones}</p>
-              <p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Allowed Distances:</strong> ${safeDistances}</p>
-              ${safeExpires ? `<p style="margin: 0 0 15px 0; font-size: 16px;"><strong>Expires:</strong> ${safeExpires}</p>` : ''}
-              
-              <div style="text-align: center; margin-top: 30px;">
-                <a href="${safeScannerLink}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 16px;">Open Scanner</a>
-              </div>
-            </div>
-
-            <div style="padding: 0 30px 30px 30px; text-align: center;">
-              <p style="margin-bottom: 20px; font-size: 14px; color: #ef4444; font-weight: bold;">SECURITY WARNING: Do not share this link with anyone. It provides direct scanning authorization without a password.</p>
-              <p style="margin: 0; font-size: 14px; color: #9ca3af;">Regards,<br>The ${safeEventName} Team</p>
-            </div>
-          </div>
-        </div>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    const mail = buildScannerAccessEmail(event, details, subject);
+    await transporter.sendMail({
+      from: `"${sanitizeHeader(fromName || event.name)}" <${sanitizeHeader(fromEmail || user)}>`,
+      to: details.volunteerEmail.trim(),
+      ...mail,
+    });
     return { success: true };
   },
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { cleanLocation } from '@/lib/events/cleanLocation';
 import { useParams } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 import { Sidebar } from '@/components/dashboard/Sidebar';
@@ -226,7 +227,7 @@ export default function EventWorkspacePage() {
   // 3. Render Redesigned Event Workspace
   const formattedDate = formatDisplayDate(event.startDate);
   const formattedTime = formatDisplayTime(event.startTime, event.endTime);
-  const locationString = event.location || (event.format === 'Virtual' ? 'Online / Remote' : 'Location TBA');
+  const locationString = cleanLocation(event.location) || (event.format === 'Virtual' ? 'Online / Remote' : 'Location TBA');
   const isDraft = event.status === 'draft';
 
   const workspaceModules = [
@@ -308,18 +309,29 @@ export default function EventWorkspacePage() {
 
               {/* Event Identity Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pb-1">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] font-bold tracking-widest uppercase text-ds-muted">
-                      EVENT WORKSPACE
-                    </span>
-                  </div>
-                  <h1 className="text-[36px] md:text-[44px] lg:text-[48px] tracking-tight font-bold text-ds-ink leading-none font-space">
+                <div className="min-w-0 space-y-2">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ds-accent font-jakarta">
+                    Event workspace
+                  </p>
+                  <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-[-0.01em] text-ds-ink font-jakarta break-words">
                     {event.name}
                   </h1>
-                  <p className="text-[14px] text-ds-muted font-jakarta">
-                    {formattedDate} · {event.format || 'Format TBA'} · {locationString}
-                  </p>
+                  <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-ds-muted font-jakarta">
+                    <li className="inline-flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-ds-muted" aria-hidden="true">calendar_today</span>
+                      <span>{formattedDate}{formattedTime ? `, ${formattedTime}` : ''}</span>
+                    </li>
+                    <li className="inline-flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-ds-muted" aria-hidden="true">
+                        {event.format === 'Virtual' ? 'videocam' : event.format === 'Hybrid' ? 'devices' : 'groups'}
+                      </span>
+                      <span>{event.format || 'Format TBA'}</span>
+                    </li>
+                    <li className="inline-flex min-w-0 items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[16px] text-ds-muted" aria-hidden="true">location_on</span>
+                      <span className="truncate" title={locationString}>{locationString}</span>
+                    </li>
+                  </ul>
                 </div>
 
                 {/* Header Actions (Status & View Public Site) */}

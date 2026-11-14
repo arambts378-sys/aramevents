@@ -16,6 +16,7 @@ import { PersonModal } from '@/components/people/PersonModal';
 import { PeopleSkeleton } from '@/components/people/PeopleSkeleton';
 import { PeopleEmptyState } from '@/components/people/PeopleEmptyState';
 import { PeopleErrorState } from '@/components/people/PeopleErrorState';
+import { RemovePersonDialog } from '@/components/people/RemovePersonDialog';
 
 export default function PeopleDirectoryPage() {
   const { currentUser, activeWorkspace, events, isHydrated } = useAppContext();
@@ -40,6 +41,8 @@ export default function PeopleDirectoryPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<WorkspacePersonRow | null>(null);
+  const [removingPerson, setRemovingPerson] = useState<WorkspacePersonRow | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const hasActiveFilters = useMemo(() => {
     return (
@@ -168,6 +171,14 @@ export default function PeopleDirectoryPage() {
             )
           ) : (
             <div className="flex flex-col gap-4">
+              {notice && (
+                <div role="status" className="flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-[13px] text-emerald-800">
+                  <span>{notice}</span>
+                  <button type="button" onClick={() => setNotice(null)} aria-label="Dismiss" className="text-emerald-700 hover:text-emerald-900">
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+                  </button>
+                </div>
+              )}
               <div className="flex items-center justify-between text-xs text-ds-muted px-1">
                 <span>
                   Showing <strong className="text-ds-ink">{people.length}</strong> {people.length === 1 ? 'person' : 'people'}
@@ -185,11 +196,24 @@ export default function PeopleDirectoryPage() {
               <PeopleTable
                 people={people}
                 onEditPerson={handleOpenEdit}
+                onRemovePerson={setRemovingPerson}
               />
             </div>
           )}
         </main>
       </div>
+
+      <RemovePersonDialog
+        person={removingPerson}
+        onClose={() => setRemovingPerson(null)}
+        onRemoved={(message) => {
+          // Drop the row straight away; the reload brings counts back in line.
+          setPeople((prev) => prev?.filter((p) => p.id !== removingPerson?.id) ?? prev);
+          setRemovingPerson(null);
+          setNotice(message);
+          loadPeople();
+        }}
+      />
 
       {/* Add / Edit Person Modal */}
       {activeWorkspace?.id && (

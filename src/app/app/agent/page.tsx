@@ -43,6 +43,10 @@ function setChatUrl(id: string | null) {
 type UiMessage = ChatMessage & {
   /** Flyer attached to a user message, rendered as a thumbnail card */
   attachment?: { name: string; url: string };
+  /** The reply is still arriving */
+  streaming?: boolean;
+  /** The organizer pressed Stop before the reply finished */
+  stopped?: boolean;
 };
 
 function uid() {
@@ -79,17 +83,26 @@ type FlyerInput = {
   source: { dataUri: string; name: string };
 } | null;
 
-/** Sends the conversation to the server route, which calls the model and returns a reply plus the full draft. */
+type AgentReply = AgentTurn & { flyerText?: string };
+
+/**
+ * Sends the conversation to the server route, which calls the model and returns a reply plus the full draft.
+ * Chat turns stream: `onDelta` receives the reply text as it is written. Reading a flyer does not stream
+ * (the server reads it, checks it and may read it again before answering).
+ */
 async function askAgent(
   history: UiMessage[],
   draft: ExtractedEventDetails | null,
   flyer: FlyerInput,
   /** The flyer's transcription when the image itself is not at hand (a chat reopened from history) */
   savedFlyerText: string | null = null,
-) {
+  opts: { onDelta?: (text: string) => void; signal?: AbortSignal } = {},
+): Promise<AgentReply> {
+  const stream = !flyer?.extract && !!opts.onDelta;
   const res = await fetch('/api/agent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal: opts.signal,
     body: JSON.stringify({
       messages: history.map((m) => ({ role: m.role, content: m.content })),
       draft,
@@ -98,16 +111,54 @@ async function askAgent(
       extract: flyer?.extract ?? false,
       flyerText: flyer?.text ?? savedFlyerText ?? undefined,
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      stream,
     }),
   });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(json.error || 'The assistant is unavailable right now. Try again in a few minutes.');
-    (err as Error & { code?: string }).code = json.code;
-    throw err;
+  if (!res.ok || !stream || !res.body) {
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(json.error || 'The assistant is unavailable right now. Try again in a few minutes.');
+      (err as Error & { code?: string }).code = json.code;
+      throw err;
+    }
+    return json as AgentReply;
   }
-  return json as AgentTurn & { flyerText?: string };
+
+  // Newline-delimited JSON: {type:'delta'|'done'|'error'}
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = '';
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value;
+    let nl: number;
+    while ((nl = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (!line) continue;
+      const event = JSON.parse(line) as { type: string; text?: string; turn?: AgentReply; error?: string };
+      if (event.type === 'delta' && event.text) opts.onDelta?.(event.text);
+      else if (event.type === 'done' && event.turn) return event.turn;
+      else if (event.type === 'error') throw new Error(event.error || 'The assistant is unavailable right now.');
+    }
+  }
+  throw new Error('The assistant stopped before finishing its answer. Please try again.');
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Writes a finished reply out progressively (about a second and a half), like a streamed one. */
+async function revealText(text: string, onProgress: (shown: string) => void, signal: AbortSignal) {
+  const step = Math.max(2, Math.ceil(text.length / 90));
+  for (let i = step; i < text.length; i += step) {
+    if (signal.aborted) return;
+    onProgress(text.slice(0, i));
+    await sleep(16);
+  }
+  if (!signal.aborted) onProgress(text);
+}
+
+const isAbort = (err: unknown) => (err as Error)?.name === 'AbortError';
 
 /** Larger images are accepted and compressed in the browser before anything is sent or stored */
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
@@ -220,47 +271,102 @@ const SUGGESTIONS = [
   { icon: 'school', label: 'Workshop', prompt: 'Two-day design workshop for 40 people with paid tickets' },
 ] as const;
 
-/* Minimal markdown: paragraphs, "- " bullet lists, **bold** and *italic* */
+/* Small markdown: paragraphs, headings, bullet and numbered lists, **bold**, *italic*, `code` and https links */
 function renderInline(text: string, keyPrefix: string) {
-  return text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g).map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={`${keyPrefix}-${i}`} className="font-semibold">{part.slice(2, -2)}</strong>;
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^)\s]+\)|\*[^*\s][^*]*\*)/g).map((part, i) => {
+    const key = `${keyPrefix}-${i}`;
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return <strong key={key} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return <code key={key} className="rounded bg-ds-ink/[0.06] px-1.5 py-0.5 font-mono text-[13px]">{part.slice(1, -1)}</code>;
+    }
+    const link = /^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/.exec(part);
+    if (link) {
+      return <a key={key} href={link[2]} target="_blank" rel="noreferrer noopener" className="text-ds-accent underline underline-offset-2 hover:text-ds-accent-strong">{link[1]}</a>;
     }
     if (part.length > 2 && part.startsWith('*') && part.endsWith('*')) {
-      return <em key={`${keyPrefix}-${i}`}>{part.slice(1, -1)}</em>;
+      return <em key={key}>{part.slice(1, -1)}</em>;
     }
-    return <React.Fragment key={`${keyPrefix}-${i}`}>{part}</React.Fragment>;
+    return <React.Fragment key={key}>{part}</React.Fragment>;
   });
 }
 
 function renderMarkdown(text: string) {
   const blocks: React.ReactNode[] = [];
-  let list: string[] = [];
+  let list: { ordered: boolean; items: string[] } | null = null;
 
   const flushList = () => {
-    if (list.length === 0) return;
-    const items = list;
+    if (!list) return;
+    const { ordered, items } = list;
+    const k = blocks.length;
+    const children = items.map((item, i) => <li key={i} className="pl-1">{renderInline(item, `li-${k}-${i}`)}</li>);
     blocks.push(
-      <ul key={`ul-${blocks.length}`} className="list-disc pl-5 space-y-1 marker:text-ds-muted">
-        {items.map((item, i) => <li key={i}>{renderInline(item, `li-${blocks.length}-${i}`)}</li>)}
-      </ul>,
+      ordered ? (
+        <ol key={`ol-${k}`} className="list-decimal pl-6 space-y-1.5 marker:text-ds-muted">{children}</ol>
+      ) : (
+        <ul key={`ul-${k}`} className="list-disc pl-6 space-y-1.5 marker:text-ds-muted">{children}</ul>
+      ),
     );
-    list = [];
+    list = null;
   };
 
   text.split('\n').forEach((line) => {
-    const bullet = line.match(/^\s*[-•]\s+(.*)$/);
-    if (bullet) {
-      list.push(bullet[1]);
+    const bullet = line.match(/^\s*[-•*]\s+(.*)$/);
+    const numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (bullet || numbered) {
+      const ordered = !!numbered;
+      if (list && list.ordered !== ordered) flushList();
+      if (!list) list = { ordered, items: [] };
+      list.items.push((bullet ?? numbered)![1]);
       return;
     }
     flushList();
-    if (line.trim()) {
+    const heading = line.match(/^\s*#{1,4}\s+(.*)$/);
+    if (heading) {
+      blocks.push(<h3 key={`h-${blocks.length}`} className="text-[15px] font-semibold text-ds-ink pt-1">{renderInline(heading[1], `h-${blocks.length}`)}</h3>);
+    } else if (line.trim()) {
       blocks.push(<p key={`p-${blocks.length}`}>{renderInline(line, `p-${blocks.length}`)}</p>);
     }
   });
   flushList();
   return blocks;
+}
+
+/* Follow-up chips under the latest reply, so the next step is one click away */
+type FollowUp = { label: string; icon: string } & (
+  | { kind: 'fill'; text: string }
+  | { kind: 'send'; text: string }
+  | { kind: 'create' }
+  | { kind: 'upload' }
+);
+
+const FILL_FOR_MISSING: Record<string, { label: string; text: string }> = {
+  'event name': { label: 'Name the event', text: 'The event is called ' },
+  'event type': { label: 'Set the event type', text: 'It is a ' },
+  format: { label: 'In person or online?', text: 'The event is ' },
+  'start date': { label: 'Add the date', text: 'It is on ' },
+  'start time': { label: 'Add the start time', text: 'It starts at ' },
+  'end time': { label: 'Add the end time', text: 'It ends at ' },
+  venue: { label: 'Add the venue', text: 'The venue is ' },
+};
+
+function followUpsFor(draft: ExtractedEventDetails | null): FollowUp[] {
+  if (!draft || !hasDraft(draft)) {
+    return [
+      { kind: 'upload', label: 'Upload a flyer', icon: 'upload_file' },
+      { kind: 'fill', label: 'Describe the event', icon: 'edit', text: 'My event is ' },
+    ];
+  }
+  const missing = missingForCreate(draft);
+  if (missing.length) {
+    return missing.slice(0, 3).map((m) => ({ kind: 'fill' as const, icon: 'add', ...FILL_FOR_MISSING[m] }));
+  }
+  return [
+    { kind: 'create', label: 'Create the event', icon: 'check_circle' },
+    { kind: 'send', label: 'Write a description', icon: 'notes', text: 'Write a short, friendly description for this event.' },
+    { kind: 'fill', label: 'Add ticket types', icon: 'confirmation_number', text: 'Ticket types: ' },
+  ];
 }
 
 /* ─────────────────────────── sub-components ──────────────────── */
@@ -277,14 +383,64 @@ function AgentMark({ className = '' }: { className?: string }) {
   );
 }
 
-function ThinkingIndicator({ ocrProgress }: { ocrProgress: number | null }) {
+/** The assistant's avatar: the sparkle on a soft round badge, pulsing while it writes */
+function AgentAvatar({ active = false }: { active?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
-      <AgentMark className="text-[22px] animate-pulse" />
-      <span className="text-[14px] text-ds-muted">
-        {ocrProgress === null ? 'Thinking…' : `Reading the flyer on this device… ${Math.round(ocrProgress * 100)}%`}
+    <span
+      aria-hidden="true"
+      className={`relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-ds-accent-soft to-white ring-1 ring-ds-accent/15 ${active ? 'agent-avatar-active' : ''}`}
+    >
+      <AgentMark className="text-[18px]" />
+    </span>
+  );
+}
+
+function TypingDots() {
+  return (
+    <span className="inline-flex items-center gap-1" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="agent-dot h-1.5 w-1.5 rounded-full bg-ds-muted" style={{ animationDelay: `${i * 160}ms` }} />
+      ))}
+    </span>
+  );
+}
+
+function ThinkingIndicator({ ocrProgress, readingFlyer }: { ocrProgress: number | null; readingFlyer: boolean }) {
+  // Reading a flyer takes a while (read, check, sometimes a second look), so say what is happening.
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const label =
+    ocrProgress !== null
+      ? `Reading the flyer on this device… ${Math.round(ocrProgress * 100)}%`
+      : readingFlyer
+        ? elapsed < 6 ? 'Reading your flyer' : elapsed < 18 ? 'Checking dates, times and venue' : 'Taking a closer look at the small print'
+        : 'Thinking';
+  return (
+    <div className="flex items-center gap-3.5" role="status" aria-live="polite">
+      <AgentAvatar active />
+      <span className="flex items-center gap-2 text-[14px] text-ds-muted">
+        <span className="agent-shimmer">{label}</span>
+        <TypingDots />
       </span>
     </div>
+  );
+}
+
+function IconAction({ icon, label, onClick, disabled }: { icon: string; label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-7 h-7 flex items-center justify-center rounded-md text-ds-muted hover:text-ds-ink hover:bg-ds-ink/[0.05] transition-colors disabled:opacity-40 disabled:pointer-events-none"
+      aria-label={label}
+      title={label}
+    >
+      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{icon}</span>
+    </button>
   );
 }
 
@@ -464,20 +620,90 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
+function UserEditor({ initial, onCancel, onSubmit }: { initial: string; onCancel: () => void; onSubmit: (text: string) => void }) {
+  const [text, setText] = useState(initial);
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const ta = ref.current;
+    if (!ta) return;
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+  }, []);
+  useEffect(() => {
+    const ta = ref.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, 240)}px`;
+  }, [text]);
+  const submit = () => text.trim() && onSubmit(text.trim());
+  return (
+    <div className="w-full max-w-[85%] rounded-2xl border border-ds-line-strong bg-white p-2 shadow-ds-card">
+      <textarea
+        ref={ref}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            submit();
+          }
+          if (e.key === 'Escape') onCancel();
+        }}
+        rows={1}
+        aria-label="Edit your message"
+        className="block w-full resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed text-ds-ink focus:outline-none"
+      />
+      <div className="flex justify-end gap-2 pt-1">
+        <button type="button" onClick={onCancel} className="ds-btn ds-btn-ghost ds-btn-sm">Cancel</button>
+        <button type="button" onClick={submit} disabled={!text.trim()} className="ds-btn ds-btn-primary ds-btn-sm">Send</button>
+      </div>
+    </div>
+  );
+}
+
 function Message({
   message,
   onEdit,
   onConfirm,
   creating,
+  isLatest,
+  busy,
+  followUps,
+  onFollowUp,
+  onRegenerate,
+  onEditMessage,
 }: {
   message: UiMessage;
   onEdit: (field: keyof ExtractedEventDetails, value: string) => void;
   onConfirm: () => void;
   creating?: boolean;
+  /** Last message in the chat: gets Regenerate and the follow-up chips */
+  isLatest: boolean;
+  busy: boolean;
+  followUps: FollowUp[];
+  onFollowUp: (f: FollowUp) => void;
+  onRegenerate: () => void;
+  onEditMessage: (id: string, text: string) => void;
 }) {
+  const [editing, setEditing] = useState(false);
+
   if (message.role === 'user') {
+    if (editing) {
+      return (
+        <div className="flex flex-col items-end">
+          <UserEditor
+            initial={message.content}
+            onCancel={() => setEditing(false)}
+            onSubmit={(text) => {
+              setEditing(false);
+              onEditMessage(message.id, text);
+            }}
+          />
+        </div>
+      );
+    }
     return (
-      <div className="flex flex-col items-end gap-2" title={formatTime(message.timestamp)}>
+      <div className="group flex flex-col items-end gap-1" title={formatTime(message.timestamp)}>
         {message.attachment ? (
           <div className="flex items-center gap-3 rounded-xl border border-ds-line bg-white p-2 pr-4 shadow-ds-card max-w-[85%]">
             {message.attachment.url ? (
@@ -499,29 +725,65 @@ function Message({
             </div>
           </div>
         ) : (
-          <div className="max-w-[85%] rounded-2xl bg-ds-ink/[0.05] px-4 py-2.5 text-[15px] leading-relaxed text-ds-ink whitespace-pre-wrap break-words">
+          <div className="agent-msg-in max-w-[80%] rounded-[20px] rounded-br-md bg-ds-accent-soft px-4 py-2.5 text-[15px] leading-relaxed text-ds-ink whitespace-pre-wrap break-words ring-1 ring-ds-accent/10">
             {message.content}
+          </div>
+        )}
+        {!message.attachment && (
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <CopyButton text={message.content} />
+            <IconAction icon="edit" label="Edit message" onClick={() => setEditing(true)} disabled={busy} />
           </div>
         )}
       </div>
     );
   }
 
+  const done = !message.streaming;
   return (
-    <div className="group flex gap-3.5" title={formatTime(message.timestamp)}>
-      <AgentMark className="text-[22px] mt-0.5 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <div className="text-[15px] leading-7 text-ds-ink space-y-3 break-words">
-          {renderMarkdown(message.content)}
-        </div>
-        {message.extraction && (
-          <div className="mt-4">
+    <div className="agent-msg-in group flex gap-3.5" title={formatTime(message.timestamp)}>
+      <AgentAvatar active={message.streaming} />
+      <div className="min-w-0 flex-1 pt-[3px]">
+        {message.content ? (
+          <div className={`text-[15px] leading-7 text-ds-ink space-y-3 break-words ${message.streaming ? 'agent-streaming' : ''}`}>
+            {renderMarkdown(message.content)}
+          </div>
+        ) : (
+          <div className="flex h-7 items-center"><TypingDots /></div>
+        )}
+        {message.stopped && (
+          <p className="mt-1 text-[12px] text-ds-muted">Stopped. Send another message or regenerate the reply.</p>
+        )}
+        {message.extraction && done && (
+          <div className="mt-4 agent-msg-in">
             <ExtractionCard details={message.extraction} onEdit={onEdit} onConfirm={onConfirm} creating={creating} />
           </div>
         )}
-        <div className="mt-1.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-          <CopyButton text={message.content} />
-        </div>
+        {done && (
+          <div className={`mt-1.5 flex items-center gap-0.5 transition-opacity ${isLatest ? '' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
+            <CopyButton text={message.content} />
+            {isLatest && <IconAction icon="refresh" label="Regenerate reply" onClick={onRegenerate} disabled={busy} />}
+          </div>
+        )}
+        {isLatest && done && !busy && followUps.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2 agent-msg-in">
+            {followUps.map((f) => (
+              <button
+                key={f.label}
+                type="button"
+                onClick={() => onFollowUp(f)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors ${
+                  f.kind === 'create'
+                    ? 'border-ds-accent/40 bg-ds-accent-soft text-ds-accent-strong hover:bg-ds-accent/15'
+                    : 'border-ds-line bg-white text-ds-body hover:bg-ds-subtle hover:text-ds-ink'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{f.icon}</span>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -553,6 +815,8 @@ export default function AgentPage() {
   const [, startTransition] = useTransition();
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  /** Cancels the turn in progress (the Stop button and Esc) */
+  const abortRef = useRef<AbortController | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -638,9 +902,45 @@ export default function AgentPage() {
     return () => clearTimeout(t);
   }, [messages, extractedDetails, flyerText, isTyping, historyUnavailable, activeWorkspace?.id, upsertSummary, historyFailed]);
 
-  useEffect(() => {
+  /* Follow the reply while it is written, unless the organizer has scrolled up to read */
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true);
+  const [showJump, setShowJump] = useState(false);
+  const onScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const pinned = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    pinnedRef.current = pinned;
+    setShowJump(!pinned);
+  };
+  const jumpToBottom = () => {
+    pinnedRef.current = true;
+    setShowJump(false);
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+  };
+  const streamingNow = messages.some((m) => m.streaming);
+  useEffect(() => {
+    if (!pinnedRef.current) return;
+    // Instant while text streams in (smooth scrolling lags behind), smooth otherwise.
+    bottomRef.current?.scrollIntoView({ behavior: streamingNow ? 'auto' : 'smooth', block: 'end' });
+  }, [messages, isTyping, streamingNow]);
+  // Sending a message always brings the conversation back to the bottom.
+  const lastUserId = [...messages].reverse().find((m) => m.role === 'user')?.id;
+  useEffect(() => {
+    if (!lastUserId) return;
+    pinnedRef.current = true; // onScroll hides the jump button once we reach the bottom
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [lastUserId]);
+
+  /* Esc stops a reply in progress */
+  useEffect(() => {
+    if (!isTyping) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') abortRef.current?.abort();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isTyping]);
 
   // Grow the composer with its content, up to a cap
   useEffect(() => {
@@ -656,10 +956,38 @@ export default function AgentPage() {
     });
   }, []);
 
-  /** Runs one assistant turn and shows the reply; the draft card follows the newest reply only. */
+  const [readingFlyer, setReadingFlyer] = useState(false);
+
+  const patchMessage = useCallback((id: string, patch: (m: UiMessage) => Partial<UiMessage>) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch(m) } : m)));
+  }, []);
+
+  const stopTurn = useCallback(() => abortRef.current?.abort(), []);
+
+  /**
+   * Runs one assistant turn. The reply appears as it is written: streamed from the server for chat
+   * turns, written out progressively for flyer reads and on-device answers. The draft card follows
+   * the newest reply only, and shows once the reply has finished.
+   */
   const runTurn = useCallback(
     async (history: UiMessage[], flyer: FlyerInput) => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      const { signal } = controller;
       setIsTyping(true);
+      setReadingFlyer(!!flyer?.extract);
+
+      const replyId = uid();
+      let shown = false;
+      const showReply = () => {
+        if (shown) return;
+        shown = true;
+        setMessages((prev) => [...prev, assistantMsg('', { id: replyId, streaming: true })]);
+      };
+      const onDelta = (text: string) => {
+        showReply();
+        patchMessage(replyId, (m) => ({ content: m.content + text }));
+      };
 
       // Without an AI provider the flyer is read on this device with OCR and rules.
       const runLocally = async () => {
@@ -674,7 +1002,8 @@ export default function AgentPage() {
             setOcrProgress(null);
           }
         }
-        return localChatTurn(extractedDetails as Partial<Details> | null, history[history.length - 1].content, { today, timeZone });
+        const turn = history.filter((m) => m.role === 'user').length - 1;
+        return localChatTurn(extractedDetails as Partial<Details> | null, history[history.length - 1].content, { today, timeZone, turn });
       };
 
       try {
@@ -683,13 +1012,23 @@ export default function AgentPage() {
           turn = await runLocally();
         } else {
           try {
-            turn = await askAgent(history, extractedDetails, flyer, flyerText);
+            turn = await askAgent(history, extractedDetails, flyer, flyerText, { onDelta, signal });
           } catch (err) {
             if ((err as Error & { code?: string }).code !== 'not_configured') throw err;
             setLocalMode(true);
             turn = await runLocally();
           }
         }
+        if (signal.aborted) throw new DOMException('Stopped', 'AbortError');
+
+        // Not streamed (flyer read or on-device): write it out now.
+        if (!shown) {
+          showReply();
+          setReadingFlyer(false);
+          await revealText(turn.reply, (text) => patchMessage(replyId, () => ({ content: text })), signal);
+          if (signal.aborted) throw new DOMException('Stopped', 'AbortError');
+        }
+
         if (turn.flyerText !== undefined) setFlyerText(turn.flyerText);
         const details = toDetails(turn.details);
         const showCard = hasDraft(details);
@@ -698,20 +1037,76 @@ export default function AgentPage() {
           setStage('reviewing_extraction');
         }
         startTransition(() => {
-          setMessages((prev) => [
-            ...prev.map((m) => (m.extraction ? { ...m, extraction: undefined } : m)),
-            assistantMsg(turn.reply, showCard ? { extraction: details } : undefined),
-          ]);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === replyId
+                ? { ...m, content: turn.reply, streaming: false, extraction: showCard ? details : undefined }
+                : m.extraction
+                  ? { ...m, extraction: undefined }
+                  : m,
+            ),
+          );
         });
         if (turn.action === 'create' && showCard) confirmRef.current(details);
       } catch (err) {
-        push(assistantMsg((err as Error).message || 'The flyer could not be read. Try again, or describe the event in a message.'));
+        if (isAbort(err) || signal.aborted) {
+          // Keep what was written so far; drop an empty bubble.
+          setMessages((prev) =>
+            prev.flatMap((m) => (m.id !== replyId ? [m] : m.content ? [{ ...m, streaming: false, stopped: true }] : [])),
+          );
+        } else {
+          const message = (err as Error).message || 'The flyer could not be read. Try again, or describe the event in a message.';
+          if (shown) patchMessage(replyId, () => ({ content: message, streaming: false }));
+          else push(assistantMsg(message));
+        }
         setStage((current) => (current === 'extracting' ? 'idle' : current));
       } finally {
+        if (abortRef.current === controller) abortRef.current = null;
+        setReadingFlyer(false);
         setIsTyping(false);
       }
     },
-    [extractedDetails, push, localMode, flyerText],
+    [extractedDetails, push, localMode, flyerText, patchMessage],
+  );
+
+  /** What to send about the flyer when re-running from a user message */
+  const flyerFor = useCallback(
+    (message: UiMessage | undefined): FlyerInput =>
+      flyerImages && flyerPreview
+        ? {
+            images: flyerImages,
+            extract: !!message?.attachment,
+            text: message?.attachment ? null : flyerText,
+            source: { dataUri: flyerPreview.url, name: flyerPreview.name },
+          }
+        : null,
+    [flyerImages, flyerPreview, flyerText],
+  );
+
+  /** Drops the latest reply and asks again from the last thing the organizer said. */
+  const handleRegenerate = useCallback(() => {
+    if (isTyping) return;
+    let lastUser = -1;
+    messages.forEach((m, i) => {
+      if (m.role === 'user') lastUser = i;
+    });
+    if (lastUser < 0) return;
+    const kept = messages.slice(0, lastUser + 1);
+    setMessages(kept);
+    void runTurn(kept, flyerFor(kept[lastUser]));
+  }, [isTyping, messages, runTurn, flyerFor]);
+
+  /** Replaces a message the organizer sent, drops everything after it, and asks again. */
+  const handleEditMessage = useCallback(
+    (id: string, text: string) => {
+      if (isTyping) return;
+      const index = messages.findIndex((m) => m.id === id);
+      if (index < 0) return;
+      const kept = [...messages.slice(0, index), userMsg(text)];
+      setMessages(kept);
+      void runTurn(kept, flyerFor(undefined));
+    },
+    [isTyping, messages, runTurn, flyerFor],
   );
 
   /* Handle flyer upload */
@@ -875,6 +1270,7 @@ export default function AgentPage() {
   });
 
   const resetChat = () => {
+    abortRef.current?.abort();
     setMessages([]);
     setInput('');
     setIsTyping(false);
@@ -930,8 +1326,7 @@ export default function AgentPage() {
   });
 
   const deleteChat = async (id: string) => {
-    const chat = history.find((c) => c.id === id);
-    if (!window.confirm(`Delete "${chat?.title ?? 'this chat'}"? This cannot be undone.`)) return;
+    // The history panel asks "Delete this chat?" inline before calling this.
     try {
       await agentConversationsService.remove(id);
       setHistory((prev) => prev.filter((c) => c.id !== id));
@@ -941,6 +1336,28 @@ export default function AgentPage() {
       window.alert('The chat could not be deleted. Try again in a moment.');
     }
   };
+
+  const handleFollowUp = (f: FollowUp) => {
+    if (f.kind === 'create') return void handleConfirm();
+    if (f.kind === 'upload') return fileInputRef.current?.click();
+    if (f.kind === 'send') {
+      if (isTyping) return;
+      const msg = userMsg(f.text);
+      push(msg);
+      void runTurn([...messages, msg], flyerFor(undefined));
+      return;
+    }
+    // Start the sentence in the composer so the organizer only types the answer.
+    setInput(f.text);
+    requestAnimationFrame(() => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      ta.focus();
+      ta.setSelectionRange(f.text.length, f.text.length);
+    });
+  };
+  const followUps = stage === 'done' || creating ? [] : followUpsFor(extractedDetails);
+  const lastId = messages[messages.length - 1]?.id;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -1000,17 +1417,32 @@ export default function AgentPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-[12px] text-ds-muted">Event assistant</span>
-            <button
-              type="button"
-              id="agent-send-message"
-              onClick={handleSend}
-              disabled={!input.trim() || isTyping}
-              aria-label="Send message"
-              className="w-8 h-8 rounded-lg bg-ds-accent text-white flex items-center justify-center hover:bg-ds-accent-strong transition-colors disabled:bg-ds-accent/35 disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
-            </button>
+            <span className="hidden sm:inline text-[12px] text-ds-muted">
+              {isTyping ? 'Esc to stop' : 'Enter to send, Shift+Enter for a new line'}
+            </span>
+            {isTyping ? (
+              <button
+                type="button"
+                id="agent-stop"
+                onClick={stopTurn}
+                aria-label="Stop generating"
+                title="Stop generating"
+                className="w-8 h-8 rounded-lg bg-ds-ink text-white flex items-center justify-center hover:bg-ds-ink/80 transition-colors"
+              >
+                <span className="block h-2.5 w-2.5 rounded-[2px] bg-white" aria-hidden="true" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                id="agent-send-message"
+                onClick={handleSend}
+                disabled={!input.trim()}
+                aria-label="Send message"
+                className="w-8 h-8 rounded-lg bg-ds-accent text-white flex items-center justify-center hover:bg-ds-accent-strong transition-colors disabled:bg-ds-accent/35 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1089,6 +1521,15 @@ export default function AgentPage() {
               <h1 className="text-[15px] font-medium text-ds-ink truncate">
                 {(conversationId && history.find((c) => c.id === conversationId)?.title) || 'AI Event Agent'}
               </h1>
+              {localMode && (
+                <span
+                  className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full bg-ds-warning-soft px-2 py-0.5 text-[11.5px] font-medium text-ds-warning"
+                  title="The full AI assistant isn't available right now, so replies are simpler and flyers are read on this device."
+                >
+                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">bolt</span>
+                  Basic mode
+                </span>
+              )}
             </div>
             <Link href="/app/events/new" className="ds-btn ds-btn-ghost ds-btn-sm hidden sm:inline-flex">
               Classic builder
@@ -1137,8 +1578,8 @@ export default function AgentPage() {
           ) : (
             <>
               {/* Conversation */}
-              <div className="flex-1 overflow-y-auto">
-                <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-4 pb-10 flex flex-col gap-7">
+              <div ref={scrollRef} onScroll={onScroll} className="relative flex-1 overflow-y-auto">
+                <div className="mx-auto w-full max-w-3xl px-4 sm:px-6 pt-6 pb-12 flex flex-col gap-6">
                   {loadingChat && (
                     <div className="flex items-center gap-2 py-10 text-[14px] text-ds-muted" role="status">
                       <span className="material-symbols-outlined animate-spin text-[18px]" aria-hidden="true">progress_activity</span>
@@ -1152,15 +1593,31 @@ export default function AgentPage() {
                       onEdit={handleFieldEdit}
                       onConfirm={handleConfirm}
                       creating={creating}
+                      isLatest={msg.id === lastId}
+                      busy={isTyping || creating}
+                      followUps={followUps}
+                      onFollowUp={handleFollowUp}
+                      onRegenerate={handleRegenerate}
+                      onEditMessage={handleEditMessage}
                     />
                   ))}
-                  {isTyping && <ThinkingIndicator ocrProgress={ocrProgress} />}
-                  <div ref={bottomRef} />
+                  {isTyping && !streamingNow && <ThinkingIndicator ocrProgress={ocrProgress} readingFlyer={readingFlyer} />}
+                  <div ref={bottomRef} className="h-px" />
                 </div>
               </div>
 
               {/* Composer docked at the bottom */}
-              <div className="shrink-0 px-4 sm:px-6 pb-3">
+              <div className="relative shrink-0 px-4 sm:px-6 pb-3">
+                {showJump && (
+                  <button
+                    type="button"
+                    onClick={jumpToBottom}
+                    aria-label="Scroll to the latest message"
+                    className="agent-msg-in absolute -top-12 left-1/2 -translate-x-1/2 z-10 w-9 h-9 rounded-full border border-ds-line bg-white text-ds-body shadow-[0_2px_10px_rgba(17,17,19,0.12)] flex items-center justify-center hover:text-ds-ink"
+                  >
+                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">arrow_downward</span>
+                  </button>
+                )}
                 <div className="mx-auto w-full max-w-3xl">
                   {composer}
                   <p className="text-[11px] text-ds-muted mt-2 text-center">

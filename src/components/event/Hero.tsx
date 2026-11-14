@@ -44,7 +44,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'asymmetric') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-8 lg:py-10 px-6 sm:px-10 lg:px-16 overflow-hidden border-b border-[var(--website-border)] bg-[var(--website-background)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-8 @min-[64rem]:py-10 px-6 @min-[40rem]:px-10 @min-[64rem]:px-16 overflow-hidden border-b border-[var(--website-border)] bg-[var(--website-background)]">
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-between">
           {/* Eyebrow & Issue / Edition metadata */}
           <div className="flex items-center justify-between pb-6 border-b border-[var(--website-border)] text-xs font-mono uppercase tracking-widest text-[var(--website-muted)]">
@@ -56,17 +56,17 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {/* Main Asymmetric Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center py-8">
+          <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-10 @min-[64rem]:gap-16 items-center py-8">
             {/* Left Column: Giant Editorial Headline & Essay intro. Takes the full width when there is no image. */}
-            <div className={`${flyerImage ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6`}>
+            <div className={`${flyerImage ? '@min-[64rem]:col-span-7' : '@min-[64rem]:col-span-12'} space-y-6`}>
               {showTitle && (
-                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] text-[var(--website-text)]">
+                <h1 className="text-4xl @min-[40rem]:text-6xl @min-[64rem]:text-7xl font-bold tracking-tight leading-[1.08] text-[var(--website-text)]">
                   {eventName}
                 </h1>
               )}
 
               {showDescription && (
-                <p className="text-lg sm:text-xl text-[var(--website-muted)] leading-relaxed max-w-2xl font-light">
+                <p className="text-lg @min-[40rem]:text-xl text-[var(--website-muted)] leading-relaxed max-w-2xl font-light">
                   {eventDescription}
                 </p>
               )}
@@ -96,12 +96,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
 
             {/* Right Column (5 cols): Asymmetric Image Frame */}
             {flyerImage && (
-              <div className="lg:col-span-5">
-                <div className="relative aspect-[4/5] max-h-[460px] w-full rounded-xl overflow-hidden border border-[var(--website-border)] shadow-xl bg-[var(--website-surface)]">
+              <div className="@min-[64rem]:col-span-5">
+                {/* Show the whole poster at its own aspect ratio, never cropped. */}
+                <div className="flex justify-center @min-[64rem]:justify-end">
                   <img
                     src={flyerImage}
                     alt={eventName}
-                    className="w-full h-full object-cover filter contrast-[1.05]"
+                    className="block w-auto h-auto max-w-full max-h-[640px] rounded-xl border border-[var(--website-border)] shadow-xl bg-[var(--website-surface)] filter contrast-[1.05]"
                   />
                 </div>
               </div>
@@ -110,7 +111,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
 
           {/* Bottom Editorial Metadata Strip */}
           {(showDate || showLocation) && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-[var(--website-border)] text-sm">
+            <div className="grid grid-cols-2 @min-[48rem]:grid-cols-4 gap-4 pt-6 border-t border-[var(--website-border)] text-sm">
               <div>
                 <span className="text-[11px] font-mono uppercase text-[var(--website-muted)] block">Date</span>
                 <span className="font-semibold text-[var(--website-text)]">{eventDate}</span>
@@ -140,9 +141,9 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'split') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col lg:flex-row bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col @min-[64rem]:flex-row bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
         {/* Left Side: Enterprise Leadership Panel */}
-        <div className="w-full lg:w-7/12 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-10 lg:py-12 z-10">
+        <div className="w-full @min-[64rem]:w-7/12 flex flex-col justify-center px-8 @min-[40rem]:px-12 @min-[64rem]:px-20 py-10 @min-[64rem]:py-12 z-10">
           <div className="max-w-2xl space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--website-border)] bg-[var(--website-surface)] text-xs font-mono font-medium text-[var(--website-primary)] uppercase tracking-wider">
               <span className="w-2 h-2 rounded-full bg-[var(--website-primary)]" />
@@ -150,13 +151,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
             </div>
 
             {showTitle && (
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12]">
+              <h1 className="text-4xl @min-[40rem]:text-5xl @min-[64rem]:text-6xl font-extrabold tracking-tight leading-[1.12]">
                 {eventName}
               </h1>
             )}
 
             {showDescription && (
-              <p className="text-base sm:text-lg text-[var(--website-muted)] leading-relaxed">
+              <p className="text-base @min-[40rem]:text-lg text-[var(--website-muted)] leading-relaxed">
                 {eventDescription}
               </p>
             )}
@@ -206,12 +207,12 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
         </div>
 
         {/* Right Side: Media Frame or Visual Pillar */}
-        <div className="w-full lg:w-5/12 relative min-h-[280px] lg:min-h-full bg-[var(--website-surface)] border-t lg:border-t-0 lg:border-l border-[var(--website-border)] flex items-center justify-center p-8 overflow-hidden">
+        <div className="w-full @min-[64rem]:w-5/12 relative min-h-[280px] @min-[64rem]:min-h-full bg-[var(--website-surface)] border-t @min-[64rem]:border-t-0 @min-[64rem]:border-l border-[var(--website-border)] flex items-center justify-center p-8 overflow-hidden">
           {flyerImage ? (
             <img
               src={flyerImage}
               alt={eventName}
-              className="w-full h-full max-h-[600px] object-cover rounded-xl shadow-2xl border border-[var(--website-border)]"
+              className="block w-auto h-auto max-w-full max-h-[640px] rounded-xl shadow-2xl border border-[var(--website-border)]"
             />
           ) : (
             <div className="w-full max-w-sm p-8 rounded-2xl border border-[var(--website-border)] bg-[var(--website-background)] shadow-lg space-y-4">
@@ -238,7 +239,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'full-bleed') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center px-6 sm:px-12 lg:px-20 py-12 bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center px-6 @min-[40rem]:px-12 @min-[64rem]:px-20 py-12 bg-[var(--website-background)] text-[var(--website-text)] overflow-hidden border-b border-[var(--website-border)]">
         {/* Subtle decorative glow */}
         <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full bg-[var(--website-primary)] opacity-15 blur-3xl pointer-events-none" />
 
@@ -253,13 +254,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {showTitle && (
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[0.98] uppercase">
+            <h1 className="text-5xl @min-[40rem]:text-7xl @min-[64rem]:text-8xl font-black tracking-tight leading-[0.98] uppercase">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-xl sm:text-2xl text-[var(--website-muted)] max-w-3xl leading-relaxed font-light">
+            <p className="text-xl @min-[40rem]:text-2xl text-[var(--website-muted)] max-w-3xl leading-relaxed font-light">
               {eventDescription}
             </p>
           )}
@@ -295,7 +296,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'stats-driven') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-10 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-10 px-6 @min-[40rem]:px-12 @min-[64rem]:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-7xl mx-auto w-full my-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-[var(--website-primary)] text-white font-mono text-xs font-black uppercase tracking-widest rounded-sm">
             <span className="material-symbols-outlined text-[15px]">sports_score</span>
@@ -303,13 +304,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {showTitle && (
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.95]">
+            <h1 className="text-5xl @min-[40rem]:text-7xl @min-[64rem]:text-8xl font-black tracking-tighter uppercase leading-[0.95]">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-lg sm:text-xl text-[var(--website-muted)] max-w-3xl leading-relaxed">
+            <p className="text-lg @min-[40rem]:text-xl text-[var(--website-muted)] max-w-3xl leading-relaxed">
               {eventDescription}
             </p>
           )}
@@ -335,22 +336,22 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {/* Athletic Numerical Metrics Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t-2 border-[var(--website-text)]/10">
+          <div className="grid grid-cols-2 @min-[48rem]:grid-cols-4 gap-4 pt-6 border-t-2 border-[var(--website-text)]/10">
             <div className="p-4 bg-[var(--website-surface)] border border-[var(--website-border)] rounded-md">
               <span className="text-[10px] font-mono uppercase text-[var(--website-muted)] block tracking-wider">Race Day</span>
-              <span className="text-xl sm:text-2xl font-black font-space">{eventDate}</span>
+              <span className="text-xl @min-[40rem]:text-2xl font-black font-space">{eventDate}</span>
             </div>
             <div className="p-4 bg-[var(--website-surface)] border border-[var(--website-border)] rounded-md">
               <span className="text-[10px] font-mono uppercase text-[var(--website-muted)] block tracking-wider">Start Line</span>
-              <span className="text-xl sm:text-2xl font-black font-space truncate block">{eventLocation}</span>
+              <span className="text-xl @min-[40rem]:text-2xl font-black font-space truncate block">{eventLocation}</span>
             </div>
             <div className="p-4 bg-[var(--website-surface)] border border-[var(--website-border)] rounded-md">
               <span className="text-[10px] font-mono uppercase text-[var(--website-muted)] block tracking-wider">Timing</span>
-              <span className="text-xl sm:text-2xl font-black font-space">RFID Chip Bib</span>
+              <span className="text-xl @min-[40rem]:text-2xl font-black font-space">RFID Chip Bib</span>
             </div>
             <div className="p-4 bg-[var(--website-surface)] border border-[var(--website-border)] rounded-md">
               <span className="text-[10px] font-mono uppercase text-[var(--website-muted)] block tracking-wider">Awards</span>
-              <span className="text-xl sm:text-2xl font-black font-space">Medal &amp; Certificate</span>
+              <span className="text-xl @min-[40rem]:text-2xl font-black font-space">Medal &amp; Certificate</span>
             </div>
           </div>
         </div>
@@ -364,20 +365,20 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'poster') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 @min-[40rem]:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
         <div className="max-w-5xl mx-auto w-full space-y-6 relative z-10">
           <div className="inline-block px-4 py-1.5 rounded-full border-2 border-[var(--website-primary)] text-xs font-mono font-bold uppercase tracking-widest text-[var(--website-primary)]">
             ★ Annual Festival &amp; Celebration ★
           </div>
 
           {showTitle && (
-            <h1 className="text-5xl sm:text-7xl lg:text-9xl font-black tracking-tight leading-[0.95] uppercase">
+            <h1 className="text-5xl @min-[40rem]:text-7xl @min-[64rem]:text-9xl font-black tracking-tight leading-[0.95] uppercase">
               {eventName}
             </h1>
           )}
 
           {(showDate || showLocation) && (
-            <div className="flex flex-wrap items-center justify-center gap-3 text-base sm:text-lg font-mono font-bold text-[var(--website-primary)]">
+            <div className="flex flex-wrap items-center justify-center gap-3 text-base @min-[40rem]:text-lg font-mono font-bold text-[var(--website-primary)]">
               <span>{eventDate}</span>
               <span>•</span>
               <span>{eventLocation}</span>
@@ -385,7 +386,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           )}
 
           {showDescription && (
-            <p className="text-lg sm:text-xl text-[var(--website-muted)] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg @min-[40rem]:text-xl text-[var(--website-muted)] max-w-2xl mx-auto leading-relaxed">
               {eventDescription}
             </p>
           )}
@@ -421,7 +422,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'outcome-focused') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 @min-[40rem]:px-12 @min-[64rem]:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             <span className="px-3 py-1 rounded bg-[var(--website-primary)] text-white font-bold uppercase tracking-wider">
@@ -433,13 +434,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {showTitle && (
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+            <h1 className="text-3xl @min-[40rem]:text-5xl @min-[64rem]:text-6xl font-bold tracking-tight leading-tight">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-base sm:text-lg text-[var(--website-muted)] leading-relaxed">
+            <p className="text-base @min-[40rem]:text-lg text-[var(--website-muted)] leading-relaxed">
               {eventDescription}
             </p>
           )}
@@ -491,7 +492,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'cinematic') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 @min-[40rem]:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)] overflow-hidden">
         <div className="max-w-4xl mx-auto w-full space-y-8 relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[var(--website-accent)]/40 bg-[var(--website-surface)] text-xs font-mono tracking-widest uppercase text-[var(--website-accent)] font-semibold shadow-xs">
             <span className="w-2 h-2 rounded-full bg-[var(--website-accent)] animate-pulse" />
@@ -499,13 +500,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {showTitle && (
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight leading-[1.08]">
+            <h1 className="text-4xl @min-[40rem]:text-6xl @min-[64rem]:text-7xl font-light tracking-tight leading-[1.08]">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-lg sm:text-xl text-[var(--website-muted)] max-w-2xl mx-auto leading-relaxed font-light">
+            <p className="text-lg @min-[40rem]:text-xl text-[var(--website-muted)] max-w-2xl mx-auto leading-relaxed font-light">
               {eventDescription}
             </p>
           )}
@@ -540,7 +541,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'story-led') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 sm:px-12 lg:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center py-12 px-6 @min-[40rem]:px-12 @min-[64rem]:px-20 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-4xl mx-auto w-full space-y-6">
           <div className="inline-flex items-center gap-2 text-xs font-mono text-[var(--website-primary)] font-bold uppercase tracking-wider">
             <span className="material-symbols-outlined text-[16px]">groups</span>
@@ -548,13 +549,13 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
           </div>
 
           {showTitle && (
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
+            <h1 className="text-4xl @min-[40rem]:text-6xl @min-[64rem]:text-7xl font-bold tracking-tight leading-tight">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-lg sm:text-xl text-[var(--website-muted)] leading-relaxed">
+            <p className="text-lg @min-[40rem]:text-xl text-[var(--website-muted)] leading-relaxed">
               {eventDescription}
             </p>
           )}
@@ -596,20 +597,20 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // =========================================================================
   if (variant === 'minimal') {
     return (
-      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+      <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 @min-[40rem]:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
         <div className="max-w-3xl mx-auto w-full space-y-6">
           <span className="text-xs font-mono uppercase tracking-widest text-[var(--website-muted)]">
             Restorative Experience · Sanctuary Retreat
           </span>
 
           {showTitle && (
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-normal tracking-normal leading-tight">
+            <h1 className="text-4xl @min-[40rem]:text-5xl @min-[64rem]:text-6xl font-normal tracking-normal leading-tight">
               {eventName}
             </h1>
           )}
 
           {showDescription && (
-            <p className="text-base sm:text-lg text-[var(--website-muted)] font-light leading-relaxed max-w-2xl mx-auto">
+            <p className="text-base @min-[40rem]:text-lg text-[var(--website-muted)] font-light leading-relaxed max-w-2xl mx-auto">
               {eventDescription}
             </p>
           )}
@@ -641,7 +642,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
   // Grand centered conference hero with centered badge and balanced CTAs
   // =========================================================================
   return (
-    <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 sm:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
+    <section className="relative w-full min-h-[60vh] flex flex-col justify-center items-center text-center py-12 px-6 @min-[40rem]:px-12 bg-[var(--website-background)] text-[var(--website-text)] border-b border-[var(--website-border)]">
       <div className="max-w-4xl mx-auto w-full space-y-6">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[var(--website-border)] bg-[var(--website-surface)] text-xs font-mono font-medium text-[var(--website-primary)] uppercase tracking-wider">
           <span className="w-2 h-2 rounded-full bg-[var(--website-primary)] animate-pulse" />
@@ -649,7 +650,7 @@ export default function Hero({ event, section, variant = 'centered' }: HeroProps
         </div>
 
         {showTitle && (
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08]">
+          <h1 className="text-4xl @min-[40rem]:text-6xl @min-[64rem]:text-7xl font-extrabold tracking-tight leading-[1.08]">
             {eventName}
           </h1>
         )}

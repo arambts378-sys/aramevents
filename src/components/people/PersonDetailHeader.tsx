@@ -10,6 +10,7 @@ interface PersonDetailHeaderProps {
   organization?: string | null;
   jobTitle?: string | null;
   onEdit: () => void;
+  onRemove?: () => void;
   onOpenMobileMenu?: () => void;
 }
 
@@ -29,6 +30,7 @@ export function PersonDetailHeader({
   organization,
   jobTitle,
   onEdit,
+  onRemove,
   onOpenMobileMenu,
 }: PersonDetailHeaderProps) {
   const initials = getInitials(fullName);
@@ -94,7 +96,18 @@ export function PersonDetailHeader({
           </div>
         </div>
 
-        <div className="w-full sm:w-auto shrink-0">
+        <div className="w-full sm:w-auto shrink-0 flex flex-col sm:flex-row gap-2">
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              id="btn-remove-person"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-ds-line hover:border-red-300 hover:bg-red-50 text-ds-body hover:text-red-600 text-xs font-semibold rounded-xl transition-all shadow-xs cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[16px]">person_remove</span>
+              <span>Remove</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onEdit}

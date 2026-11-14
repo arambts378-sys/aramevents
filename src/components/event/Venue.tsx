@@ -16,11 +16,11 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
 
   return (
     <section id="venue" className="bg-brand-white website-section border-t border-brand-border/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8">
         
         {/* VARIANT: IMMERSIVE (Summit / Cinematic full-bleed venue banner) */}
         {variant === "immersive" && (
-          <div className="relative rounded-2xl overflow-hidden min-h-[340px] flex items-end p-6 md:p-12 shadow-lg">
+          <div className="relative rounded-2xl overflow-hidden min-h-[340px] flex items-end p-6 @min-[48rem]:p-12 shadow-lg">
             <img
               src={imageUrl}
               alt="Venue"
@@ -30,7 +30,7 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
               <span className="text-xs font-mono uppercase tracking-widest text-brand-maroon font-bold bg-white/90 px-2.5 py-1 rounded inline-block mb-4">
                 Destination Venue
               </span>
-              <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-4">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-bold leading-tight mb-4">
                 {content.title || event.venue || "Official Venue"}
               </h2>
               <p className="text-lg text-white/80 mb-6 max-w-xl">
@@ -63,16 +63,16 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
               <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
                 // Architecture &amp; Setting
               </span>
-              <h2 className="text-3xl md:text-5xl font-serif text-brand-dark leading-tight">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-serif text-brand-dark leading-tight">
                 {content.title || event.venue || "Event Venue"}
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-8 aspect-[16/9] rounded-xl overflow-hidden bg-brand-soft border border-brand-border">
+            <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-8 items-start">
+              <div className="@min-[64rem]:col-span-8 aspect-[16/9] rounded-xl overflow-hidden bg-brand-soft border border-brand-border">
                 <img src={imageUrl} alt="Venue architecture" className="w-full h-full object-cover filter grayscale contrast-115" />
               </div>
-              <div className="lg:col-span-4 bg-brand-soft border border-brand-border p-6 rounded-xl space-y-6">
+              <div className="@min-[64rem]:col-span-4 bg-brand-soft border border-brand-border p-6 rounded-xl space-y-6">
                 <div>
                   <span className="text-[11px] font-mono uppercase text-brand-muted block mb-1">CITY / REGION</span>
                   <div className="text-xl font-serif text-brand-dark">{event.location}</div>
@@ -103,8 +103,8 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
 
         {/* VARIANT: COMPACT (Workshop / Quick practical row card) */}
         {variant === "compact" && (
-          <div className="bg-brand-soft border border-brand-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-8">
-            <div className="w-full md:w-64 h-44 rounded-xl overflow-hidden bg-brand-border shrink-0">
+          <div className="bg-brand-soft border border-brand-border rounded-2xl p-6 @min-[48rem]:p-8 flex flex-col @min-[48rem]:flex-row items-center gap-8">
+            <div className="w-full @min-[48rem]:w-64 h-44 rounded-xl overflow-hidden bg-brand-border shrink-0">
               <img src={imageUrl} alt="Venue location" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 space-y-2 text-left">
@@ -144,7 +144,7 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
                   {content.heading || "Venue"}
                 </span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-4">
+              <h2 className="text-3xl @min-[48rem]:text-5xl font-medium text-brand-dark leading-tight tracking-tight mb-4">
                 {content.title || event.venue || "Event Venue"}
               </h2>
               {content.description && (
@@ -154,8 +154,8 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
               )}
             </div>
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12 xl:space-x-16">
-              <div className="w-full lg:w-2/3 mb-10 lg:mb-0">
+            <div className="flex flex-col @min-[64rem]:flex-row @min-[64rem]:space-x-12 @min-[80rem]:space-x-16">
+              <div className="w-full @min-[64rem]:w-2/3 mb-10 @min-[64rem]:mb-0">
                 <div className="relative aspect-video w-full overflow-hidden bg-brand-soft rounded-xl shadow-xs">
                   <img
                     src={imageUrl}
@@ -166,8 +166,8 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
                 </div>
               </div>
 
-              <div className="w-full lg:w-1/3 flex flex-col justify-center">
-                <div className="space-y-8 bg-brand-soft/50 p-6 md:p-8 rounded-xl border border-brand-border">
+              <div className="w-full @min-[64rem]:w-1/3 flex flex-col justify-center">
+                <div className="space-y-8 bg-brand-soft/50 p-6 @min-[48rem]:p-8 rounded-xl border border-brand-border">
                   <div>
                     <h3 className="text-xs font-mono text-brand-muted uppercase tracking-wider mb-1">Location</h3>
                     <p className="text-xl font-medium text-brand-dark">{event.location}</p>

@@ -4,6 +4,8 @@ import { EmptyPanel, PageHeader, StatusPill } from '@/components/ui';
 import { FilterTabs, Pager, SearchBox } from '@/components/super-admin/Pager';
 import { STATUS_PILL, fmtAgo, fmtDate, roleLabel } from '@/components/super-admin/fmt';
 import { listOrganizers } from '@/services/superAdminLive.server';
+import { ActionDialog } from '@/components/super-admin/controls/ActionDialog';
+import { deleteOrganizerAction } from '@/app/actions/superAdminActions';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -69,7 +71,7 @@ export default async function OrganizersPage({ searchParams }: { searchParams: P
             ) : (
               <>
                 <div className="ds-table-wrap">
-                  <table className="ds-table min-w-[860px]">
+                  <table className="ds-table min-w-[940px]">
                     <thead>
                       <tr>
                         <th scope="col">Account</th>
@@ -78,6 +80,7 @@ export default async function OrganizersPage({ searchParams }: { searchParams: P
                         <th scope="col">Joined</th>
                         <th scope="col">Last sign-in</th>
                         <th scope="col">Status</th>
+                        <th scope="col" className="text-right"><span className="sr-only">Actions</span></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -111,6 +114,20 @@ export default async function OrganizersPage({ searchParams }: { searchParams: P
                               <StatusPill tone={STATUS_PILL[o.status].tone}>{STATUS_PILL[o.status].label}</StatusPill>
                               {o.isPlatformAdmin && <StatusPill tone="brand" dot={false}>Admin</StatusPill>}
                             </span>
+                          </td>
+                          <td className="text-right">
+                            <ActionDialog
+                              label="Delete"
+                              variant="ghost"
+                              tone="danger"
+                              title={`Permanently delete ${o.name || o.email || 'this account'}?`}
+                              description={<>This can’t be undone. The sign-in account is removed, plus every workspace they <strong className="text-ds-ink">own</strong> and all of those workspaces’ events, registrations, tickets and check-ins. They’re also removed from other teams. Open the account first to see exactly what they own.</>}
+                              confirmLabel="Delete permanently"
+                              reason="required"
+                              confirmPhrase={o.email ?? 'DELETE'}
+                              disabled={o.isPlatformAdmin}
+                              action={deleteOrganizerAction.bind(null, o.id)}
+                            />
                           </td>
                         </tr>
                       ))}

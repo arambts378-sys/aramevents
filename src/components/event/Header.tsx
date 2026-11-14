@@ -46,7 +46,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
   const isSolid = variant === "solid";
 
   const headerContainerClass = isFloating
-    ? "sticky top-4 z-50 w-full px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto"
+    ? "sticky top-4 z-50 w-full px-4 @min-[40rem]:px-6 @min-[64rem]:px-8 max-w-5xl mx-auto"
     : isTransparent
     ? "absolute top-0 left-0 right-0 z-50 w-full bg-transparent"
     : isSolid
@@ -55,7 +55,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
 
   const innerNavClass = isFloating
     ? "bg-brand-white/95 backdrop-blur-md rounded-full px-6 shadow-md border border-brand-border flex justify-between items-center h-16"
-    : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20";
+    : "max-w-7xl mx-auto px-4 @min-[40rem]:px-6 @min-[64rem]:px-8 flex justify-between items-center h-20";
 
   return (
     <header className={headerContainerClass}>
@@ -72,7 +72,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
 
         {/* Desktop Navigation */}
         {!isMinimal && (
-          <nav className="hidden md:flex space-x-7">
+          <nav className="hidden @min-[48rem]:flex space-x-7">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -86,7 +86,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
         )}
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden @min-[48rem]:flex items-center">
           {showCta && (
             <Link
               href={ctaDest}
@@ -102,7 +102,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex items-center md:hidden">
+        <div className="flex items-center @min-[48rem]:hidden">
           <button
             type="button"
             className="inline-flex items-center justify-center p-2 rounded-md text-brand-dark hover:text-brand-maroon hover:bg-brand-border/50 focus:outline-none"
@@ -126,7 +126,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-brand-border bg-brand-white shadow-lg" id="mobile-menu">
+        <div className="@min-[48rem]:hidden border-t border-brand-border bg-brand-white shadow-lg" id="mobile-menu">
           <div className="px-4 pt-3 pb-4 space-y-2">
             {navLinks.map((link) => (
               <Link
