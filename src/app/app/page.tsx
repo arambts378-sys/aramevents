@@ -8,6 +8,7 @@ import { WorkspaceHeader } from '@/components/dashboard/WorkspaceHeader';
 import { KpiOverview } from '@/components/dashboard/KpiOverview';
 import { UpcomingEvents } from '@/components/dashboard/UpcomingEvents';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { TicketSalesOverview } from '@/components/dashboard/TicketSalesOverview';
 import { AllEventsTable } from '@/components/dashboard/AllEventsTable';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 
@@ -119,6 +120,9 @@ export default function DashboardPage() {
             registrationsCount={totalRegistrations}
             teamMembersCount={teamMembersCount}
           />
+
+          {/* Ticket types, sales and revenue, once events have registrations */}
+          <TicketSalesOverview events={events} />
 
           {/* Upcoming Events */}
           <UpcomingEvents events={events} />
