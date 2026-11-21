@@ -40,6 +40,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
+    agentUpgrade: "security",
   },
   async headers() {
     return [
