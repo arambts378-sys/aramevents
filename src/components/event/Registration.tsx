@@ -8,6 +8,7 @@ import { ticketService, formatPaiseToINR } from '@/services/ticketService';
 import { EventRegistrationSettings, PublicTicketAvailability } from '@/types';
 import { RegistrationVariant } from '@/data/templates';
 import { SponsorButtons } from './Sponsors';
+import { ConcertTickets } from './concert/ConcertSections';
 
 interface RegistrationProps {
   event?: any;
@@ -51,6 +52,8 @@ export default function Registration({ event, section, variant = "split" }: Regi
   if (!settings || !settings.is_enabled) {
     return null;
   }
+
+  if (variant === "concert") return <ConcertTickets event={event} section={section} tickets={tickets} />;
 
   const registerUrl = content.buttonUrl || `/events/${event?.slug || event?.id || slug}/register`;
   const headingText = content.heading || (

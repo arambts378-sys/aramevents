@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { ConcertFinalCTA } from "./concert/ConcertSections";
 
-export default function FinalCTA({ event, section }: any) {
+export default function FinalCTA({ event, section, variant }: any) {
+  if (variant === "concert") return <ConcertFinalCTA event={event} section={section} />;
   const content = section?.content || {};
   const title = content.title || "Ready to shape the future?";
   

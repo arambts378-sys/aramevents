@@ -1,5 +1,6 @@
 import { EventData } from "@/types/event";
 import { AboutVariant } from "@/data/templates";
+import { ConcertAbout } from "./concert/ConcertSections";
 
 interface AboutProps {
   event: EventData;
@@ -8,6 +9,7 @@ interface AboutProps {
 }
 
 export default function About({ event, section, variant = "split" }: AboutProps) {
+  if (variant === "concert") return <ConcertAbout event={event} section={section} />;
   const content = section?.content || {};
 
   const headingText = content.heading || (

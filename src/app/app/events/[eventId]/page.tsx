@@ -9,6 +9,7 @@ import { Sidebar } from '@/components/dashboard/Sidebar';
 import { createClient } from '@/lib/supabase/client';
 import { EventSetupCard } from '@/components/events/setup/EventSetupCard';
 import WebsiteLinkField from '@/components/website-editor/WebsiteLinkField';
+import { EditEventDetailsDialog } from '@/components/events/EditEventDetailsDialog';
 
 export default function EventWorkspacePage() {
   const routeParams = useParams();
@@ -19,6 +20,7 @@ export default function EventWorkspacePage() {
   const [publishError, setPublishError] = useState<string | null>(null);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [editingDetails, setEditingDetails] = useState(false);
   const [metrics, setMetrics] = useState<{
     registrations: number;
     checkIns: number;
@@ -335,9 +337,20 @@ export default function EventWorkspacePage() {
                 </div>
 
                 {/* Header Actions (Status & View Public Site) */}
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center md:justify-end gap-3">
                     {renderStatusBadge(event.status)}
+
+                    {/* Edit details: available for drafts, live (published) and finished events */}
+                    <button
+                      id="btn-edit-details"
+                      type="button"
+                      onClick={() => setEditingDetails(true)}
+                      className="inline-flex items-center gap-1.5 px-4 h-10 rounded-xl bg-white border border-ds-line text-ds-ink font-semibold text-[13px] hover:border-ds-accent hover:text-ds-accent transition-colors shadow-xs font-jakarta"
+                    >
+                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">edit</span>
+                      <span>Edit details</span>
+                    </button>
 
                     {/* Publish / Unpublish Button */}
                     <button
@@ -396,18 +409,33 @@ export default function EventWorkspacePage() {
 
             {/* While it's a draft, the next steps come first and stand in for the tool shortcuts below */}
             {isDraft && (
-              <EventSetupCard event={event} onGoLive={handleTogglePublish} goingLive={publishing} />
+              <EventSetupCard
+                event={event}
+                onGoLive={handleTogglePublish}
+                goingLive={publishing}
+                onEditDetails={() => setEditingDetails(true)}
+              />
             )}
 
             {/* 2. EVENT SUMMARY CARD */}
             <section className="bg-white border border-ds-line rounded-2xl p-7 shadow-xs">
-              <div className="space-y-1 pb-6 border-b border-ds-line">
-                <h2 className="text-[16px] font-bold text-ds-ink font-space">
-                  {event.name}
-                </h2>
-                <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
-                  {event.description || 'No description provided.'}
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-ds-line">
+                <div className="min-w-0 space-y-1">
+                  <h2 className="text-[16px] font-bold text-ds-ink font-space">
+                    {event.name}
+                  </h2>
+                  <p className="text-[13px] text-ds-muted font-jakarta leading-relaxed">
+                    {event.description || 'No description provided.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingDetails(true)}
+                  className="inline-flex items-center gap-1.5 self-start shrink-0 px-3.5 h-9 rounded-xl bg-white border border-ds-line text-ds-ink font-semibold text-[13px] hover:border-ds-accent hover:text-ds-accent transition-colors shadow-xs font-jakarta"
+                >
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">edit</span>
+                  <span>Edit details</span>
+                </button>
               </div>
 
               {/* Metadata Grid (4-Column Desktop) */}
@@ -469,6 +497,15 @@ export default function EventWorkspacePage() {
                 Quick actions
               </h3>
               <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setEditingDetails(true)}
+                  className="inline-flex items-center gap-2 px-3.5 h-10 rounded-xl bg-white border border-ds-line text-ds-ink font-semibold text-[13px] hover:border-ds-accent hover:text-ds-accent transition-colors shadow-xs active:scale-[0.99] font-jakarta"
+                >
+                  <span className="material-symbols-outlined text-[17px]">edit_calendar</span>
+                  <span>Edit event details</span>
+                </button>
+
                 <Link
                   href={`/app/events/${event.id}/website/editor`}
                   className="inline-flex items-center gap-2 px-3.5 h-10 rounded-xl bg-white border border-ds-line text-ds-ink font-semibold text-[13px] hover:border-ds-accent hover:text-ds-accent transition-colors shadow-xs active:scale-[0.99] font-jakarta"
@@ -631,6 +668,10 @@ export default function EventWorkspacePage() {
           </div>
         </main>
       </div>
+
+      {editingDetails && (
+        <EditEventDetailsDialog event={event} onSave={updateEvent} onClose={() => setEditingDetails(false)} />
+      )}
     </div>
   );
 }

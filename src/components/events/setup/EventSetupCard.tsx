@@ -13,7 +13,18 @@ import {
 import { useEventSetupProgress } from './useEventSetupProgress';
 
 /** The checklist on a draft event's workspace: what's done, and what to do next. */
-export function EventSetupCard({ event, onGoLive, goingLive }: { event: Event; onGoLive: () => void; goingLive: boolean }) {
+export function EventSetupCard({
+  event,
+  onGoLive,
+  goingLive,
+  onEditDetails,
+}: {
+  event: Event;
+  onGoLive: () => void;
+  goingLive: boolean;
+  /** The details step is edited in place on the workspace, so it opens the editor instead of a page. */
+  onEditDetails?: () => void;
+}) {
   const progress = useEventSetupProgress(event);
 
   if (!progress) {
@@ -66,15 +77,11 @@ export function EventSetupCard({ event, onGoLive, goingLive }: { event: Event; o
         {SETUP_STEPS.map((step, index) => {
           const isDone = progress[step.id];
           const isNext = upNext?.id === step.id;
-          return (
-            <li key={step.id}>
-              <Link
-                href={setupStepHref(step, event.id)}
-                aria-current={isNext ? 'step' : undefined}
-                className={`group flex h-full items-start gap-3 rounded-xl border p-4 transition-colors ${
-                  isNext ? 'border-ds-accent bg-ds-accent-soft/40' : 'border-ds-line hover:border-ds-accent/60'
-                }`}
-              >
+          const stepClass = `group flex h-full w-full text-left items-start gap-3 rounded-xl border p-4 transition-colors ${
+            isNext ? 'border-ds-accent bg-ds-accent-soft/40' : 'border-ds-line hover:border-ds-accent/60'
+          }`;
+          const content = (
+            <>
                 <span
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-bold font-jakarta ${
                     isDone ? 'bg-ds-accent text-white' : 'bg-ds-accent-soft text-ds-accent'
@@ -93,7 +100,19 @@ export function EventSetupCard({ event, onGoLive, goingLive }: { event: Event; o
                   </span>
                   <span className="block mt-0.5 text-[12px] leading-relaxed text-ds-muted font-jakarta">{step.description}</span>
                 </span>
-              </Link>
+            </>
+          );
+          return (
+            <li key={step.id}>
+              {step.id === 'details' && onEditDetails ? (
+                <button type="button" onClick={onEditDetails} aria-current={isNext ? 'step' : undefined} className={stepClass}>
+                  {content}
+                </button>
+              ) : (
+                <Link href={setupStepHref(step, event.id)} aria-current={isNext ? 'step' : undefined} className={stepClass}>
+                  {content}
+                </Link>
+              )}
             </li>
           );
         })}

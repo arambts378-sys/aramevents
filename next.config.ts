@@ -27,7 +27,8 @@ const securityHeaders = [
       "default-src 'self'",
       // Razorpay Checkout loads its script and opens its payment window in a frame.
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
-      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+      // Google Maps: the venue map on event websites.
+      "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https:",
@@ -40,6 +41,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
+    agentUpgrade: "security",
   },
   async headers() {
     return [
