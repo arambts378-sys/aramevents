@@ -31,9 +31,11 @@ interface Props {
   tickets?: PublicTicketAvailability[];
   sponsorPackages?: PublicSponsorPackage[];
   initialRole?: 'attendee' | SponsorKind;
+  /** A ticket chosen on the event website ("Book" on a ticket), selected when it can be bought */
+  initialTicketId?: string;
 }
 
-export default function PublicRegistrationClient({ themeStyle, paymentsEnabled = false, event, settings, slug, walkathonDistances = [], isWalkathon = false, tickets = [], sponsorPackages = [], initialRole = 'attendee' }: Props) {
+export default function PublicRegistrationClient({ themeStyle, paymentsEnabled = false, event, settings, slug, walkathonDistances = [], isWalkathon = false, tickets = [], sponsorPackages = [], initialRole = 'attendee', initialTicketId }: Props) {
   /** Wraps a screen in the website's theme: colours, fonts and button corners. */
   const themed = (screen: React.ReactNode) => (
     <div
@@ -64,6 +66,8 @@ export default function PublicRegistrationClient({ themeStyle, paymentsEnabled =
   // Selected Ticket State
   const [selectedTicketId, setSelectedTicketId] = useState<string>(() => {
     if (tickets && tickets.length > 0) {
+      const chosen = tickets.find(t => t.id === initialTicketId && t.status === 'on_sale');
+      if (chosen) return chosen.id;
       const firstAvailable = tickets.find(t => t.status === 'on_sale' && t.ticket_type === 'free')
         || tickets.find(t => t.status === 'on_sale')
         || tickets[0];

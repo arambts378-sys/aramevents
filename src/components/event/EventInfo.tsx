@@ -1,5 +1,6 @@
 import { EventData } from "@/types/event";
 import { EventInfoVariant } from "@/data/templates";
+import { ConcertInfo } from "./concert/ConcertSections";
 
 interface EventInfoProps {
   event: EventData;
@@ -8,6 +9,7 @@ interface EventInfoProps {
 }
 
 export default function EventInfo({ event, section, variant = "stats-strip" }: EventInfoProps) {
+  if (variant === "concert") return <ConcertInfo event={event} section={section} />;
   const content = section?.content || {};
   const showDate = content.showDate ?? true;
   const showTime = content.showTime ?? true;

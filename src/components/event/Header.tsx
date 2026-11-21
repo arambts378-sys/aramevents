@@ -17,9 +17,13 @@ export default function Header({ event, section, websiteConfig, variant = "stick
   const content = section?.content || {};
   const logoText = content.logoText || event?.name || "Aram Events";
   const showLogoText = content.showLogoText ?? true;
-  const ctaText = content.ctaText || "Register Now";
+  // Concert sites sell tickets: the button says so and jumps to the ticket wall when it's on the page.
+  const isConcert = websiteConfig?.templateId === 'concert';
+  const ticketsOnPage = Boolean(websiteConfig?.sections?.find((s: any) => s.id === 'register')?.visible);
+  const ctaText = content.ctaText || (isConcert ? "Book Tickets" : "Register Now");
   const showCta = content.showCta ?? true;
-  const ctaDest = content.ctaDest || `/events/${event?.slug || event?.id}/register`;
+  const ctaDest =
+    content.ctaDest || (isConcert && ticketsOnPage ? '#registration' : `/events/${event?.slug || event?.id}/register`);
 
   // Generate nav links based on visible sections
   const possibleNavSections = [
@@ -38,6 +42,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
       return sec && sec.visible;
     })
     .map(nav => ({ label: nav.label, href: `#${nav.id}` }));
+  if (isConcert && ticketsOnPage) navLinks.splice(Math.min(1, navLinks.length), 0, { label: 'Tickets', href: '#registration' });
 
   // Variant classes
   const isFloating = variant === "floating";
@@ -64,7 +69,7 @@ export default function Header({ event, section, websiteConfig, variant = "stick
         <div className="flex-shrink-0 flex items-center">
           {showLogoText && (
             <Link href="/" className="text-xl font-bold text-brand-dark tracking-tight flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-maroon"></span>
+              {!isConcert && <span className="w-2.5 h-2.5 rounded-full bg-brand-maroon"></span>}
               <span>{logoText}</span>
             </Link>
           )}

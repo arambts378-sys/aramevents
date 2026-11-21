@@ -135,7 +135,7 @@ export default function EventWebsiteRenderer({
         return <Header event={event} section={section} websiteConfig={websiteConfig} variant={variants.header} />;
       case 'home':
       case 'hero':
-        return <Hero event={event} section={section} variant={variants.hero} />;
+        return <Hero event={event} section={section} variant={variants.hero} websiteConfig={websiteConfig} />;
       case 'event_info':
         return <EventInfo event={event} section={section} variant={variants.eventInfo} />;
       case 'about':
@@ -155,7 +155,7 @@ export default function EventWebsiteRenderer({
       case 'contact':
         return <Contact event={event} section={section} />;
       case 'final_cta':
-        return <FinalCTA event={event} section={section} />;
+        return <FinalCTA event={event} section={section} variant={variants.finalCta} />;
       case 'footer':
         return <Footer event={event} section={section} variant={variants.footer} />;
       default:

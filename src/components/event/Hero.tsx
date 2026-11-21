@@ -4,14 +4,18 @@ import React from 'react';
 import Link from 'next/link';
 import { WebsiteSection } from '@/types';
 import { HeroVariant } from '@/data/templates';
+import { ConcertHero } from './concert/ConcertSections';
 
 interface HeroProps {
   event: any;
   section?: WebsiteSection;
   variant?: HeroVariant;
+  /** The whole website, for layouts that borrow text from other sections */
+  websiteConfig?: any;
 }
 
-export default function Hero({ event, section, variant = 'centered' }: HeroProps) {
+export default function Hero({ event, section, variant = 'centered', websiteConfig }: HeroProps) {
+  if (variant === 'concert') return <ConcertHero event={event} section={section} websiteConfig={websiteConfig} />;
   const content = section?.content || {};
   const hasFlyer = !!content.image;
 

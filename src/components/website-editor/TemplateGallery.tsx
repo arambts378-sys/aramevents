@@ -45,7 +45,7 @@ export default function TemplateGallery({
   const activeLayout: ThemeLayout = theme.layout || currentTemplate.layout;
 
   // Categories list
-  const categories = ['All', 'Conference', 'Corporate', 'Creative', 'Community', 'Sports', 'Wellness', 'Networking', 'Festival'];
+  const categories = ['All', 'Concert', 'Conference', 'Corporate', 'Creative', 'Community', 'Sports', 'Wellness', 'Networking', 'Festival'];
 
   // Filtered templates
   const filteredTemplates = useMemo(() => {
@@ -271,6 +271,29 @@ export default function TemplateGallery({
             <div className="p-1 rounded border border-black text-center text-[5px] font-bold uppercase" style={{ backgroundColor: text, color: '#fff' }}>STAGE 02</div>
           </div>
           <div className="h-2 rounded bg-black flex items-center justify-center text-[4px] text-white font-mono uppercase font-bold">WEEKEND PASSES</div>
+        </div>
+      );
+    } else if (tpl.id === 'concert') {
+      // CONCERT: Gig poster hero + seating-zone ticket stubs
+      layoutContent = (
+        <div className="flex flex-col justify-between h-full space-y-1">
+          {renderMiniHeader()}
+          <div className="grid grid-cols-12 gap-1 items-center">
+            <div className="col-span-8 space-y-0.5">
+              <span className="text-[5px] font-bold uppercase tracking-widest block" style={{ color: acc }}>● LIVE IN CONCERT</span>
+              <span className="w-full h-2 rounded block" style={{ backgroundColor: text }}></span>
+              <span className="inline-block px-1.5 py-0.5 rounded-full text-[4px] font-bold text-white" style={{ backgroundColor: pri }}>BOOK TICKETS</span>
+            </div>
+            <div className="col-span-4 h-7 rounded rotate-2 border border-white/10" style={{ background: `linear-gradient(160deg, ${pri}, ${acc})` }}></div>
+          </div>
+          <div className="grid grid-cols-3 gap-0.5">
+            {['FANPIT', 'VIP', 'PLATINUM'].map((z) => (
+              <div key={z} className="flex items-center justify-between rounded border border-dashed px-0.5 py-0.5 text-[4px] font-bold" style={{ backgroundColor: surface, borderColor: border, color: text }}>
+                <span>{z}</span>
+                <span style={{ color: acc }}>₹</span>
+              </div>
+            ))}
+          </div>
         </div>
       );
     } else if (tpl.id === 'sports') {

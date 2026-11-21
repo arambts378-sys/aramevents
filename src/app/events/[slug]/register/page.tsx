@@ -11,11 +11,11 @@ export default async function PublicRegistrationPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ as?: string | string[] }>;
+  searchParams: Promise<{ as?: string | string[]; ticket?: string | string[] }>;
 }) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
-  const { as } = await searchParams;
+  const { as, ticket } = await searchParams;
   
   const supabase = createAdminClient();
   
@@ -144,6 +144,7 @@ export default async function PublicRegistrationPage({
       tickets={tickets}
       sponsorPackages={sponsorPackages || []}
       initialRole={as === 'sponsor' || as === 'partner' ? as : 'attendee'}
+      initialTicketId={typeof ticket === 'string' ? ticket : undefined}
     />
   );
 }

@@ -1,6 +1,7 @@
 import { EventData } from "@/types/event";
 import { VenueVariant } from "@/data/templates";
 import Link from "next/link";
+import { ConcertVenue } from "./concert/ConcertSections";
 
 interface VenueProps {
   event: EventData;
@@ -9,6 +10,7 @@ interface VenueProps {
 }
 
 export default function Venue({ event, section, variant = "split" }: VenueProps) {
+  if (variant === "concert") return <ConcertVenue event={event} section={section} />;
   const content = section?.content || {};
   const showMap = content.showMap ?? true;
   const mapUrl = `https://maps.google.com/?q=${encodeURIComponent((event.venue || "") + " " + (event.location || ""))}`;

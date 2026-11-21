@@ -33,7 +33,8 @@ export type HeroVariant =
   | 'stats-driven'
   | 'poster'
   | 'story-led'
-  | 'minimal';
+  | 'minimal'
+  | 'concert';
 
 export type SpeakerVariant =
   | 'spotlight'
@@ -59,7 +60,8 @@ export type VenueVariant =
   | 'split'
   | 'immersive'
   | 'map'
-  | 'compact';
+  | 'compact'
+  | 'concert';
 
 export type RegistrationVariant =
   | 'centered'
@@ -69,7 +71,8 @@ export type RegistrationVariant =
   | 'pricing-table'
   | 'invitation'
   | 'pass-cards'
-  | 'floating-card';
+  | 'floating-card'
+  | 'concert';
 
 export type FooterVariant =
   | 'editorial'
@@ -98,14 +101,16 @@ export type AboutVariant =
   | 'split'
   | 'outcomes'
   | 'categories'
-  | 'story';
+  | 'story'
+  | 'concert';
 
 export type EventInfoVariant =
   | 'editorial-meta'
   | 'stats-strip'
   | 'highlights-grid'
   | 'metric-cards'
-  | 'minimal-pills';
+  | 'minimal-pills'
+  | 'concert';
 
 export interface TemplateVariants {
   header: HeaderVariant;
@@ -120,6 +125,8 @@ export interface TemplateVariants {
   register: RegistrationVariant;
   contact: 'minimal' | 'split' | 'cards';
   footer: FooterVariant;
+  /** Closing call-to-action; templates without one use the standard banner. */
+  finalCta?: 'default' | 'concert';
 }
 
 export interface TemplateConfig {
@@ -626,6 +633,51 @@ export const templates: TemplateConfig[] = [
       footer: 'festival',
     },
     defaultSections: ['header', 'hero', 'about', 'speakers', 'agenda', 'event_info', 'venue', 'sponsors', 'register', 'footer'],
+  },
+  {
+    id: 'concert',
+    name: 'Concert',
+    description: 'Gig-poster hero, show details, seating-zone ticket wall with per-zone booking, and venue directions for live music nights.',
+    category: 'Concert',
+    tags: ['Poster Hero', 'Ticket Wall', 'Seating Zones'],
+    colors: {
+      primary: '#E11D48',
+      secondary: '#9F1239',
+      background: '#0A0A0F',
+      surface: '#15151F',
+      text: '#F8FAFC',
+      accent: '#FBBF24',
+      border: '#2A2A3A',
+      muted: '#A1A1B5',
+    },
+    typography: {
+      headingFont: 'Space Grotesk',
+      bodyFont: 'Inter',
+      headingScale: 'large',
+      bodyScale: 'standard',
+    },
+    layout: {
+      contentWidth: 'wide',
+      cardStyle: 'bordered',
+      buttonStyle: 'pill',
+      density: 'standard',
+    },
+    variants: {
+      header: 'sticky-blur',
+      hero: 'concert',
+      eventInfo: 'concert',
+      about: 'concert',
+      speakers: 'lineup',
+      agenda: 'cards',
+      venue: 'concert',
+      sponsors: 'grid',
+      exhibitors: 'grid',
+      register: 'concert',
+      contact: 'minimal',
+      footer: 'festival',
+      finalCta: 'concert',
+    },
+    defaultSections: ['header', 'hero', 'event_info', 'about', 'speakers', 'register', 'venue', 'sponsors', 'final_cta', 'footer'],
   },
   {
     id: 'sports',
