@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { eventCoverImage } from '@/lib/events/coverImage';
 
 export const metadata: Metadata = {
   title: 'Live events',
@@ -57,6 +58,7 @@ function EventCard({ event, past }: { event: PublicEvent; past?: boolean }) {
   const href =
     event.website?.status === 'published' ? `/events/${event.slug}` : `/events/${event.slug}/register`;
   const venue = event.format === 'Virtual' ? 'Online' : event.location || 'Venue to be announced';
+  const cover = eventCoverImage(event.flyer_url, event.website);
 
   return (
     <Link
@@ -65,15 +67,35 @@ function EventCard({ event, past }: { event: PublicEvent; past?: boolean }) {
         past ? 'opacity-75' : ''
       }`}
     >
-      <div className="relative aspect-[16/9] bg-ds-accent-soft">
-        {event.flyer_url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- flyers are user uploads on Supabase storage
-          <img src={event.flyer_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+      {/*
+        Fixed-size frame so every card in a row lines up. Flyers come in any shape (often square or
+        portrait posters), so show the whole flyer over a blurred copy of itself instead of cropping it.
+      */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-ds-accent-soft">
+        {cover ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- flyers are user uploads on Supabase storage */}
+            <img
+              src={cover}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl"
+              loading="lazy"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element -- flyers are user uploads on Supabase storage */}
+            <img
+              src={cover}
+              alt=""
+              className="absolute inset-0 h-full w-full object-contain"
+              loading="lazy"
+            />
+          </>
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <span className="material-symbols-outlined text-[48px] text-ds-accent/60" aria-hidden="true">
-              event
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-ds-accent-soft to-white px-6 text-center">
+            <span className="material-symbols-outlined text-[44px] text-ds-accent/70" aria-hidden="true">
+              {event.format === 'Virtual' ? 'videocam' : 'event'}
             </span>
+            <span className="line-clamp-2 text-base font-bold text-ds-accent-strong/80">{event.name}</span>
           </div>
         )}
         {event.type && (

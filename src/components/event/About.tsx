@@ -228,8 +228,8 @@ export default function About({ event, section, variant = "split" }: AboutProps)
 
         {/* VARIANT: EDITORIAL & SPLIT (Default Magazine & Clean Split) */}
         {(variant === "editorial" || variant === "split") && (
-          <div className={`flex flex-col @min-[64rem]:items-start @min-[64rem]:space-x-16 @min-[80rem]:space-x-24 ${content.imagePosition === 'left' ? '@min-[64rem]:flex-row-reverse @min-[64rem]:space-x-reverse' : '@min-[64rem]:flex-row'}`}>
-            <div className="w-full @min-[64rem]:w-1/2 mb-12 @min-[64rem]:mb-0">
+          <div className={`flex flex-col @min-[64rem]:items-center @min-[64rem]:space-x-16 @min-[80rem]:space-x-24 ${content.imagePosition === 'left' ? '@min-[64rem]:flex-row-reverse @min-[64rem]:space-x-reverse' : '@min-[64rem]:flex-row'}`}>
+            <div className="w-full @min-[64rem]:flex-1 mb-12 @min-[64rem]:mb-0">
               <div className="inline-flex items-center space-x-2 mb-6">
                 <span className="w-8 h-[1px] bg-brand-maroon"></span>
                 <span className="text-xs font-mono text-brand-maroon uppercase tracking-widest font-semibold">
@@ -246,8 +246,8 @@ export default function About({ event, section, variant = "split" }: AboutProps)
               </div>
             </div>
 
-            <div className="w-full @min-[64rem]:w-1/2">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-brand-soft rounded-xl shadow-xs">
+            <div className="w-full @min-[64rem]:w-5/12 @min-[64rem]:shrink-0">
+              <div className="relative aspect-[4/5] w-full max-h-[620px] overflow-hidden bg-brand-soft rounded-xl shadow-xs">
                 <img
                   src={imageUrl}
                   alt="About the event"

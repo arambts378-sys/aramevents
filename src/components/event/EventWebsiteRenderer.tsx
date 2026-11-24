@@ -16,6 +16,7 @@ import FinalCTA from "@/components/event/FinalCTA";
 import Footer from "@/components/event/Footer";
 import { templates } from "@/data/templates";
 import { resolveWebsiteTheme } from "@/lib/events/websiteTheme";
+import { withDisplayDateTime } from "@/lib/events/displayDateTime";
 
 export type WebsiteRendererMode = 'editor' | 'preview' | 'public';
 
@@ -28,12 +29,14 @@ interface Props {
 }
 
 export default function EventWebsiteRenderer({
-  event,
+  event: rawEvent,
   websiteConfig,
   mode,
   activeSectionId,
   onSectionClick,
 }: Props) {
+  // Sections show "25 November 2026" and "9:00 am – 6:00 pm", not the stored "2026-11-25" / "09:00:00".
+  const event = withDisplayDateTime(rawEvent || {});
   // Resolve active template and theme
   const template =
     templates.find((t) => t.id === websiteConfig?.templateId) || templates[0];
@@ -113,6 +116,8 @@ export default function EventWebsiteRenderer({
     websiteConfig?.sections
       ?.filter((s: any) => s.visible)
       ?.sort((a: any, b: any) => a.order - b.order) || [];
+  // The Event info section already lists date, time, venue and format, so heroes don't repeat them.
+  const showsEventInfo = visibleSections.some((s: any) => s.id === 'event_info');
 
   const variants = template.variants || {
     header: 'sticky-blur',
@@ -135,7 +140,7 @@ export default function EventWebsiteRenderer({
         return <Header event={event} section={section} websiteConfig={websiteConfig} variant={variants.header} />;
       case 'home':
       case 'hero':
-        return <Hero event={event} section={section} variant={variants.hero} websiteConfig={websiteConfig} />;
+        return <Hero event={event} section={section} variant={variants.hero} websiteConfig={websiteConfig} hideFactsStrip={showsEventInfo} />;
       case 'event_info':
         return <EventInfo event={event} section={section} variant={variants.eventInfo} />;
       case 'about':

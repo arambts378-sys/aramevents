@@ -2,7 +2,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import QRCodeLib from 'qrcode';
-import html2canvas from 'html2canvas';
 import { cleanLocation } from '@/lib/events/cleanLocation';
 
 export interface TicketData {
@@ -27,8 +26,8 @@ interface TicketTemplateProps {
 }
 
 /*
- * The ticket is drawn with inline hex colours on purpose: it is captured to a PNG with html2canvas,
- * which cannot read the colour functions (oklch, color-mix) that Tailwind's palette compiles to.
+ * The ticket uses inline hex colours so the on-screen ticket, the printed one and the downloaded PNG
+ * (drawn by `drawTicket` below with the same colours and measurements) all match.
  */
 const INK = '#16151A';
 const MUTED = '#6B6874';
@@ -39,14 +38,17 @@ function isHex(value?: string) {
   return !!value && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim());
 }
 
-/** Darkens a hex colour, for the second stop of the header gradient. */
-function shade(hex: string, amount: number) {
+/** Mixes a hex colour with white (amount 0–1 of white), for the pale ticket-type panel. */
+function tint(hex: string, amount: number) {
   let h = hex.replace('#', '');
   if (h.length === 3) h = h.split('').map((c) => c + c).join('');
   const n = parseInt(h, 16);
-  const ch = (shift: number) => Math.max(0, Math.min(255, Math.round(((n >> shift) & 255) * (1 - amount))));
+  const ch = (shift: number) => Math.round(((n >> shift) & 255) + (255 - ((n >> shift) & 255)) * amount);
   return `#${[16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join('')}`;
 }
+
+/* Ticket-type panel: label line, then the tier name in bold brand colour. Shared by screen and PNG. */
+const TIER = { marginTop: 14, padY: 10, padX: 12, bar: 4, labelH: 14, gap: 2, lineH: 20, size: 15 };
 
 function formatDate(date?: string | null) {
   if (!date) return '';
@@ -61,6 +63,271 @@ function formatTime(time?: string | null) {
   const d = new Date();
   d.setHours(h, m || 0, 0, 0);
   return d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+}
+
+interface DrawTicketInput {
+  fontFamily: string;
+  brand: string;
+  notch: string;
+  type: string;
+  ticketName: string;
+  eventName: string;
+  dateLine: string;
+  timeLine: string;
+  venue: string;
+  monthShort: string;
+  dayNum: string;
+  distance: string;
+  qr: HTMLImageElement;
+  registrationNumber: string;
+  fullName: string;
+  email: string;
+}
+
+/** Splits text into lines no wider than `max`, breaking long words (emails, IDs) if needed. */
+function wrapText(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
+  const lines: string[] = [];
+  let line = '';
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const next = line ? `${line} ${word}` : word;
+    if (ctx.measureText(next).width <= max) {
+      line = next;
+      continue;
+    }
+    if (line) lines.push(line);
+    line = '';
+    let rest = word;
+    while (ctx.measureText(rest).width > max && rest.length > 1) {
+      let cut = rest.length - 1;
+      while (cut > 1 && ctx.measureText(rest.slice(0, cut)).width > max) cut--;
+      lines.push(rest.slice(0, cut));
+      rest = rest.slice(cut);
+    }
+    line = rest;
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [''];
+}
+
+/**
+ * Draws the ticket as a PNG-ready canvas, mirroring the on-screen layout (340px card inside a 12px
+ * frame). Sizes are in CSS pixels and scaled up for a sharp image.
+ */
+function drawTicket(t: DrawTicketInput): HTMLCanvasElement {
+  const SCALE = 3;
+  const FRAME = 12;
+  const CARD_W = 340;
+  const PAD = 22;
+  const INNER = CARD_W - PAD * 2;
+  const W = CARD_W + FRAME * 2;
+  const font = (weight: number, size: number, family = t.fontFamily) => `${weight} ${size}px ${family}`;
+  const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+  // Measure first, so the canvas can be sized to the content.
+  const probe = document.createElement('canvas').getContext('2d')!;
+  probe.font = font(800, 22);
+  const nameLines = wrapText(probe, t.eventName, INNER);
+  probe.font = font(800, TIER.size);
+  const tierLines = t.ticketName ? wrapText(probe, t.ticketName, INNER - TIER.bar - TIER.padX * 2) : [];
+  const tierH = tierLines.length ? TIER.marginTop + TIER.padY * 2 + TIER.labelH + TIER.gap + TIER.lineH * tierLines.length : 0;
+  probe.font = font(400, 13);
+  const venueLines = wrapText(probe, t.venue, INNER - 62 - 14);
+  probe.font = font(800, 17);
+  const personLines = wrapText(probe, t.fullName.replace(/\b\p{L}/gu, (c) => c.toUpperCase()), INNER);
+  probe.font = font(400, 12);
+  const emailLines = t.email ? wrapText(probe, t.email, INNER) : [];
+  probe.font = font(600, 12);
+  const footerLines = wrapText(probe, 'Admit one · Show this QR code at the entrance', INNER);
+
+  const detailsH = 20 + 3 + 18 + 3 + 18 * venueLines.length;
+  const dateRowH = Math.max(detailsH, 60);
+  const cardH =
+    6 + 16 + 16 + // accent bar, brand row
+    8 + 28 * nameLines.length +
+    tierH +
+    18 + dateRowH + 18 +
+    (t.distance ? 38 + 16 : 0) +
+    20 + // tear line
+    18 + 190 + 10 + 18 + 6 + // QR block and registration number
+    14 + 22 * personLines.length + (emailLines.length ? 2 + 16 * emailLines.length : 0) + 18 +
+    11 * 2 + 16 * footerLines.length;
+  const H = cardH + FRAME * 2;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * SCALE;
+  canvas.height = H * SCALE;
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(SCALE, SCALE);
+  ctx.textBaseline = 'middle';
+
+  const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+  const text = (s: string, x: number, y: number, f: string, color: string, align: CanvasTextAlign = 'left', spacing = 0) => {
+    ctx.font = f;
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${spacing}px`;
+    ctx.fillText(s, x, y);
+    if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px';
+  };
+
+  // Frame and card
+  ctx.fillStyle = t.notch;
+  ctx.fillRect(0, 0, W, H);
+  const cx = FRAME;
+  const cy = FRAME;
+  ctx.save();
+  roundRect(cx, cy, CARD_W, cardH, 18);
+  ctx.fillStyle = PAPER;
+  ctx.fill();
+  ctx.clip();
+
+  let y = cy;
+  ctx.fillStyle = t.brand;
+  ctx.fillRect(cx, y, CARD_W, 6);
+  y += 6 + 16;
+
+  // Brand row
+  text(t.type.toUpperCase(), cx + PAD, y + 8, font(700, 11), MUTED, 'left', 1.1);
+  y += 16 + 8;
+
+  // Event name
+  for (const line of nameLines) {
+    text(line, cx + PAD, y + 14, font(800, 22), INK);
+    y += 28;
+  }
+
+  // Ticket type, on its own highlighted panel so it can't collide with anything
+  if (tierLines.length) {
+    y += TIER.marginTop;
+    const boxH = tierH - TIER.marginTop;
+    ctx.save();
+    roundRect(cx + PAD, y, INNER, boxH, 10);
+    ctx.fillStyle = tint(t.brand, 0.9);
+    ctx.fill();
+    ctx.clip();
+    ctx.fillStyle = t.brand;
+    ctx.fillRect(cx + PAD, y, TIER.bar, boxH);
+    ctx.restore();
+    const tx = cx + PAD + TIER.bar + TIER.padX;
+    let ty = y + TIER.padY;
+    text('TICKET TYPE', tx, ty + TIER.labelH / 2, font(700, 10), MUTED, 'left', 1);
+    ty += TIER.labelH + TIER.gap;
+    for (const line of tierLines) {
+      text(line, tx, ty + TIER.lineH / 2, font(800, TIER.size), t.brand);
+      ty += TIER.lineH;
+    }
+    y += boxH;
+  }
+  y += 18;
+
+  // Date block
+  roundRect(cx + PAD, y, 62, dateRowH, 12);
+  ctx.fillStyle = t.brand;
+  ctx.fill();
+  const blockTop = y + (dateRowH - 44) / 2;
+  ctx.globalAlpha = 0.85;
+  text(t.monthShort.toUpperCase(), cx + PAD + 31, blockTop + 7, font(700, 11), '#FFFFFF', 'center', 1.1);
+  ctx.globalAlpha = 1;
+  text(t.dayNum, cx + PAD + 31, blockTop + 14 + 15, font(800, 26), '#FFFFFF', 'center');
+
+  const dx = cx + PAD + 62 + 14;
+  let dy = y + (dateRowH - detailsH) / 2;
+  text(t.dateLine, dx, dy + 10, font(700, 14), INK);
+  dy += 20 + 3;
+  text(t.timeLine, dx, dy + 9, font(400, 13), MUTED);
+  dy += 18 + 3;
+  for (const line of venueLines) {
+    text(line, dx, dy + 9, font(400, 13), MUTED);
+    dy += 18;
+  }
+  y += dateRowH + 18;
+
+  if (t.distance) {
+    roundRect(cx + PAD, y, INNER, 38, 10);
+    ctx.fillStyle = '#F6F5F9';
+    ctx.fill();
+    ctx.font = font(400, 13);
+    const label = 'Distance ';
+    text(label, cx + PAD + 12, y + 19, font(400, 13), MUTED);
+    text(t.distance, cx + PAD + 12 + ctx.measureText(label).width, y + 19, font(700, 13), INK);
+    y += 38 + 16;
+  }
+
+  // Tear line with notches
+  ctx.save();
+  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx + 18, y + 10);
+  ctx.lineTo(cx + CARD_W - 18, y + 10);
+  ctx.stroke();
+  ctx.restore();
+  for (const nx of [cx - 1, cx + CARD_W + 1]) {
+    ctx.beginPath();
+    ctx.arc(nx, y + 10, 10, 0, Math.PI * 2);
+    ctx.fillStyle = t.notch;
+    ctx.fill();
+    ctx.strokeStyle = LINE;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  y += 20 + 18;
+
+  // QR code
+  const qx = cx + (CARD_W - 190) / 2;
+  roundRect(qx + 0.5, y + 0.5, 189, 189, 14);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(t.qr, qx + 11, y + 11, 168, 168);
+  ctx.imageSmoothingEnabled = true;
+  y += 190 + 10;
+  text(t.registrationNumber, cx + CARD_W / 2, y + 9, font(700, 13, MONO), INK, 'center', 0.5);
+  y += 18 + 6 + 14;
+
+  // Attendee
+  for (const line of personLines) {
+    text(line, cx + CARD_W / 2, y + 11, font(800, 17), INK, 'center');
+    y += 22;
+  }
+  if (emailLines.length) {
+    y += 2;
+    for (const line of emailLines) {
+      text(line, cx + CARD_W / 2, y + 8, font(400, 12), MUTED, 'center');
+      y += 16;
+    }
+  }
+  y += 18;
+
+  // Footer
+  ctx.fillStyle = t.brand;
+  ctx.fillRect(cx, y, CARD_W, cardH - (y - cy));
+  y += 11;
+  for (const line of footerLines) {
+    text(line, cx + CARD_W / 2, y + 8, font(600, 12), '#FFFFFF', 'center');
+    y += 16;
+  }
+  ctx.restore();
+
+  // Card border on top of everything
+  roundRect(cx + 0.5, cy + 0.5, CARD_W - 1, cardH - 1, 18);
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  return canvas;
 }
 
 export function TicketTemplate({ data, className = '', accent, backdrop = '#F5F4F7' }: TicketTemplateProps) {
@@ -105,29 +372,32 @@ export function TicketTemplate({ data, className = '', accent, backdrop = '#F5F4
   const registrationNumber = registration?.registrationNumber || registration?.registration_number || 'PENDING';
 
   const handleDownload = async () => {
-    if (!ticketRef.current || isDownloading || !qrLoaded) return;
+    const qrImg = qrImgRef.current;
+    if (!ticketRef.current || isDownloading || !qrLoaded || !qrImg) return;
     setIsDownloading(true);
     setDownloadError(null);
     try {
       await document.fonts.ready;
-      const scale = 2;
-      const canvas = await html2canvas(ticketRef.current, { scale, useCORS: true, backgroundColor: notch, logging: false });
-
-      // html2canvas can leave the QR image blank, so paint it onto the result at the same spot.
-      const qrImg = qrImgRef.current;
-      const ctx = canvas.getContext('2d');
-      if (qrImg && ctx) {
-        const box = ticketRef.current.getBoundingClientRect();
-        const r = qrImg.getBoundingClientRect();
-        // The canvas is not always exactly `scale` times the element (device pixel ratio, zoom), so measure it.
-        const k = canvas.width / box.width;
-        const [x, y, w, h] = [(r.left - box.left) * k, (r.top - box.top) * k, r.width * k, r.height * k];
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(x, y, w, h);
-        ctx.drawImage(qrImg, x, y, w, h);
-      }
+      // Drawn straight onto a canvas rather than screenshotting the page: page-capture libraries
+      // drop the QR image on some phones (iOS Safari, in-app browsers), and a ticket without it is useless.
+      const canvas = drawTicket({
+        fontFamily: getComputedStyle(ticketRef.current).fontFamily || 'sans-serif',
+        brand,
+        notch,
+        type: event?.type || 'Event',
+        ticketName: ticketName || '',
+        eventName: event?.name || 'Event ticket',
+        dateLine: endLabel ? `${dateLabel} – ${endLabel}` : dateLabel,
+        timeLine: timeLabel ? `${timeLabel}${event?.timezone === 'Asia/Kolkata' ? ' IST' : ''}` : 'Time to be announced',
+        venue,
+        monthShort,
+        dayNum,
+        distance: isWalkathon && distanceCategory?.name ? String(distanceCategory.name) : '',
+        qr: qrImg,
+        registrationNumber,
+        fullName,
+        email: attendee.email || '',
+      });
       const dataUrl = canvas.toDataURL('image/png');
       if (!dataUrl || !dataUrl.startsWith('data:image/')) throw new Error('Ticket image generation failed.');
       const link = document.createElement('a');
@@ -146,7 +416,7 @@ export function TicketTemplate({ data, className = '', accent, backdrop = '#F5F4
 
   return (
     <div className={`flex w-full flex-col items-center ${className}`}>
-      {/* Captured area. Plain blocks only: html2canvas misplaces text in pills and clips ellipses. */}
+      {/* On-screen and printed ticket. Keep `drawTicket` in step with layout changes here. */}
       <div ref={ticketRef} style={{ padding: 12, backgroundColor: notch }} className="print:p-0">
         <div
           style={{
@@ -165,15 +435,33 @@ export function TicketTemplate({ data, className = '', accent, backdrop = '#F5F4
           <div style={{ height: 6, background: brand }} />
 
           {/* Brand row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 22px 0', fontSize: 11, lineHeight: '16px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            <span style={{ color: MUTED }}>{event?.type || 'Event'}</span>
-            <span style={{ color: brand }}>{ticketName || 'Admit one'}</span>
+          <div style={{ padding: '16px 22px 0', fontSize: 11, lineHeight: '16px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED }}>
+            {event?.type || 'Event'}
           </div>
 
           {/* Event name */}
           <h2 style={{ margin: 0, padding: '8px 22px 0', fontSize: 22, lineHeight: '28px', fontWeight: 800, color: INK, wordBreak: 'break-word' }}>
             {event?.name || 'Event ticket'}
           </h2>
+
+          {/* Ticket type */}
+          {ticketName && (
+            <div
+              style={{
+                margin: `${TIER.marginTop}px 22px 0`,
+                padding: `${TIER.padY}px ${TIER.padX}px ${TIER.padY}px ${TIER.padX + TIER.bar}px`,
+                borderRadius: 10,
+                background: `linear-gradient(to right, ${brand} ${TIER.bar}px, ${tint(brand, 0.9)} ${TIER.bar}px)`,
+              }}
+            >
+              <div style={{ fontSize: 10, lineHeight: `${TIER.labelH}px`, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED }}>
+                Ticket type
+              </div>
+              <div style={{ marginTop: TIER.gap, fontSize: TIER.size, lineHeight: `${TIER.lineH}px`, fontWeight: 800, color: brand, wordBreak: 'break-word' }}>
+                {ticketName}
+              </div>
+            </div>
+          )}
 
           {/* Date block and details */}
           <div style={{ display: 'flex', gap: 14, alignItems: 'stretch', padding: '18px 22px' }}>

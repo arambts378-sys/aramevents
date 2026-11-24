@@ -581,7 +581,7 @@ export default function PublicRegistrationClient({ themeStyle, paymentsEnabled =
                         <span className="min-w-0 truncate text-on-surface-variant">
                           1 × <span className="font-medium text-on-surface">{selectedTicket.name}</span>
                         </span>
-                        <span className="text-[18px] font-bold text-on-surface">
+                        <span className="shrink-0 whitespace-nowrap text-[18px] font-bold text-on-surface">
                           {selectedTicket.price_amount > 0 ? formatPaiseToINR(selectedTicket.price_amount) : 'Free'}
                         </span>
                       </div>
