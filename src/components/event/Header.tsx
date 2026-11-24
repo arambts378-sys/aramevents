@@ -69,7 +69,6 @@ export default function Header({ event, section, websiteConfig, variant = "stick
         <div className="flex-shrink-0 flex items-center">
           {showLogoText && (
             <Link href="/" className="text-xl font-bold text-brand-dark tracking-tight flex items-center gap-2">
-              {!isConcert && <span className="w-2.5 h-2.5 rounded-full bg-brand-maroon"></span>}
               <span>{logoText}</span>
             </Link>
           )}

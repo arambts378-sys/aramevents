@@ -12,9 +12,11 @@ interface HeroProps {
   variant?: HeroVariant;
   /** The whole website, for layouts that borrow text from other sections */
   websiteConfig?: any;
+  /** True when the page also has an Event info section, so the hero leaves out its own facts strip. */
+  hideFactsStrip?: boolean;
 }
 
-export default function Hero({ event, section, variant = 'centered', websiteConfig }: HeroProps) {
+export default function Hero({ event, section, variant = 'centered', websiteConfig, hideFactsStrip = false }: HeroProps) {
   if (variant === 'concert') return <ConcertHero event={event} section={section} websiteConfig={websiteConfig} />;
   const content = section?.content || {};
   const hasFlyer = !!content.image;
@@ -50,19 +52,10 @@ export default function Hero({ event, section, variant = 'centered', websiteConf
     return (
       <section className="relative w-full min-h-[60vh] flex flex-col justify-between py-8 @min-[64rem]:py-10 px-6 @min-[40rem]:px-10 @min-[64rem]:px-16 overflow-hidden border-b border-[var(--website-border)] bg-[var(--website-background)]">
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-between">
-          {/* Eyebrow & Issue / Edition metadata */}
-          <div className="flex items-center justify-between pb-6 border-b border-[var(--website-border)] text-xs font-mono uppercase tracking-widest text-[var(--website-muted)]">
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[var(--website-primary)] animate-pulse" />
-              <span>Thought Leadership · Editorial Edition</span>
-            </span>
-            <span>{eventDate}</span>
-          </div>
-
           {/* Main Asymmetric Grid */}
-          <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-10 @min-[64rem]:gap-16 items-center py-8">
+          <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-12 @min-[64rem]:gap-14 items-center py-8">
             {/* Left Column: Giant Editorial Headline & Essay intro. Takes the full width when there is no image. */}
-            <div className={`${flyerImage ? '@min-[64rem]:col-span-7' : '@min-[64rem]:col-span-12'} space-y-6`}>
+            <div className={`${flyerImage ? '@min-[64rem]:col-span-5' : '@min-[64rem]:col-span-12'} space-y-6`}>
               {showTitle && (
                 <h1 className="text-4xl @min-[40rem]:text-6xl @min-[64rem]:text-7xl font-bold tracking-tight leading-[1.08] text-[var(--website-text)]">
                   {eventName}
@@ -98,23 +91,33 @@ export default function Hero({ event, section, variant = 'centered', websiteConf
               </div>
             </div>
 
-            {/* Right Column (5 cols): Asymmetric Image Frame */}
+            {/* Right Column (7 cols): framed image, offset over a panel in the brand colour */}
             {flyerImage && (
-              <div className="@min-[64rem]:col-span-5">
-                {/* Show the whole poster at its own aspect ratio, never cropped. */}
+              <div className="@min-[64rem]:col-span-7">
                 <div className="flex justify-center @min-[64rem]:justify-end">
-                  <img
-                    src={flyerImage}
-                    alt={eventName}
-                    className="block w-auto h-auto max-w-full max-h-[640px] rounded-xl border border-[var(--website-border)] shadow-xl bg-[var(--website-surface)] filter contrast-[1.05]"
-                  />
+                  <div className="relative w-full max-w-full pb-4 pl-4 @min-[48rem]:pb-6 @min-[48rem]:pl-6">
+                    <div
+                      aria-hidden="true"
+                      className="absolute bottom-0 left-0 right-6 top-6 rounded-2xl bg-[var(--website-primary)] opacity-90 @min-[48rem]:right-10 @min-[48rem]:top-10"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute -right-3 -top-3 h-24 w-24 rounded-2xl border-2 border-dashed border-[var(--website-primary)] opacity-40"
+                    />
+                    {/* The whole poster at its own aspect ratio, never cropped. */}
+                    <img
+                      src={flyerImage}
+                      alt={eventName}
+                      className="relative block w-full h-auto max-h-[680px] object-contain rounded-2xl bg-[var(--website-surface)] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.45)] ring-1 ring-black/5"
+                    />
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Bottom Editorial Metadata Strip */}
-          {(showDate || showLocation) && (
+          {/* Bottom Editorial Metadata Strip (left out when the Event info section shows the same facts) */}
+          {!hideFactsStrip && (showDate || showLocation) && (
             <div className="grid grid-cols-2 @min-[48rem]:grid-cols-4 gap-4 pt-6 border-t border-[var(--website-border)] text-sm">
               <div>
                 <span className="text-[11px] font-mono uppercase text-[var(--website-muted)] block">Date</span>

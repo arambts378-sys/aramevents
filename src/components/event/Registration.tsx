@@ -275,18 +275,18 @@ export default function Registration({ event, section, variant = "split" }: Regi
 
                   <div className="space-y-3">
                     {tickets.map((t) => (
-                      <div key={t.id} className="p-3.5 border border-brand-border rounded bg-brand-soft/40 flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold text-sm text-brand-dark">{t.name}</div>
+                      <div key={t.id} className="p-3.5 border border-brand-border rounded bg-brand-soft/40 flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-sm text-brand-dark break-words">{t.name}</div>
                           {t.description && (
-                            <div className="text-xs text-brand-muted truncate max-w-[200px]">{t.description}</div>
+                            <div className="text-xs text-brand-muted line-clamp-2">{t.description}</div>
                           )}
                           <span className="inline-block text-[10px] font-mono uppercase tracking-wider text-brand-maroon mt-1">
                             {t.status === 'sold_out' ? 'Sold Out' : t.status === 'sales_ended' ? 'Sales Ended' : 'Available'}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <div className="font-mono font-bold text-base text-brand-dark">
+                        <div className="shrink-0 text-right">
+                          <div className="font-mono font-bold text-base text-brand-dark whitespace-nowrap">
                             {formatPaiseToINR(t.price_amount)}
                           </div>
                         </div>

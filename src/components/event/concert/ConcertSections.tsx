@@ -42,7 +42,8 @@ function clock(t?: string) {
 
 /** Show time from "17:30:00 - 00:00:00" → "5:30 PM – 12:00 AM" */
 function showTime(event: any) {
-  const raw: string = event?.time || [event?.startTime, event?.endTime].filter(Boolean).join(' - ');
+  // Prefer the raw 24-hour times: `time` may already be formatted for display ("9:00 am – 6:00 pm").
+  const raw: string = [event?.startTime, event?.endTime].filter(Boolean).join(' - ') || event?.time || '';
   const [start, end] = raw.split(/\s+[-–]\s+/);
   const s = clock(start);
   const e = clock(end);
@@ -279,12 +280,12 @@ export function ConcertInfo({ event, section }: SectionProps) {
     <section className="border-y border-[var(--website-border)] bg-[var(--website-surface)] text-[var(--website-text)]">
       <div className="mx-auto grid max-w-7xl grid-cols-2 px-5 @min-[40rem]:px-10 @min-[64rem]:grid-cols-4">
         {items.slice(0, 4).map((it) => (
-          <div key={it.label} className="flex items-center gap-3.5 py-6 pr-4">
+          <div key={it.label} className="flex flex-col items-start gap-2.5 py-5 pr-3 @min-[40rem]:flex-row @min-[40rem]:items-center @min-[40rem]:gap-3.5 @min-[40rem]:py-6 @min-[40rem]:pr-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--website-primary)_18%,transparent)] text-[var(--website-primary)]">
               <span className="material-symbols-outlined text-[22px]" aria-hidden="true">{it.icon}</span>
             </span>
             <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--website-muted)]">{it.label}</div>
+              <div className="break-words text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--website-muted)] @min-[40rem]:tracking-[0.2em]">{it.label}</div>
               <div className="mt-0.5 font-semibold leading-snug">{it.value}</div>
             </div>
           </div>

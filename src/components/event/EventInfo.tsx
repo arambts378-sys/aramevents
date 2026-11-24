@@ -33,44 +33,37 @@ export default function EventInfo({ event, section, variant = "stats-strip" }: E
         
         {/* VARIANT: EDITORIAL-META (Publication metadata columns) */}
         {variant === "editorial-meta" && (
-          <div className="grid grid-cols-1 @min-[48rem]:grid-cols-4 gap-8 divide-y @min-[48rem]:divide-y-0 @min-[48rem]:divide-x divide-brand-border/60">
+          <div className="grid grid-cols-1 @min-[48rem]:grid-cols-2 @min-[64rem]:grid-cols-4 gap-x-8 gap-y-6 divide-y @min-[48rem]:divide-y-0 @min-[64rem]:divide-x divide-brand-border/60">
+            {/* One font throughout (the website's own), so the four facts read as a set. */}
             {showDate && (
-              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
-                <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
-                  // Date &amp; Season
-                </span>
-                <div className="text-3xl font-serif text-brand-dark">
-                  {dateRange} {monthYear}
+              <div className="pt-6 first:pt-0 @min-[48rem]:pt-0 @min-[64rem]:px-6 @min-[64rem]:first:pl-0">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-brand-maroon">Date</span>
+                <div className="text-xl @min-[48rem]:text-2xl font-semibold leading-snug text-brand-dark">
+                  {[dateRange, monthYear].filter(Boolean).join(" ")}
                 </div>
               </div>
             )}
             {showTime && (
-              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
-                <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
-                  // Schedule Hours
-                </span>
-                <div className="text-2xl font-mono text-brand-dark font-light">
+              <div className="pt-6 @min-[48rem]:pt-0 @min-[64rem]:px-6">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-brand-maroon">Time</span>
+                <div className="text-xl @min-[48rem]:text-2xl font-semibold leading-snug text-brand-dark">
                   {startTime} {endTime ? `– ${endTime}` : ''}
                 </div>
               </div>
             )}
             {showLocation && (
-              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
-                <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
-                  // Host City &amp; Venue
-                </span>
-                <div className="text-xl font-medium text-brand-dark">
+              <div className="pt-6 @min-[48rem]:pt-0 @min-[64rem]:px-6">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-brand-maroon">Venue</span>
+                <div className="text-base @min-[48rem]:text-lg font-medium leading-relaxed text-brand-dark">
                   {event.venue || event.location}
                 </div>
               </div>
             )}
             {showFormat && (
-              <div className="pt-4 @min-[48rem]:pt-0 @min-[48rem]:px-6">
-                <span className="text-[11px] font-mono text-brand-maroon uppercase tracking-widest font-semibold block mb-2">
-                  // Assembly Format
-                </span>
-                <div className="text-lg font-mono uppercase text-brand-dark">
-                  {event.type} · {event.format}
+              <div className="pt-6 @min-[48rem]:pt-0 @min-[64rem]:px-6">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-brand-maroon">Format</span>
+                <div className="text-base @min-[48rem]:text-lg font-medium leading-relaxed text-brand-dark">
+                  {[event.type, event.format].filter(Boolean).join(" · ")}
                 </div>
               </div>
             )}
