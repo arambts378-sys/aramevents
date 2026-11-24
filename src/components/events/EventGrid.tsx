@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Event } from '@/types';
 import { copyToClipboard, publicWebsiteUrl } from '@/components/website-editor/WebsiteLinkField';
+import { eventCoverImage } from '@/lib/events/coverImage';
 
 interface EventGridProps {
   events: Event[];
@@ -150,7 +151,7 @@ export function EventGrid({ events }: EventGridProps) {
             {/* 1. Event Image / Flyer with Status Badge */}
             <div className="relative aspect-video w-full overflow-hidden bg-ds-accent-soft">
               <EventImageWithFallback
-                src={event.flyer}
+                src={eventCoverImage(event.flyer, event.website)}
                 alt={event.name}
                 format={event.format || event.type}
                 name={event.name}
