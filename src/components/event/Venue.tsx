@@ -2,6 +2,7 @@ import { EventData } from "@/types/event";
 import { VenueVariant } from "@/data/templates";
 import Link from "next/link";
 import { ConcertVenue } from "./concert/ConcertSections";
+import { VenueMap, hasMappableVenue, venueMapLinks } from "./VenueMap";
 
 interface VenueProps {
   event: EventData;
@@ -12,9 +13,19 @@ interface VenueProps {
 export default function Venue({ event, section, variant = "split" }: VenueProps) {
   if (variant === "concert") return <ConcertVenue event={event} section={section} />;
   const content = section?.content || {};
-  const showMap = content.showMap ?? true;
-  const mapUrl = `https://maps.google.com/?q=${encodeURIComponent((event.venue || "") + " " + (event.location || ""))}`;
-  const imageUrl = content.image || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=2070&auto=format&fit=crop";
+  // The address from the event details. Venue and location often hold the same text, so don't repeat it.
+  const venueName = (event.venue || "").trim();
+  const locationText = (event.location || "").trim();
+  const address = venueName && locationText && !venueName.includes(locationText) && !locationText.includes(venueName)
+    ? `${venueName}, ${locationText}`
+    : venueName.length >= locationText.length ? venueName : locationText;
+  const mapQuery = (typeof content.mapQuery === "string" && content.mapQuery.trim()) || address;
+  const showMap = (content.showMap ?? true) && hasMappableVenue(address);
+  const eventSlug = (event as { slug?: string }).slug;
+  const mapUrl = venueMapLinks(mapQuery).directions;
+  // The organizer's own venue photo, if they uploaded one in the editor.
+  const photo = typeof content.image === "string" && content.image.trim() ? content.image : null;
+  const imageUrl = photo || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=2070&auto=format&fit=crop";
 
   return (
     <section id="venue" className="bg-brand-white website-section border-t border-brand-border/60">
@@ -57,6 +68,9 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
             </div>
           </div>
         )}
+        {variant === "immersive" && showMap && (
+          <VenueMap query={mapQuery} label={address} photo={photo} slug={eventSlug} className="mt-6 h-[360px] rounded-2xl border border-brand-border" />
+        )}
 
         {/* VARIANT: EDITORIAL (High-fashion architecture feature) */}
         {variant === "editorial" && (
@@ -71,17 +85,17 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
             </div>
 
             <div className="grid grid-cols-1 @min-[64rem]:grid-cols-12 gap-8 items-start">
-              <div className="@min-[64rem]:col-span-8 aspect-[16/9] rounded-xl overflow-hidden bg-brand-soft border border-brand-border">
-                <img src={imageUrl} alt="Venue architecture" className="w-full h-full object-cover filter grayscale contrast-115" />
-              </div>
+              {showMap ? (
+                <VenueMap query={mapQuery} label={address} photo={photo} slug={eventSlug} className="@min-[64rem]:col-span-8 w-full h-[320px] @min-[48rem]:h-[420px] rounded-xl border border-brand-border" />
+              ) : (
+                <div className="@min-[64rem]:col-span-8 aspect-[16/9] rounded-xl overflow-hidden bg-brand-soft border border-brand-border">
+                  <img src={imageUrl} alt="Venue architecture" className="w-full h-full object-cover filter grayscale contrast-115" />
+                </div>
+              )}
               <div className="@min-[64rem]:col-span-4 bg-brand-soft border border-brand-border p-6 rounded-xl space-y-6">
                 <div>
-                  <span className="text-[11px] font-mono uppercase text-brand-muted block mb-1">CITY / REGION</span>
-                  <div className="text-xl font-serif text-brand-dark">{event.location}</div>
-                </div>
-                <div>
-                  <span className="text-[11px] font-mono uppercase text-brand-muted block mb-1">PRIMARY LOCATION</span>
-                  <div className="text-lg font-medium text-brand-dark">{event.venue || event.location}</div>
+                  <span className="text-[11px] font-mono uppercase text-brand-muted block mb-1">ADDRESS</span>
+                  <div className="text-xl font-serif text-brand-dark">{address || "Venue to be announced"}</div>
                 </div>
                 {content.description && (
                   <p className="text-sm text-brand-muted leading-relaxed pt-4 border-t border-brand-border">
@@ -106,9 +120,13 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
         {/* VARIANT: COMPACT (Workshop / Quick practical row card) */}
         {variant === "compact" && (
           <div className="bg-brand-soft border border-brand-border rounded-2xl p-6 @min-[48rem]:p-8 flex flex-col @min-[48rem]:flex-row items-center gap-8">
-            <div className="w-full @min-[48rem]:w-64 h-44 rounded-xl overflow-hidden bg-brand-border shrink-0">
-              <img src={imageUrl} alt="Venue location" className="w-full h-full object-cover" />
-            </div>
+            {showMap ? (
+              <VenueMap query={mapQuery} label={address} photo={photo} slug={eventSlug} className="w-full @min-[48rem]:w-80 h-56 rounded-xl shrink-0" />
+            ) : (
+              <div className="w-full @min-[48rem]:w-64 h-44 rounded-xl overflow-hidden bg-brand-border shrink-0">
+                <img src={imageUrl} alt="Venue location" className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="flex-1 space-y-2 text-left">
               <span className="text-xs font-mono uppercase text-brand-maroon font-bold tracking-wider">
                 Event Location &amp; Directions
@@ -158,14 +176,18 @@ export default function Venue({ event, section, variant = "split" }: VenueProps)
 
             <div className="flex flex-col @min-[64rem]:flex-row @min-[64rem]:space-x-12 @min-[80rem]:space-x-16">
               <div className="w-full @min-[64rem]:w-2/3 mb-10 @min-[64rem]:mb-0">
-                <div className="relative aspect-video w-full overflow-hidden bg-brand-soft rounded-xl shadow-xs">
-                  <img
-                    src={imageUrl}
-                    alt="Venue building"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 border border-brand-maroon/10 mix-blend-overlay"></div>
-                </div>
+                {showMap ? (
+                  <VenueMap query={mapQuery} label={address} photo={photo} slug={eventSlug} className="w-full h-[320px] @min-[48rem]:h-[420px] rounded-xl border border-brand-border shadow-xs" />
+                ) : (
+                  <div className="relative aspect-video w-full overflow-hidden bg-brand-soft rounded-xl shadow-xs">
+                    <img
+                      src={imageUrl}
+                      alt="Venue building"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 border border-brand-maroon/10 mix-blend-overlay"></div>
+                  </div>
+                )}
               </div>
 
               <div className="w-full @min-[64rem]:w-1/3 flex flex-col justify-center">
